@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* Thin weight */
+@font-face {
+  font-family: 'Vazir';
+  font-weight: 100;
+  font-style: normal;
+  src: url('/fonts/Vazir/Vazir-Thin-FD-WOL.woff2') format('woff2'),
+       url('/fonts/Vazir/Vazir-Thin-FD-WOL.woff') format('woff'),
+       url('/fonts/Vazir/Vazir-Thin-FD-WOL.ttf') format('truetype');
+}
+
+/* Light weight */
+@font-face {
+  font-family: 'Vazir';
+  font-weight: 300;
+  font-style: normal;
+  src: url('/fonts/Vazir/Vazir-Light-FD-WOL.woff2') format('woff2'),
+       url('/fonts/Vazir/Vazir-Light-FD-WOL.woff') format('woff'),
+       url('/fonts/Vazir/Vazir-Light-FD-WOL.ttf') format('truetype');
+}
+
+/* Normal weight (Regular) */
+@font-face {
+  font-family: 'Vazir';
+  font-weight: 400;
+  font-style: normal;
+  src: url('/fonts/Vazir/Vazir-FD-WOL.woff2') format('woff2'),
+       url('/fonts/Vazir/Vazir-FD-WOL.woff') format('woff'),
+       url('/fonts/Vazir/Vazir-FD-WOL.ttf') format('truetype');
+}
+
+/* Medium weight */
+@font-face {
+  font-family: 'Vazir';
+  font-weight: 500;
+  font-style: normal;
+  src: url('/fonts/Vazir/Vazir-Medium-FD-WOL.woff2') format('woff2'),
+       url('/fonts/Vazir/Vazir-Medium-FD-WOL.woff') format('woff'),
+       url('/fonts/Vazir/Vazir-Medium-FD-WOL.ttf') format('truetype');
+}
+
+/* Bold weight */
+@font-face {
+  font-family: 'Vazir';
+  font-weight: 700;
+  font-style: normal;
+  src: url('/fonts/Vazir/Vazir-Bold-FD-WOL.woff2') format('woff2'),
+       url('/fonts/Vazir/Vazir-Bold-FD-WOL.woff') format('woff'),
+       url('/fonts/Vazir/Vazir-Bold-FD-WOL.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: Lalezar;
+  src: url("/fonts/Digi Lalezar Plus.ttf");
+  font-display: swap;
+}
+@theme {
+  --color-midnight: #121063;
+  --color-tahiti: #3ab7bf;
+  --color-bermuda: #78dcca;
+
+  --color-primary-bg: #141E22;
+  --color-secondary-bg: #1A262D;
+  --color-primary: #39DB7D;
+  --color-active-item-bg: #202E36;
+  --color-text-secondary: #707E80;
+  --color-text-primary: #fff;
+  --color-input-bg: #0F171A;
+  --color-border-1: #293842;
+  --color-border-2: #25333C;
+}
