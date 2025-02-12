@@ -1,0 +1,11 @@
+{
+    "version": "v0.1.0",
+    "notes": "-",
+    "pub_date": "2025-02-12T22:17:00.0+03:30",
+    "platforms": {
+        "windows-x86_64": {
+            "signature": "",
+            "url": "https://github.com/nimdeveloper/khazane/releases/download/latest/anbardar_0.1.0_x64_en-US.msi"
+        }
+    }
+}

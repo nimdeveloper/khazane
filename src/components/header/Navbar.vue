@@ -1,98 +1,167 @@
 <template>
-  <div class="w-full flex justify-between align-middle content-between items-center">
-    <div class="inline-flex items-center">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="40px" height="40px" class="h-10">
-        <path fill="#c7d7e2"
-          d="M57.2,59.7H18.8c-1.3,0-2.4-1.1-2.4-2.4V19.4c0-1.3,1.1-2.4,2.4-2.4h38.4c1.3,0,2.4,1.1,2.4,2.4v37.8 C59.7,58.6,58.6,59.7,57.2,59.7" />
-        <path fill="#f4f7f9"
-          d="M28.236,17h-3.672c-0.715,0.54-1.164,1.401-1.164,2.4v17.9c0,1.7,1.3,3,3,3c1.6,0,3-1.4,3-3V19.4 C29.4,18.401,28.951,17.54,28.236,17" />
-        <path fill="#c7d7e2"
-          d="M57.2,111H18.8c-1.3,0-2.4-1.1-2.4-2.4V70.7c0-1.3,1.1-2.4,2.4-2.4h38.4c1.3,0,2.4,1.101,2.4,2.4 v37.8C59.7,109.9,58.6,111,57.2,111" />
-        <path fill="#f4f7f9"
-          d="M28.235,68.3h-3.671c-0.715,0.54-1.165,1.401-1.165,2.4V88.6c0,1.7,1.3,3,3,3c1.6,0,3-1.399,3-3V70.7 C29.4,69.701,28.951,68.84,28.235,68.3" />
-        <path fill="#c7d7e2"
-          d="M109.2,111H70.8c-1.3,0-2.399-1.1-2.399-2.4V70.7c0-1.3,1.1-2.4,2.399-2.4h38.4 c1.3,0,2.399,1.101,2.399,2.4v37.8C111.6,109.9,110.5,111,109.2,111" />
-        <path fill="#f4f7f9"
-          d="M80.135,68.3h-3.671c-0.715,0.54-1.165,1.401-1.165,2.4V88.6c0,1.7,1.3,3,3,3c1.7,0,3-1.399,3-3V70.7 C81.3,69.701,80.851,68.84,80.135,68.3" />
-        <path fill="#454b54"
-          d="M57.2,62.7H18.8c-3,0-5.4-2.4-5.4-5.4V19.4c0-3,2.4-5.4,5.4-5.4h38.4c3,0,5.4,2.4,5.4,5.4v37.9 C62.7,60.3,60.2,62.7,57.2,62.7z M19.4,56.7h37.3V20H19.4V56.7z" />
-        <path fill="#dadbdd"
-          d="M69.7 16.4c-1.7 0-3 1.3-3 3v37.9c0 1.7 1.3 3 3 3 1.6 0 3-1.4 3-3V19.4C72.7 17.7 71.4 16.4 69.7 16.4M79.7 16.4c-1.7 0-3 1.3-3 3v37.9c0 1.7 1.3 3 3 3 1.6 0 3-1.4 3-3V19.4C82.7 17.7 81.4 16.4 79.7 16.4M89.7 16.4c-1.7 0-3 1.3-3 3v37.9c0 1.7 1.3 3 3 3 1.6 0 3-1.4 3-3V19.4C92.7 17.7 91.4 16.4 89.7 16.4M99.7 16.4c-1.7 0-3 1.3-3 3v37.9c0 1.7 1.3 3 3 3 1.6 0 3-1.4 3-3V19.4C102.7 17.7 101.4 16.4 99.7 16.4M109.7 16.4c-1.7 0-3 1.3-3 3v37.9c0 1.7 1.3 3 3 3 1.6 0 3-1.4 3-3V19.4C112.7 17.7 111.4 16.4 109.7 16.4" />
-        <path fill="#454b54"
-          d="M57.2 114H18.8c-3 0-5.4-2.4-5.4-5.4V70.7c0-3 2.4-5.4 5.4-5.4h38.4c3 0 5.4 2.4 5.4 5.4v37.9C62.7 111.6 60.2 114 57.2 114zM19.4 108h37.3V71.3H19.4V108zM109.2 114H70.8c-3 0-5.4-2.4-5.4-5.4V70.7c0-3 2.4-5.4 5.4-5.4h38.4c3 0 5.4 2.4 5.4 5.4v37.9C114.6 111.6 112.2 114 109.2 114zM71.3 108h37.3V71.3H71.3V108z" />
-      </svg>
-      <h1 class="font-bold text-xl ms-1">
-        انبار دار
-      </h1>
+    <div
+        class="h-dvh bg-secondary-bg/30 absolute left-0 top-0 md:hidden w-dvw z-[7]"
+        :class="{ hidden: !menuOpen }"
+    ></div>
+    <div
+        class="w-full flex justify-between align-middle content-between items-start relative z-[10]"
+    >
+        <div class="inline-flex items-center">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                id="Layer_1"
+                data-name="Layer 1"
+                viewBox="0 0 24 24"
+                width="40px"
+                height="40px"
+                class="text-primary h-10"
+            >
+                <path
+                    d="M12.016,5.731L3.025,2.724,10.427,.257c1.026-.342,2.136-.342,3.162,0l7.419,2.473-8.992,3.001Zm-3.182,5.623l2.175-3.624L3.063,5.081c-.617-.206-1.293,.045-1.628,.602L.308,7.563c-.667,1.112-.133,2.555,1.097,2.965l5.081,1.694c.889,.296,1.865-.065,2.347-.868ZM3.008,2.718v.011l.017-.006-.017-.006ZM11.008,23.905V11.617l-.46,.766c-.742,1.236-2.044,1.945-3.415,1.945-.425,0-.856-.067-1.28-.209l-3.845-1.281v4.558c0,2.152,1.377,4.063,3.419,4.743l4.435,1.478c.374,.121,.758,.22,1.146,.287ZM23.728,7.596l-1.148-1.913c-.334-.557-1.011-.808-1.628-.602l-7.945,2.648,2.175,3.624c.482,.804,1.458,1.165,2.347,.868l5.118-1.706c1.211-.404,1.737-1.825,1.08-2.92Zm-6.845,6.733c-1.371,0-2.673-.708-3.415-1.945l-.46-.766v12.282c.422-.074,.84-.182,1.236-.314h.01l4.335-1.446c2.042-.681,3.419-2.591,3.419-4.743v-4.559l-3.845,1.282c-.424,.142-.855,.209-1.28,.209Z"
+                    fill="currentColor"
+                />
+            </svg>
+            <h1 class="font-bold text-xl ms-1">خزانه</h1>
+            <button
+                class="cursor-pointer p-2 ms-3 border-2 rounded-xl transition-colors"
+                :class="{
+                    'text-primary border-primary':
+                        globalState.SidebarOpen && !lgAndLarger,
+                    'text-text-secondary border-border-1':
+                        !globalState.SidebarOpen && !lgAndLarger,
+                    hidden: lgAndLarger,
+                }"
+                @click.prevent="handleFilterButtonClick"
+                v-if="globalState.HasFilter"
+            >
+                <IconFilter :size="16" color="currentColor" />
+            </button>
+        </div>
+        <button
+            class="cursor-pointer p-2 ms-3 border-2 rounded-xl transition-colors md:hidden"
+            :class="{
+                'text-primary': menuOpen,
+                'text-text-secondary': !menuOpen,
+            }"
+            @click.prevent="menuToggle"
+        >
+            <IconMenu :size="24" color="currentColor" />
+        </button>
+        <div
+            class="flex justify-between align-middle content-between items-center text-sm absolute top-full w-full flex-col bg-secondary-bg z-20 rounded-xl translate-y-3 gap-2 overflow-hidden transition-all"
+            :class="[
+                {
+                    'max-h-dvh py-2 px-2': menuOpen,
+                    'max-h-0 p-0': !menuOpen,
+                },
+                'md:static md:top-0 md:w-[unset] md:flex-row md:bg-transparent md:gap-0 md:max-h-[unset] md:p-0 md:translate-0',
+            ]"
+        >
+            <NuxtLink
+                v-for="(item, id) in routes"
+                :key="id"
+                :to="item.path"
+                class="cursor-pointer inline-flex rounded-2xl px-4 py-5 w-full justify-start gap-2 transition-colors duration-300"
+                :class="[
+                    {
+                        'bg-active-item-bg text-primary md:shadow-lg':
+                            item.active,
+                        'text-text-secondary': !item.active,
+                    },
+                    'md:w-[unset] md:rounded-4xl md:px-4.5 md:py-2 md:mx-1 md:justify-around md:items-center md:gap-0',
+                    'hover:bg-active-item-bg md:hover:shadow-lg',
+                ]"
+            >
+                <component :is="item.icon" :size="20" color="currentColor" />
+                <span
+                    class="ms-1"
+                    :class="{ 'text-text-primary': item.active }"
+                    >{{ item.title }}</span
+                >
+            </NuxtLink>
+        </div>
     </div>
-    <div class="flex justify-between align-middle content-between items-center text-sm">
-      <NuxtLink v-for="item, id in routes" :key="id" :to="item.path"
-        class="cursor-pointer inline-flex rounded-4xl px-4.5 py-2 mx-1 justify-around items-center hover:bg-active-item-bg hover:shadow-lg"
-        :class="{ 'bg-active-item-bg text-primary shadow-lg': item.active, 'text-text-secondary': !item.active }">
-        <component :is="item.icon" :size="20" color="currentColor" />
-        <span class="ms-1" :class="{ 'text-text-primary': item.active }">{{ item.title }}</span>
-      </NuxtLink>
-    </div>
-  </div>
 </template>
 <script setup lang="ts">
-import { IconBarChart, IconBooks, IconCart, IconFolder, IconGauge } from '#components';
+import {
+    IconBarChart,
+    IconBooks,
+    IconCart,
+    IconFolder,
+    IconGauge,
+    IconMenu,
+} from "#components";
+import { useMyGlobalStore } from "~/stores/global";
+import { breakpointsTailwind } from "@vueuse/core";
 
-const route = useRoute()
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const lgAndLarger = breakpoints.greaterOrEqual("lg");
+const mdAndLarger = breakpoints.greaterOrEqual("md");
 
+const globalState = useMyGlobalStore();
+const { toggleSidebar } = globalState;
+const route = useRoute();
 const routes = ref([
-  {
-    icon: shallowRef(IconGauge),
-    title: "داشبورد",
-    active: true,
-    path: '/'
-  },
-  {
-    icon: shallowRef(IconBooks),
-    title: "انبار",
-    active: false,
-    path: '/inventory'
-  },
-  {
-    icon: shallowRef(IconCart),
-    title: "سفارش",
-    active: false,
-    path: '/order'
-  },
-  {
-    icon: shallowRef(IconBarChart),
-    title: "گزارش",
-    active: false,
-    path: '/reports'
-  },
-  {
-    icon: shallowRef(IconFolder),
-    title: "پرونده ها",
-    active: false,
-    path: '/documents'
-  },
+    {
+        icon: shallowRef(IconGauge),
+        title: "داشبورد",
+        active: true,
+        path: "/",
+    },
+    {
+        icon: shallowRef(IconBooks),
+        title: "انبار",
+        active: false,
+        path: "/inventory",
+    },
+    {
+        icon: shallowRef(IconCart),
+        title: "سفارش",
+        active: false,
+        path: "/order",
+    },
+    {
+        icon: shallowRef(IconBarChart),
+        title: "گزارش",
+        active: false,
+        path: "/reports",
+    },
+    {
+        icon: shallowRef(IconFolder),
+        title: "پرونده ها",
+        active: false,
+        path: "/documents",
+    },
 ]);
 
+const menuOpen = ref(false);
+
+function menuToggle() {
+    menuOpen.value = !menuOpen.value;
+}
 function updateActiveStatus() {
-  routes.value.forEach((each, index) => {
-    if (each.path === "/") {
-      if (route.path === each.path) {
-        each.active = true
-      } else {
-        each.active = false
-      }
-    } else if (route.path.startsWith(each.path)) {
-      each.active = true
-    } else {
-      each.active = false
-    }
-  })
+    routes.value.forEach((each, index) => {
+        if (each.path === "/") {
+            if (route.path === each.path) {
+                each.active = true;
+            } else {
+                each.active = false;
+            }
+        } else if (route.path.startsWith(each.path)) {
+            each.active = true;
+        } else {
+            each.active = false;
+        }
+    });
 }
 watch(route, () => {
-  updateActiveStatus()
-})
+    updateActiveStatus();
+});
 onBeforeMount(() => {
-  updateActiveStatus()
-})
+    updateActiveStatus();
+});
 
+const handleFilterButtonClick = () => {
+    toggleSidebar();
+};
 </script>

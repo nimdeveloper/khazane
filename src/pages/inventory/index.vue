@@ -1,146 +1,147 @@
 <template>
-  <div class="w-full flex">
-    <div class="flex flex-col" :style="{ width: `${sidebarWidth}%` }">
-      <div class="flex flex-row mt-2">
-        <h2 class="text-xl">
-          محصولات
-        </h2>
-        <div class="border border-border-1 rounded-2xl py-1 px-2 text-xs ms-2">
-          <span>{{ totalProducts }}</span> <span class="text-text-secondary">محصول</span>
+    <div class="w-full flex relative">
+        <div
+            class="flex flex-col absolute z-20 bg-primary-bg px-2 py-2.5 shadow transition-transform border-2 border-border-2 h-[calc(100dvh-90px)] rounded-2xl top-[5px]"
+            :class="[
+                {
+                    'translate-x-[110%]':
+                        !globalState.SidebarOpen && !lgAndLarger,
+                    'translate-0': globalState.SidebarOpen,
+                },
+                'lg:static lg:py-0 lg:h-full lg:shadow-none lg:px-0 lg:border-0',
+            ]"
+            :style="{ width: !mdSmaller ? `${sidebarWidth}%` : '100%' }"
+        >
+            <InventoryProductFilters />
         </div>
-      </div>
-      <div class="flex w-full rounded-2xl py-4 px-2 mt-4 bg-secondary-bg flex-col overflow-y-auto"
-        style="height: calc(100dvh - 132px);">
-        <div class="text-text-secondary ps-1">
-          نوع محصولات
-        </div>
-        <div class="flex flex-wrap mt-3">
-          <div v-for="item, index of productTypeChoices" :key="index" class="w-full lg:w-1/2 ps-1 pb-1">
-            <button class="cursor-pointer rounded-2xl py-2 px-4 border border-border-2 w-full inline-flex items-center"
-              :class="{
-                'border-primary bg-active-item-bg': activeproductType === item.value
-              }" @click="changeProductTypeFilter(item.value)">
-              <div class="text-nowrap text-ellipsis overflow-hidden text-sm">{{ item.label }}</div>
-              <div class="rounded-lg py-1 ms-auto text-sm px-2 " :class="{
-                'border-primary bg-primary/20 text-primary': activeproductType === item.value,
-                'bg-text-secondary/20': activeproductType !== item.value,
-              }">1000</div>
-            </button>
-          </div>
-        </div>
-        <div class="mt-8 text-text-secondary ps-1">
-          مرتب سازی
-        </div>
-        <div class="ps-1 mt-3">
-          <FormSelect :options="sortChoices" :selected="activeSort" @change="(val) => activeSort = val">
-            <template #icon>
-              <IconSort :size="25" color="currentColor" />
-            </template>
-          </FormSelect>
-        </div>
-        <div class="mt-8">دسته بندی</div>
-        <div class="ps-1 mt-3">
-          <FormSelect :options="categoryChoices" :selected="activeCategory" @change="(val) => activeCategory = val">
-            <template #icon>
-              <IconCategory :size="25" color="currentColor" />
-            </template>
-          </FormSelect>
-        </div>
-        <div class="mt-8">انبار</div>
-        <div class="ps-1 mt-3">
-          <FormSelect :options="inventoryChoices" :selected="activeInvetory" @change="(val) => activeInvetory = val">
-            <template #icon>
-              <IconInventory :size="25" color="currentColor" />
-            </template>
-          </FormSelect>
-        </div>
-      </div>
-    </div>
-    <div class="p-4 flex" :style="{ width: `${100 - sidebarWidth}%` }">
+        <div
+            class="z-10 bg-active-item-bg/30 absolute w-full h-full top-0 left-0"
+            :class="{
+                hidden: !globalState.SidebarOpen || lgAndLarger,
+            }"
+        ></div>
 
+        <div
+            class="p-4 flex flex-col"
+            :style="{ width: lgAndLarger ? `${100 - sidebarWidth}%` : '100%' }"
+        >
+            <div class="flex w-full flex-col md:flex-row">
+                <div
+                    class="grow-1 bg-input-bg rounded-2xl md:me-2 justify-between flex items-center px-3 py-2 relative text-text-primary"
+                >
+                    <IconMagnify
+                        :size="20"
+                        color="currentColor"
+                        class="absolute start-5 top-1/2 -translate-y-1/2 rotate-90"
+                    />
+                    <input
+                        class="w-full bg-transparent border-0 ps-10 outline-0 shadow-[none] py-1"
+                        type="text"
+                        placeholder="جستجو"
+                    />
+                    <div
+                        class="h-2/3 w-0.5 bg-text-secondary/10 mx-1 my-auto"
+                        v-if="scanSupported"
+                    ></div>
+                    <button
+                        class="inline-flex text-xs align-middle items-center cursor-pointer active:bg-active-item-bg/50 h-full px-2 rounded transition-all"
+                        v-if="scanSupported"
+                    >
+                        <IconScan
+                            :size="25"
+                            color="currentColor"
+                            class="text-primary me-1.5"
+                        />
+                        اسکن
+                    </button>
+                </div>
+                <div class="flex my-3 md:my-0 items-center">
+                    <div
+                        class="inline-flex rounded-xl bg-active-item-bg justify-between grow-0"
+                    >
+                        <button
+                            class="bg-active-item-bg p-2 border-2 text-2xl cursor-pointer rounded-xl transition-colors w-11 h-11 my-auto"
+                            :class="{
+                                'border-primary text-primary':
+                                    activeProductsView === 'list',
+                                'border-transparent text-text-secondary':
+                                    activeProductsView !== 'list',
+                            }"
+                            @click.prevent="activeProductsView = 'list'"
+                        >
+                            <IconList
+                                :size="18"
+                                color="currentColor"
+                                class="m-auto"
+                            />
+                        </button>
+                        <button
+                            class="bg-active-item-bg px-3 py-2 border-2 text-2xl cursor-pointer rounded-xl transition-colors w-11 h-11 my-auto"
+                            :class="{
+                                'border-primary text-primary':
+                                    activeProductsView === 'grid',
+                                'border-transparent text-text-secondary':
+                                    activeProductsView !== 'grid',
+                            }"
+                            @click.prevent="activeProductsView = 'grid'"
+                        >
+                            <IconGrid
+                                :size="14"
+                                color="currentColor"
+                                class="m-auto"
+                            />
+                        </button>
+                    </div>
+                    <div class="self-stretch flex">
+                        <div
+                            class="h-2/3 w-0.5 bg-text-secondary/30 mx-2 my-auto"
+                        ></div>
+                    </div>
+                    <div class="inline-flex self-stretch">
+                        <button
+                            class="rounded-xl bg-active-item-bg py-1.5 px-2 text-text-secondary hover:text-amber-50 hover:border-amber-50 transition-colors cursor-pointer min-w-full min-h-full"
+                        >
+                            <IconThreeDots :size="28" color="currentColor" />
+                        </button>
+                    </div>
+                    <div class="grow-1 ms-2 text-nowrap">
+                        <NuxtLink
+                            :to="{ name: 'inventory-new-product' }"
+                            class="bg-primary rounded-2xl px-4 py-2.5 text-input-bg cursor-pointer hover:bg-primary/80 font-bold min-w-full inline-block text-center"
+                        >
+                            محصول جدید
+                        </NuxtLink>
+                    </div>
+                </div>
+            </div>
+            <InventoryProductList
+                class="max-h-[calc(100%-116px)] md:max-h-[calc(100%-48px)]"
+            />
+        </div>
     </div>
-  </div>
 </template>
 
 <script lang="ts" setup>
+import { IconMagnify } from "#components";
+import { breakpointsTailwind } from "@vueuse/core";
+import { useMyGlobalStore } from "~/stores/global";
 
-const productTypeChoices = [
-  {
-    label: "همه",
-    value: "all",
-  },
-  {
-    label: "فعال",
-    value: "active",
-  },
-  {
-    label: "غیر فعال",
-    value: "inactive",
-  },
-  {
-    label: "پیش نویس",
-    value: "draft",
-  },
-]
-const sortChoices = [
-  {
-    prefix: "الفبایی",
-    label: "آ-ی",
-    value: "alphabetical-des"
-  },
-  {
-    prefix: "الفبایی",
-    label: "ی-آ",
-    value: "alphabetical-asc"
-  },
-]
-const categoryChoices = [
-  {
-    prefix: "",
-    label: "همه",
-    value: "all",
-  },
-  {
-    prefix: "",
-    label: "دسته بندی 1",
-    value: "group1",
-  },
-  {
-    prefix: "",
-    label: "دسته بندی 2",
-    value: "group2",
-  },
-]
-const inventoryChoices = [
-  {
-    prefix: "",
-    label: "همه",
-    value: "all",
-  },
-  {
-    prefix: "",
-    label: "دسته بندی 1",
-    value: "group1",
-  },
-  {
-    prefix: "",
-    label: "دسته بندی 2",
-    value: "group2",
-  },
-]
-const sidebarWidth = ref(35)
-const totalProducts = ref(1000)
+const globalState = useMyGlobalStore();
 
-// Filters
-const activeproductType = ref("all")
-const activeSort = ref(sortChoices[0])
-const activeCategory = ref(categoryChoices[0])
-const activeInvetory = ref(inventoryChoices[0])
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const lgAndLarger = breakpoints.greaterOrEqual("lg");
+const mdSmaller = breakpoints.smaller("md");
 
-// Function
-function changeProductTypeFilter(val: string) {
-  activeproductType.value = val
-}
+const sidebarWidth = ref(35);
+const activeProductsView = ref<"list" | "grid">("list");
+const scanSupported = ref<boolean>(true);
+
+onMounted(() => {
+    globalState.withFilter();
+});
+onBeforeUnmount(() => {
+    globalState.noFilter();
+});
 </script>
 
 <style></style>

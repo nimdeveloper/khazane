@@ -10,5 +10,11 @@
   "[vue]": {
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true
-  }
+  },
+  "[rust]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true
+  },
+  "cSpell.words": ["Tauri", "unlisten", "vueuse"],
+  "prettier.tabWidth": 4
 }
