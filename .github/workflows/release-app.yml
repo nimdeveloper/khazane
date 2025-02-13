@@ -90,15 +90,19 @@ jobs:
                         repo: context.repo.repo,
                         per_page: 100
                       });
-                      return tags.data
+
+                      const versions = tags.data
                         .map(tag => tag.name.replace('app-', ''))
                         .filter(tag => tag !== 'latest');
+
+                      core.setOutput("tags", versions.join(" "));
 
             - name: Determine highest version tag
               id: determine-highest
               run: |
-                  echo "tags=${{ steps.get-all-tags.outputs.result }}" >> $GITHUB_ENV
-                  echo "highest=$(echo ${{ steps.get-all-tags.outputs.result }} | tr ' ' '\n' | sort -V | tail -n 1)" >> $GITHUB_ENV
+                  highest=$(echo "${{ steps.get-all-tags.outputs.tags }}" | tr ' ' '\n' | sort -V | tail -n 1)
+                  echo "highest=$highest" >> $GITHUB_ENV
+                  echo "highest=$highest" >> $GITHUB_OUTPUT
               shell: bash
 
             - name: Get release assets
@@ -109,9 +113,9 @@ jobs:
                       const release = await github.rest.repos.getReleaseByTag({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        tag: "app-" + process.env.highest[0]
+                        tag: "app-" + process.env.highest
                       });
-                      return release.data;
+                      core.setOutput("release_id", release.data.id);
 
             - name: Create or update latest release
               uses: actions/github-script@v7
@@ -120,7 +124,7 @@ jobs:
                       await github.rest.repos.updateRelease({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
-                          release_id: latestRelease.data.id,
+                          release_id: "${{ steps.get-release.outputs.release_id }}",
                           make_latest: true,
                           draft: false,
                           prerelease: false
