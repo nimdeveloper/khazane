@@ -73,6 +73,7 @@ jobs:
     update-latest:
         needs: build
         runs-on: ubuntu-latest
+        permissions: write-all
         if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/app-v') }}
         env:
             GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
