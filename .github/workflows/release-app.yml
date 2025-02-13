@@ -90,7 +90,9 @@ jobs:
                         repo: context.repo.repo,
                         per_page: 100
                       });
-                      return tags.data.map(tag => tag.name);
+                      return tags.data
+                        .map(tag => tag.name.replace('app-', ''))
+                        .filter(tag => tag !== 'latest');
 
             - name: Determine highest version tag
               id: determine-highest
@@ -147,17 +149,13 @@ jobs:
                       }
 
             - name: Upload assets to latest release
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ fromJson(steps.get-release.outputs.result).upload_url }}
-                  asset_path: src-tauri/target/release/bundle/msi/khazane_${{ env.highest }}_x64_en-US.msi
-                  asset_name: khazane_latest_x64_en-US.msi
-                  asset_content_type: application/octet-stream
-
-            - name: Upload assets to latest release
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ fromJson(steps.get-release.outputs.result).upload_url }}
-                  asset_path: src-tauri/target/release/bundle/nsis/khazane_${{ env.highest }}_x64-setup.exe
-                  asset_name: khazane_latest_x64-setup.exe
-                  asset_content_type: application/octet-stream
+              run: |
+                  files=("khazane_${{ env.highest }}_x64-setup.exe" "khazane_${{ env.highest }}_x64-setup.exe.sig" "khazane_${{ env.highest }}_x64_en-US.msi" "khazane_${{ env.highest }}_x64_en-US.msi.sig" "latest.json")
+                  for file in "${files[@]}"; do
+                    if [[ "$file" == "latest.json" ]]; then
+                      asset_name="release.json"
+                    else
+                      asset_name=$(basename "$file")
+                    fi
+                    gh release upload latest "src-tauri/target/release/bundle/$file" --name "$asset_name" --content-type application/octet-stream
+                  done
