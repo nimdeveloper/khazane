@@ -109,7 +109,7 @@ jobs:
                       const release = await github.rest.repos.getReleaseByTag({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        tag: process.env.highest
+                        tag: "app-" + process.env.highest[0]
                       });
                       return release.data;
 
