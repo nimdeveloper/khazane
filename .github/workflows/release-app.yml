@@ -8,8 +8,7 @@ on:
 jobs:
     build:
         environment: stable
-        permissions:
-            contents: write
+        permissions: write-all
         strategy:
             fail-fast: false
             matrix:
@@ -70,3 +69,77 @@ jobs:
                   releaseDraft: true
                   prerelease: false
                   args: ${{ matrix.args }}
+
+    update-latest:
+        needs: build
+        runs-on: ubuntu-latest
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Get release assets
+              id: get-release
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      const release = await github.rest.repos.getReleaseByTag({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        tag: '${{ github.ref_name }}'
+                      });
+                      return release.data;
+
+            - name: Create or update latest release
+              uses: actions/github-script@v6
+              with:
+                  script: |
+                      try {
+                        // Get existing latest release
+                        const latestRelease = await github.rest.repos.getReleaseByTag({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          tag: 'latest'
+                        });
+                        
+                        // Update existing release
+                        await github.rest.repos.updateRelease({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          release_id: latestRelease.data.id,
+                          tag_name: 'latest',
+                          name: 'Latest Release',
+                          body: 'This is the latest stable release of the app.\n\n' + 
+                                'Original release: ${{ github.ref_name }}',
+                          draft: false,
+                          prerelease: false
+                        });
+                      } catch (error) {
+                        // Create new release if it doesn't exist
+                        await github.rest.repos.createRelease({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          tag_name: 'latest',
+                          name: 'Latest Release',
+                          body: 'This is the latest stable release of the app.\n\n' + 
+                                'Original release: ${{ github.ref_name }}',
+                          draft: false,
+                          prerelease: false
+                        });
+                      }
+
+            - name: Upload assets to latest release
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ fromJson(steps.get-release.outputs.result).upload_url }}
+                  asset_path: src-tauri/target/release/bundle/msi/khazane_${{ github.ref_name }}_x64_en-US.msi
+                  asset_name: khazane_latest_x64_en-US.msi
+                  asset_content_type: application/octet-stream
+
+            - name: Upload assets to latest release
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ fromJson(steps.get-release.outputs.result).upload_url }}
+                  asset_path: src-tauri/target/release/bundle/nsis/khazane_${{ github.ref_name }}_x64-setup.exe
+                  asset_name: khazane_latest_x64-setup.exe
+                  asset_content_type: application/octet-stream

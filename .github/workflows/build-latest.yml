@@ -8,8 +8,7 @@ on:
 jobs:
     build:
         environment: latest
-        permissions:
-            contents: write
+        permissions: write-all
         strategy:
             fail-fast: false
             matrix:
