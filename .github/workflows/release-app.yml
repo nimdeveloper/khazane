@@ -34,6 +34,7 @@ jobs:
 
             - name: Enable Corepack
               run: corepack enable
+                  yarn set version stable
 
             - name: setup node
               uses: actions/setup-node@v4
