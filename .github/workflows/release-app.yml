@@ -66,7 +66,7 @@ jobs:
                   tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
                   releaseName: "App v__VERSION__"
                   releaseBody: "See the assets to download this version and install."
-                  releaseDraft: true
+                  releaseDraft: false
                   prerelease: false
                   args: ${{ matrix.args }}
 
@@ -103,7 +103,7 @@ jobs:
 
             - name: Get release assets
               id: get-release
-              uses: actions/github-script@v6
+              uses: actions/github-script@v7
               with:
                   script: |
                       const release = await github.rest.repos.getReleaseByTag({
@@ -114,48 +114,14 @@ jobs:
                       return release.data;
 
             - name: Create or update latest release
-              uses: actions/github-script@v6
+              uses: actions/github-script@v7
               with:
                   script: |
-                      try {
-                        const latestRelease = await github.rest.repos.getReleaseByTag({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          tag: 'latest'
-                        });
-                        
-                        await github.rest.repos.updateRelease({
+                      await github.rest.repos.updateRelease({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
                           release_id: latestRelease.data.id,
-                          tag_name: 'latest',
-                          name: 'Latest Release',
-                          body: 'This is the latest stable release of the app.\n\n' + 
-                                'Original release: ' + process.env.highest,
+                          make_latest: true,
                           draft: false,
                           prerelease: false
-                        });
-                      } catch (error) {
-                        await github.rest.repos.createRelease({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          tag_name: 'latest',
-                          name: 'Latest Release',
-                          body: 'This is the latest stable release of the app.\n\n' + 
-                                'Original release: ' + process.env.highest,
-                          draft: false,
-                          prerelease: false
-                        });
-                      }
-
-            - name: Upload assets to latest release
-              run: |
-                  files=("khazane_${{ env.highest }}_x64-setup.exe" "khazane_${{ env.highest }}_x64-setup.exe.sig" "khazane_${{ env.highest }}_x64_en-US.msi" "khazane_${{ env.highest }}_x64_en-US.msi.sig" "latest.json")
-                  for file in "${files[@]}"; do
-                    if [[ "$file" == "latest.json" ]]; then
-                      asset_name="release.json"
-                    else
-                      asset_name=$(basename "$file")
-                    fi
-                    gh release upload latest "src-tauri/target/release/bundle/$file" --name "$asset_name" --content-type application/octet-stream
-                  done
+                      });
