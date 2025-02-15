@@ -108,6 +108,9 @@ watch($modalElement, () => {
     if ($modalElement.value) {
         const modal: ModalInterface = new Modal($modalElement.value, {
             onHide: () => {
+                if (document.activeElement) {
+                    (<HTMLElement>document.activeElement).blur();
+                }
                 isOpen.value = false;
                 emit("close");
             },
@@ -126,6 +129,9 @@ const openModal = () => {
     }
 };
 const closeModal = () => {
+    if (document.activeElement) {
+        (<HTMLElement>document.activeElement).blur();
+    }
     if ($modalInstance.value) {
         $modalInstance.value.hide();
     }
@@ -135,6 +141,9 @@ watch(isOpen, (newVal, _) => {
     if (!modalModel.value) return;
     if (!newVal) {
         if (modalModel.value.isVisible()) {
+            if (document.activeElement) {
+                (<HTMLElement>document.activeElement).blur();
+            }
             modalModel.value.hide();
         }
         return;

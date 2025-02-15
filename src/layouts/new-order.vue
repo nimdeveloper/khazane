@@ -7,7 +7,7 @@
         <div class="flex flex-col w-full">
             <NuxtLink
                 class="inline-flex items-center mt-2 lg:mb-6 gap-0 hover:gap-1 transition-all lg:ms-4 text-text-secondary"
-                to="/inventory/"
+                to="/order/"
             >
                 <IconNavArrowRight
                     :size="20"
@@ -141,6 +141,7 @@ import Simplebar from "simplebar-vue";
 import { IconBox, IconDocument, IconRuler, IconTagFill } from "#components";
 import { ProductUnit } from "~/interfaces/product";
 import { useMyProductStore } from "~/stores/product";
+import { Order } from "~/interfaces/order";
 
 const productStore = useMyProductStore();
 
@@ -148,14 +149,24 @@ const newWarehouseModalOpen = ref({ open: false, preferred_name: "" });
 
 provide(/* key */ "newWarehouseModalOpen", /* value */ newWarehouseModalOpen);
 
-const { storage } = useTempProduct();
+const storage = useStorage(
+    "new-order-temp-item",
+    new Order(""),
+    sessionStorage,
+    {
+        serializer: {
+            read: (v: any) => ProductUnit.read(v),
+            write: (v: any) => v.write(),
+        },
+    }
+);
 
 const route = useRoute();
 const steps = ref([
     {
         name: "اطلاعات عمومی",
         link: {
-            name: "inventory-new-product-id-public",
+            name: "order-new-order-id-public",
             params: { id: "-1" },
         },
         icon: shallowRef(IconDocument),
@@ -163,23 +174,23 @@ const steps = ref([
     },
     {
         name: "اطلاعات مالی",
-        link: { name: "inventory-new-product-id-sale", params: { id: "-1" } },
+        link: { name: "order-new-order-id-sale", params: { id: "-1" } },
         icon: shallowRef(IconTagFill),
         active: false,
     },
     {
-        name: "اطلاعات موجودی",
+        name: "محصولات",
         link: {
-            name: "inventory-new-product-id-quantity",
+            name: "order-new-order-id-products",
             params: { id: "-1" },
         },
         icon: shallowRef(IconBox),
         active: false,
     },
     {
-        name: "اندازه گیری",
+        name: "فاکتور",
         link: {
-            name: "inventory-new-product-id-measure",
+            name: "order-new-order-id-invoice",
             params: { id: "-1" },
         },
         icon: shallowRef(IconRuler),

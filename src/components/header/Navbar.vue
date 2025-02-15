@@ -4,7 +4,7 @@
         :class="{ hidden: !menuOpen }"
     ></div>
     <div
-        class="w-full flex justify-between align-middle content-between items-start relative z-[10]"
+        class="w-full flex justify-between align-middle content-between items-start relative z-[30]"
     >
         <div class="inline-flex items-center">
             <svg
@@ -23,7 +23,7 @@
             </svg>
             <h1 class="font-bold text-xl ms-1">خزانه</h1>
             <button
-                class="cursor-pointer p-2 ms-3 border-2 rounded-xl transition-colors"
+                class="cursor-pointer p-2 ms-3 border-2 rounded-xl transition-colors sidebar-close-exception"
                 :class="{
                     'text-primary border-primary':
                         globalState.SidebarOpen && !lgAndLarger,
@@ -31,7 +31,7 @@
                         !globalState.SidebarOpen && !lgAndLarger,
                     hidden: lgAndLarger,
                 }"
-                @click.prevent="handleFilterButtonClick"
+                @click.stop.prevent="handleFilterButtonClick"
                 v-if="globalState.HasFilter"
             >
                 <IconFilter :size="16" color="currentColor" />
@@ -84,12 +84,12 @@
 </template>
 <script setup lang="ts">
 import {
-    IconBarChart,
-    IconBooks,
-    IconCart,
+    IconFileReport,
     IconFolder,
     IconGauge,
     IconMenu,
+    IconTransferVan,
+    IconWarehouse,
 } from "#components";
 import { useMyGlobalStore } from "~/stores/global";
 import { breakpointsTailwind } from "@vueuse/core";
@@ -109,19 +109,19 @@ const routes = ref([
         path: "/",
     },
     {
-        icon: shallowRef(IconBooks),
+        icon: shallowRef(IconWarehouse),
         title: "انبار",
         active: false,
         path: "/inventory",
     },
     {
-        icon: shallowRef(IconCart),
-        title: "سفارش",
+        icon: shallowRef(IconTransferVan),
+        title: "گردش انبار",
         active: false,
         path: "/order",
     },
     {
-        icon: shallowRef(IconBarChart),
+        icon: shallowRef(IconFileReport),
         title: "گزارش",
         active: false,
         path: "/reports",

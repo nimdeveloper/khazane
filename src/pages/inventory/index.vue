@@ -1,16 +1,10 @@
 <template>
     <div class="w-full flex relative">
         <div
-            class="flex flex-col absolute z-20 bg-primary-bg px-2 py-2.5 shadow transition-transform border-2 border-border-2 h-[calc(100dvh-90px)] rounded-2xl top-[5px]"
-            :class="[
-                {
-                    'translate-x-[110%]':
-                        !globalState.SidebarOpen && !lgAndLarger,
-                    'translate-0': globalState.SidebarOpen,
-                },
-                'lg:static lg:py-0 lg:h-full lg:shadow-none lg:px-0 lg:border-0',
-            ]"
-            :style="{ width: !mdSmaller ? `${sidebarWidth}%` : '100%' }"
+            class="h-[calc(100dvh-90px)] z-20 relative max-w-lg"
+            :style="{
+                width: lgAndLarger ? `${sidebarWidth}%` : '0',
+            }"
         >
             <InventoryProductFilters />
         </div>
@@ -22,7 +16,7 @@
         ></div>
 
         <div
-            class="p-4 flex flex-col"
+            class="p-4 flex flex-col flex-1"
             :style="{ width: lgAndLarger ? `${100 - sidebarWidth}%` : '100%' }"
         >
             <div class="flex w-full flex-col md:flex-row">
@@ -130,7 +124,6 @@ const globalState = useMyGlobalStore();
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const lgAndLarger = breakpoints.greaterOrEqual("lg");
-const mdSmaller = breakpoints.smaller("md");
 
 const sidebarWidth = ref(35);
 const activeProductsView = ref<"list" | "grid">("list");

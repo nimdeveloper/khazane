@@ -45,7 +45,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useStorage } from "@vueuse/core";
 import { ProductUnit } from "~/interfaces/product";
 import {
     writeFile,
@@ -62,17 +61,9 @@ const productStore = useMyProductStore();
 
 const product = ref(new ProductUnit(""));
 const productFiles = ref<File[]>([]);
-const storage = useStorage(
-    "new-product-temp-item",
-    new ProductUnit(""),
-    sessionStorage,
-    {
-        serializer: {
-            read: (v: any) => ProductUnit.read(v),
-            write: (v: any) => v.write(),
-        },
-    }
-);
+
+const { storage } = useTempProduct();
+
 watch(productFiles, async (newVal) => {
     const files: string[] = [];
     for (const each of newVal) {
