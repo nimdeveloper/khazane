@@ -136,31 +136,14 @@
 </template>
 
 <script lang="ts" setup>
-import { useStorage } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
-import { IconBox, IconDocument, IconRuler, IconTagFill } from "#components";
-import { ProductUnit } from "~/interfaces/product";
-import { useMyProductStore } from "~/stores/product";
-import { Order } from "~/interfaces/order";
-
-const productStore = useMyProductStore();
+import { IconBox, IconDocument, IconReportFile, IconUsers } from "#components";
 
 const newWarehouseModalOpen = ref({ open: false, preferred_name: "" });
 
 provide(/* key */ "newWarehouseModalOpen", /* value */ newWarehouseModalOpen);
 
-const storage = useStorage(
-    "new-order-temp-item",
-    new Order(""),
-    sessionStorage,
-    {
-        serializer: {
-            read: (v: any) => ProductUnit.read(v),
-            write: (v: any) => v.write(),
-        },
-    }
-);
-
+const { storage } = useTempOrder();
 const route = useRoute();
 const steps = ref([
     {
@@ -173,9 +156,9 @@ const steps = ref([
         active: false,
     },
     {
-        name: "اطلاعات مالی",
+        name: "افراد",
         link: { name: "order-new-order-id-sale", params: { id: "-1" } },
-        icon: shallowRef(IconTagFill),
+        icon: shallowRef(IconUsers),
         active: false,
     },
     {
@@ -193,7 +176,7 @@ const steps = ref([
             name: "order-new-order-id-invoice",
             params: { id: "-1" },
         },
-        icon: shallowRef(IconRuler),
+        icon: shallowRef(IconReportFile),
         active: false,
     },
 ]);
@@ -232,12 +215,12 @@ function handlePrevious() {
 }
 function saveDraft() {
     storage.value.status = "draft";
-    productStore.addProduct(storage.value).then(() => {
-        storage.value = null;
-        navigateTo({
-            name: "inventory",
-        });
-    });
+    // productStore.addProduct(storage.value).then(() => {
+    //     storage.value = null;
+    //     navigateTo({
+    //         name: "inventory",
+    //     });
+    // });
 }
 function handleNext() {
     let next_step = -1;
@@ -252,12 +235,12 @@ function handleNext() {
     } else {
         if (storage.value.valid()) {
             storage.value.status = "active";
-            productStore.addProduct(storage.value).then(() => {
-                storage.value = null;
-                navigateTo({
-                    name: "inventory",
-                });
-            });
+            // productStore.addProduct(storage.value).then(() => {
+            //     storage.value = null;
+            //     navigateTo({
+            //         name: "inventory",
+            //     });
+            // });
         }
     }
 }

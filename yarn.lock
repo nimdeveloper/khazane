@@ -1190,6 +1190,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@persian-tools/persian-tools@npm:^3.6.0":
+  version: 3.6.0
+  resolution: "@persian-tools/persian-tools@npm:3.6.0"
+  dependencies:
+    fastest-levenshtein: "npm:^1.0.16"
+  checksum: 10c0/18d89f03c53845d02b3a544d6680d5268b583e3c554f8d90dec67a0cf644104aaf45126b77220e55a7a1677ad609eba3168acddc49c1563be3d9091d7a8513bf
+  languageName: node
+  linkType: hard
+
 "@pinia/nuxt@npm:^0.9.0":
   version: 0.9.0
   resolution: "@pinia/nuxt@npm:0.9.0"
@@ -1846,6 +1855,13 @@ __metadata:
   version: 0.2.0
   resolution: "@trysound/sax@npm:0.2.0"
   checksum: 10c0/44907308549ce775a41c38a815f747009ac45929a45d642b836aa6b0a536e4978d30b8d7d680bbd116e9dd73b7dbe2ef0d1369dcfc2d09e83ba381e485ecbe12
+  languageName: node
+  linkType: hard
+
+"@types/animejs@npm:^3.1.13":
+  version: 3.1.13
+  resolution: "@types/animejs@npm:3.1.13"
+  checksum: 10c0/6c1c977417a699bf4c3eaf6fdb948ea29011543f69370f98f7c7bac42aadb3309dda23a8415738f7480eed1a355b6ee130d1405339cd031a876774fc8e6f6c47
   languageName: node
   linkType: hard
 
@@ -3790,6 +3806,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fastest-levenshtein@npm:^1.0.16":
+  version: 1.0.16
+  resolution: "fastest-levenshtein@npm:1.0.16"
+  checksum: 10c0/7e3d8ae812a7f4fdf8cad18e9cde436a39addf266a5986f653ea0d81e0de0900f50c0f27c6d5aff3f686bcb48acbd45be115ae2216f36a6a13a7dbbf5cad878b
+  languageName: node
+  linkType: hard
+
 "fastq@npm:^1.6.0":
   version: 1.18.0
   resolution: "fastq@npm:1.18.0"
@@ -4739,6 +4762,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "khazane@workspace:."
   dependencies:
+    "@persian-tools/persian-tools": "npm:^3.6.0"
     "@pinia/nuxt": "npm:^0.9.0"
     "@tailwindcss/vite": "npm:^4.0.0"
     "@tauri-apps/api": "npm:^2.2.0"
@@ -4749,6 +4773,7 @@ __metadata:
     "@tauri-apps/plugin-store": "npm:~2"
     "@tauri-apps/plugin-stronghold": "npm:~2"
     "@tauri-apps/plugin-updater": "npm:~2"
+    "@types/animejs": "npm:^3.1.13"
     "@vueuse/nuxt": "npm:12.5.0"
     animejs: "npm:^3.2.2"
     flowbite: "npm:^3.1.1"

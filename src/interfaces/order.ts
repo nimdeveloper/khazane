@@ -1,5 +1,6 @@
 import { Person, type IPerson } from "./person";
 import { ProductUnit, type IProductUnit } from "./product";
+import { instanceOfIWareHouse, WareHouse, type IWareHouse } from "./warehouse";
 
 export interface IRole {
     name: string;
@@ -11,15 +12,16 @@ export interface IOrderProduct {
 }
 export interface IOrder {
     key: string;
-    type: string | null;
-    delivery: IPerson | null;
-    recipient: IPerson | null;
-    citation_number: string | null;
+    type?: string;
+    delivery: IPerson | IWareHouse | null;
+    recipient: IPerson | IWareHouse | null;
+    citation_number?: string;
     manager: IPerson | null;
     approvers: IRole[];
     goods: IOrderProduct[];
-    document_date: string | null;
-    document_number: string | null;
+    document_date?: string;
+    document_number?: string;
+    status: string;
 }
 
 export class Order implements IOrder {
@@ -27,22 +29,29 @@ export class Order implements IOrder {
 
     constructor(
         public key: IOrder["key"],
-        public type: IOrder["type"] = null,
-        public delivery: Person | null = null,
-        public recipient: Person | null = null,
-        public citation_number: IOrder["citation_number"] = null,
+        public type?: IOrder["type"],
+        public delivery: Person | WareHouse | null = null,
+        public recipient: Person | WareHouse | null = null,
+        public citation_number?: IOrder["citation_number"],
         public manager: Person | null = null,
         public approvers: (IRole & { person: Person })[] = [],
         public goods: (IOrderProduct & { product: ProductUnit })[] = [],
-        public document_date: IOrder["document_date"] = null,
-        public document_number: IOrder["document_number"] = null
+        public document_date?: IOrder["document_date"],
+        public document_number?: IOrder["document_number"],
+        public status = "draft"
     ) {}
+    static autoPersonWareHouse(data: IPerson | IWareHouse): Person | WareHouse {
+        if (instanceOfIWareHouse(data)) {
+            return WareHouse.fromInterface(data as IWareHouse);
+        }
+        return Person.fromInterface(data as IPerson);
+    }
     static fromInterface(data: IOrder) {
         return new this(
             data.key,
             data.type,
-            data.delivery ? Person.fromInterface(data.delivery) : null,
-            data.recipient ? Person.fromInterface(data.recipient) : null,
+            data.delivery ? this.autoPersonWareHouse(data.delivery) : null,
+            data.recipient ? this.autoPersonWareHouse(data.recipient) : null,
             data.citation_number,
             data.manager ? Person.fromInterface(data.manager) : null,
             data.approvers
@@ -58,7 +67,8 @@ export class Order implements IOrder {
                   }))
                 : [],
             data.document_date,
-            data.document_number
+            data.document_number,
+            data.status
         );
     }
     toInterface(): IOrder {
@@ -83,6 +93,7 @@ export class Order implements IOrder {
                 : [],
             document_date: this.document_date,
             document_number: this.document_number,
+            status: this.status,
         };
     }
     write() {

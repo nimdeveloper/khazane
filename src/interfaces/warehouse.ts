@@ -7,6 +7,9 @@ export interface IWareHouse {
     shorthand?: string;
     key: string;
 }
+export function instanceOfIWareHouse(object: any): Boolean {
+    return "shorthand" in object;
+}
 export class WareHouse implements IWareHouse {
     static COLOR_PALATES = [
         {

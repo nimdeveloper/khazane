@@ -1,20 +1,25 @@
 {
-  "search.exclude": {
-    "**/.yarn": true,
-    "**/.pnp.*": true
-  },
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "nuxtr.intellisense.nuxtrc": true,
-  "nuxtr.intellisense.vueFiles": true,
-  "nuxtr.intellisense.nuxtignore": true,
-  "[vue]": {
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true
-  },
-  "[rust]": {
-    "editor.formatOnSave": true,
-    "editor.formatOnPaste": true
-  },
-  "cSpell.words": ["Tauri", "unlisten", "vueuse"],
-  "prettier.tabWidth": 4
+    "search.exclude": {
+        "**/.yarn": true,
+        "**/.pnp.*": true
+    },
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "nuxtr.intellisense.nuxtrc": true,
+    "nuxtr.intellisense.vueFiles": true,
+    "nuxtr.intellisense.nuxtignore": true,
+    "nuxtr.defaultPackageManager": "Yarn",
+    "nuxtr.piniaFiles.defaultTemplate": "setup",
+    "nuxtr.vueFiles.script.defaultLanguage": "ts",
+    "nuxtr.vueFiles.style.defaultLanguage": "scss",
+    "[vue]": {
+        "editor.formatOnPaste": true,
+        "editor.formatOnSave": true
+    },
+    "[rust]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true
+    },
+    "cSpell.words": ["Tauri", "unlisten", "vueuse"],
+    "prettier.tabWidth": 4,
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }

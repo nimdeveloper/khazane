@@ -1,22 +1,116 @@
-<template></template>
+<template>
+    <div class="flex w-full gap-4 my-3">
+        <div class="grow-1 w-1/2">
+            <FormSelect
+                :options="selectableItems"
+                :selected="order.delivery"
+                :searchable="true"
+                :addable="false"
+                @change="(e) => (order.delivery = e)"
+                @toggled="
+                    (e) => {
+                        if (!e) {
+                            warehouseStore.loadWareHouses();
+                            personStore.loadPersons();
+                        }
+                    }
+                "
+                name="order_delivery"
+                label="تحویل دهنده"
+                class="grow-1"
+            />
+        </div>
+        <div class="grow-1 w-1/2">
+            <FormSelect
+                :options="selectableItems"
+                :selected="order.recipient"
+                :searchable="true"
+                :addable="true"
+                @change="(e) => (order.recipient = e)"
+                @toggled="
+                    (e) => {
+                        if (!e) {
+                            warehouseStore.loadWareHouses();
+                            personStore.loadPersons();
+                        }
+                    }
+                "
+                name="order_recipient"
+                label="تحویل گیرنده"
+                class="grow-1"
+            />
+        </div>
+    </div>
+    <div class="flex w-full mt-3 gap-4 my-3">
+        <div class="grow-1 w-1/2">
+            <FormInput
+                name="order_type"
+                label="نوع استناد"
+                v-model:value="order.type"
+                class="grow-1"
+            />
+        </div>
+        <div class="grow-1 w-1/2">
+            <FormInput
+                name="order_"
+                label="شماره استناد"
+                v-model:value="order.document_number"
+                class="grow-1"
+            />
+        </div>
+    </div>
+    <div class="flex w-full mt-3 gap-4 my-3">
+        <div class="grow-1 w-1/2">
+            <FormInput
+                name="order_type"
+                label="تاریخ استناد"
+                v-model:value="order.document_date"
+                class="grow-1"
+            />
+        </div>
+        <div class="grow-1 w-1/2">
+            <FormSelect
+                :options="personStore.persons"
+                :selected="order.manager"
+                :searchable="true"
+                :addable="false"
+                @change="(e) => (order.manager = e)"
+                @toggled="(e) => !e && personStore.loadPersons()"
+                name="order_manager"
+                label="رابط"
+                class="grow-1"
+            />
+        </div>
+    </div>
+</template>
 
 <script lang="ts" setup>
-import { useMyProductStore } from "~/stores/product";
 import { Order } from "~/interfaces/order";
+import type { IPerson, Person } from "~/interfaces/person";
+import type { IWareHouse, WareHouse } from "~/interfaces/warehouse";
+import { useMyPersonStore } from "~/stores/person";
+import { useMyWarehouseStore } from "~/stores/warehouse";
 
 definePageMeta({ layout: "new-order" });
 
-const productStore = useMyProductStore();
+const personStore = useMyPersonStore();
+const warehouseStore = useMyWarehouseStore();
 
 const order = ref(new Order(""));
-const productFiles = ref<File[]>([]);
 
 const { storage } = useTempOrder();
 
+const selectableItems = computed(() => {
+    const { persons } = personStore;
+    const { warehouses } = warehouseStore;
+    return (<(WareHouse | Person)[]>[]).concat(persons, warehouses);
+});
 watch(order, (newVal) => {
     storage.value = newVal;
 });
-onMounted(async () => {
+onMounted(() => {
+    personStore.loadPersons();
+    warehouseStore.loadWareHouses();
     if (storage.value) {
         order.value = storage.value;
     }

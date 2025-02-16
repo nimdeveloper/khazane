@@ -56,7 +56,7 @@
                     ></div>
                 </label>
             </div>
-            <div class="px-5 max-h-50">
+            <div class="px-5 max-h-50" v-if="options.length > 0">
                 <Simplebar
                     data-simplebar-direction="rtl"
                     class="max-h-48 pe-3 w-full pb-3 mb-3"
