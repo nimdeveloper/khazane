@@ -157,7 +157,7 @@ const steps = ref([
     },
     {
         name: "افراد",
-        link: { name: "order-new-order-id-sale", params: { id: "-1" } },
+        link: { name: "order-new-order-id-users", params: { id: "-1" } },
         icon: shallowRef(IconUsers),
         active: false,
     },

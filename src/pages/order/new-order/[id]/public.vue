@@ -82,6 +82,16 @@
             />
         </div>
     </div>
+    <div class="flex w-full mt-3 gap-4 my-3">
+        <div class="grow-1">
+            <FormTextArea
+                name="order_type"
+                label="توضیحات"
+                v-model:value="order.description"
+                class="grow-1"
+            />
+        </div>
+    </div>
 </template>
 
 <script lang="ts" setup>

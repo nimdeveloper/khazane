@@ -98,6 +98,12 @@ export class ProductUnit implements IProductUnit {
     public valid() {
         return true;
     }
+    get label() {
+        return this.title;
+    }
+    get value() {
+        return this.key;
+    }
 }
 
 export interface IProductCategory {
