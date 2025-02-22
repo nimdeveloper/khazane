@@ -52,27 +52,47 @@
                         }"
                         @click.stop.prevent="onItemClick(item)"
                     >
-                        <span v-if="item.prefix">{{ item.prefix }}:&nbsp;</span
-                        >{{ item.label }}&nbsp;
                         <div
-                            class="p-2 bg-active-item-bg dark:hover:bg-gray-700 dark:border-gray-600 rounded-lg ms-auto me-1"
+                            class="flex grow-1 justify-between align-middle content-center"
                         >
-                            <IconPlus
-                                v-if="
-                                    !selected?.find(
-                                        (each) => each.value === item.value
-                                    )
-                                "
-                                :size="18"
-                                color="currentColor"
-                                class="text-primary"
-                            />
-                            <IconClose
-                                v-else
-                                :size="18"
-                                color="currentColor"
-                                class="text-text-secondary"
-                            />
+                            <div
+                                class="h-16 w-16 rounded-2xl bg-white overflow-hidden"
+                            >
+                                <img
+                                    :src="imagesMap.get((<ProductUnit>item).key)||defaultImage"
+                                    width="64"
+                                    height="64"
+                                    class="h-16 w-16 object-center object-cover"
+                                />
+                            </div>
+                            <div class="me-auto my-auto ms-2">
+                                <span v-if="item.prefix"
+                                    >{{ item.prefix }}:&nbsp;</span
+                                >{{ item.label }}&nbsp;
+                            </div>
+                            <div class="inline-flex">
+                                <div
+                                    class="m-auto p-2 bg-active-item-bg dark:hover:bg-gray-700 dark:border-gray-600 rounded-lg ms-auto me-1"
+                                >
+                                    <IconPlus
+                                        v-if="
+                                            !selected?.find(
+                                                (each) =>
+                                                    each.value === item.value
+                                            )
+                                        "
+                                        :size="18"
+                                        color="currentColor"
+                                        class="text-primary"
+                                    />
+                                    <IconClose
+                                        v-else
+                                        :size="18"
+                                        color="currentColor"
+                                        class="text-text-secondary"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </button>
                 </Simplebar>
@@ -97,16 +117,20 @@
 </template>
 
 <script lang="ts" setup>
+import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
 import { onClickOutside } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
+import type { ProductUnit } from "~/interfaces/product";
 
-let isSelected: boolean;
+const imagesMap = ref<Map<string, string>>(new Map());
 
 interface SelectedType {
     value: string;
     prefix?: string;
     label: string;
 }
+
+const defaultImage = "/images/no-photo.jpg";
 
 // Defines
 const {
@@ -134,16 +158,29 @@ const searchValue = ref("");
 
 const options = computed(() => {
     if (!searchable) return defaultOptions;
-    return defaultOptions.filter((each) => {
-        const searchAble = each.label.replaceAll(" ", "");
-        const searchAble2 = each.prefix?.replaceAll(" ", "") || "";
-        return (
-            searchAble.startsWith(
-                searchValue.value.trim().replaceAll(" ", "")
-            ) ||
-            searchAble2.startsWith(searchValue.value.trim().replaceAll(" ", ""))
-        );
-    });
+    return defaultOptions
+        .filter((each) => {
+            const searchAble = each.label.replaceAll(" ", "");
+            const searchAble2 = each.prefix?.replaceAll(" ", "") || "";
+            return (
+                searchAble.startsWith(
+                    searchValue.value.trim().replaceAll(" ", "")
+                ) ||
+                searchAble2.startsWith(
+                    searchValue.value.trim().replaceAll(" ", "")
+                )
+            );
+        })
+        .map((each) => {
+            if ((<ProductUnit>each).image) {
+                processRawFile((<ProductUnit>each).image || "").then((tmp) => {
+                    if (tmp) {
+                        imagesMap.value.set((<ProductUnit>each).key, tmp);
+                    }
+                });
+            }
+            return each;
+        });
 });
 watch(isOpen, (_, oldVal) => {
     if (oldVal && selectDropdownHolder.value) {
@@ -191,6 +228,25 @@ function calculatePosition(dropdownHeightValue = dropdownHeight.value) {
         else position.value = "bottom";
     }
 }
+
+const processRawFile = async (file: string | File) => {
+    if (file instanceof File) {
+        return window.URL.createObjectURL(file);
+    } else if (file) {
+        const openFile = new File(
+            [
+                new Blob([
+                    await readFile(file, {
+                        baseDir: BaseDirectory.AppCache,
+                    }),
+                ]),
+            ],
+            "temp"
+        );
+        return window.URL.createObjectURL(openFile);
+    }
+};
+
 onMounted(() => {
     window.addEventListener("resize", () => calculatePosition());
     document.addEventListener("scroll", () => calculatePosition());
@@ -198,6 +254,11 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener("resize", () => calculatePosition());
     document.removeEventListener("scroll", () => calculatePosition());
+    for (const each of imagesMap.value.values()) {
+        if (each) {
+            window.URL.revokeObjectURL(each);
+        }
+    }
 });
 onClickOutside(selectHolder, () => {
     if (isOpen.value) {
