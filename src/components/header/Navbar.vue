@@ -1,10 +1,10 @@
 <template>
     <div
-        class="h-dvh bg-secondary-bg/30 absolute left-0 top-0 md:hidden w-dvw z-[7]"
+        class="h-dvh bg-secondary-bg/30 absolute left-0 top-0 md:hidden w-dvw z-[7] print:hidden"
         :class="{ hidden: !menuOpen }"
     ></div>
     <div
-        class="w-full flex justify-between align-middle content-between items-start relative z-[30]"
+        class="w-full flex justify-between align-middle content-between items-start relative z-[30] print:hidden"
     >
         <div class="inline-flex items-center">
             <svg

@@ -1,5 +1,7 @@
 <template>
-    <div class="bg-primary-bg h-full text-text-primary font-vazir">
+    <div
+        class="bg-primary-bg print:bg-white print:text-active-item-bg h-full text-text-primary font-vazir"
+    >
         <NuxtRouteAnnouncer />
         <Modal v-model:modal="modal" />
         <NuxtLayout>
@@ -31,6 +33,9 @@ body {
     padding: 10px;
     height: 100dvh;
     box-sizing: border-box;
+    @media print {
+        padding: 0;
+    }
 }
 #app,
 #__nuxt {

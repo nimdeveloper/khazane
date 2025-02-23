@@ -44,7 +44,7 @@
                     <button
                         v-for="(item, index) of options"
                         :key="index"
-                        class="py-2 px-3 hover:bg-primary-bg bg-secondary-bg rounded-xl flex items-center w-full cursor-pointer"
+                        class="py-2 px-3 hover:bg-primary-bg bg-secondary-bg rounded-xl flex items-center w-full cursor-pointer my-3"
                         :class="{
                             'border border-primary': selected?.find(
                                 (each) => each.value === item.value

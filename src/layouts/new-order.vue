@@ -6,7 +6,7 @@
         />
         <div class="flex flex-col w-full">
             <NuxtLink
-                class="inline-flex items-center mt-2 lg:mb-6 gap-0 hover:gap-1 transition-all lg:ms-4 text-text-secondary"
+                class="inline-flex items-center mt-2 lg:mb-6 gap-0 hover:gap-1 transition-all lg:ms-4 text-text-secondary print:hidden"
                 to="/order/"
             >
                 <IconNavArrowRight
@@ -14,12 +14,12 @@
                     color="currentColor"
                     class="me-2"
                 />
-                باز گشت به لیست محصولات
+                باز گشت به گردش انبار
             </NuxtLink>
             <div class="flex w-full">
                 <div class="flex flex-col lg:flex-row w-full">
                     <ul
-                        class="flex lg:block space-y space-y-4 grow-1 lg:grow-0 lg:w-96 lg:max-w-96 text-sm font-medium text-gray-500 dark:text-gray-400 lg:me-4 lg:mb-0 z-[2]"
+                        class="flex lg:block space-y space-y-4 grow-1 lg:grow-0 lg:w-96 lg:max-w-96 text-sm font-medium text-gray-500 dark:text-gray-400 lg:me-4 lg:mb-0 z-[2] print:hidden"
                     >
                         <li
                             v-for="(step, index) of steps"
@@ -69,16 +69,19 @@
                         </li>
                     </ul>
                     <div
-                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-active-item-bg h-[calc(100dvh-225px)] lg:h-[calc(100dvh-138px)] flex flex-col relative w-auto lg:w-[calc(100%-384px)]"
+                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-active-item-bg h-[calc(100dvh-225px)] lg:h-[calc(100dvh-138px)] print:h-auto print:bg-transparent print:p-1 flex flex-col relative w-auto lg:w-[calc(100%-384px)]"
                     >
+                        <div class="h-full pe-3 hidden print:block">
+                            <slot />
+                        </div>
                         <Simplebar
                             data-simplebar-direction="rtl"
-                            class="h-full pe-3"
+                            class="h-full pe-3 print:hidden"
                         >
                             <slot />
                         </Simplebar>
                         <div
-                            class="absolute bottom-0 left-0 w-full h-16 py-3 pe-5 flex justify-end"
+                            class="absolute bottom-0 left-0 w-full h-16 py-3 pe-5 flex justify-end print:hidden"
                         >
                             <button
                                 @click="saveDraft"
