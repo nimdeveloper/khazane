@@ -4,7 +4,7 @@
         :class="{ hidden: !menuOpen }"
     ></div>
     <div
-        class="w-full flex justify-between align-middle content-between items-start relative z-[30] print:hidden"
+        class="w-full flex justify-start align-middle content-between items-center relative z-[30] print:hidden"
     >
         <div class="inline-flex items-center">
             <svg
@@ -38,7 +38,7 @@
             </button>
         </div>
         <button
-            class="cursor-pointer p-2 ms-3 border-2 rounded-xl transition-colors md:hidden"
+            class="cursor-pointer p-1 border-2 rounded-xl transition-colors md:hidden ms-auto"
             :class="{
                 'text-primary': menuOpen,
                 'text-text-secondary': !menuOpen,
@@ -48,7 +48,7 @@
             <IconMenu :size="24" color="currentColor" />
         </button>
         <div
-            class="flex justify-between align-middle content-between items-center text-sm absolute top-full w-full flex-col bg-secondary-bg z-20 rounded-xl translate-y-3 gap-2 overflow-hidden transition-all"
+            class="flex justify-between align-middle content-between items-center text-sm absolute top-full w-full flex-col bg-secondary-bg z-20 rounded-xl translate-y-3 gap-2 overflow-hidden transition-all ms-auto"
             :class="[
                 {
                     'max-h-dvh py-2 px-2': menuOpen,
@@ -80,6 +80,34 @@
                 >
             </NuxtLink>
         </div>
+        <div class="h-full flex">
+            <div class="w-0.5 mx-2 h-full bg-active-item-bg"></div>
+            <div
+                class="h-full flex items-center text-text-secondary border-2 border-text-secondary rounded-2xl flex-row-reverse relative"
+            >
+                <button class="m-3 my-1 cursor-pointer">
+                    <IconUser :size="24" color="currentColor" />
+                </button>
+                <div class="w-0.25 mx-0.5 h-full bg-text-secondary"></div>
+                <button
+                    class="mx-2 my-1 cursor-pointer"
+                    @click.stop.prevent="miniMenuOpen = !miniMenuOpen"
+                >
+                    <IconAltArrow :size="20" color="currentColor" />
+                </button>
+                <div
+                    class="absolute end-0 top-full bg-active-item-bg translate-y-2 min-w-36 px-2 py-3 rounded-2xl shadow text-text-primary"
+                    :class="{
+                        block: miniMenuOpen,
+                        hidden: !miniMenuOpen,
+                    }"
+                >
+                    <SharedUpdaterButton
+                        class="p-2 cursor-pointer hover:bg-primary/20 rounded-xl w-full text-start"
+                    />
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 <script setup lang="ts">
@@ -96,10 +124,11 @@ import { breakpointsTailwind } from "@vueuse/core";
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const lgAndLarger = breakpoints.greaterOrEqual("lg");
-const mdAndLarger = breakpoints.greaterOrEqual("md");
 
 const globalState = useMyGlobalStore();
+
 const { toggleSidebar } = globalState;
+
 const route = useRoute();
 const routes = ref([
     {
@@ -133,7 +162,7 @@ const routes = ref([
         path: "/documents",
     },
 ]);
-
+const miniMenuOpen = ref(false);
 const menuOpen = ref(false);
 
 function menuToggle() {
