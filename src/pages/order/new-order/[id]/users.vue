@@ -8,9 +8,10 @@
                 :options="personStore.persons"
                 :selected="item.person"
                 :searchable="true"
-                :addable="false"
+                :addable="true"
                 @toggled="(e) => !e && personStore.loadPersons()"
                 @change="(e) => (item.person = e)"
+                @add="(name: string) => newUserModalOpen = { open: true, preferred_name: name }"
                 :name="`order_approvers_${index}_person`"
                 label="کاربر"
                 class="grow-1"
@@ -53,6 +54,10 @@ import { useMyPersonStore } from "~/stores/person";
 definePageMeta({ layout: "new-order" });
 
 const personStore = useMyPersonStore();
+
+const newUserModalOpen = inject<{ open: boolean; preferred_name: string }>(
+    "newUserModalOpen"
+);
 
 const order = ref(new Order(""));
 

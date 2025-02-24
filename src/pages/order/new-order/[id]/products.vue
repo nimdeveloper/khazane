@@ -17,26 +17,56 @@
             :key="`${index}_${item.product?.key}`"
         >
             <div v-if="item.product">
-                <div class="flex">
+                <div class="flex flex-col md:flex-row">
                     <div class="rounded-xl overflow-hidden m-1">
                         <img
                             :src="imagesMap.get(item.product!.key) || defaultImage"
                             width="64"
                             height="64"
-                            class="h-16 w-16 object-center object-cover"
+                            class="w-full h-36 md:h-16 md:w-16 object-center object-cover rounded-xl"
                         />
                     </div>
-                    <div class="flex">
-                        {{ item.product?.label }}
-                        {{ item.quantity }}
+                    <div class="flex flex-col ms-1">
+                        <div>
+                            {{ item.product?.label }}
+                        </div>
+                        <div
+                            class="flex items-center align-middle text-text-secondary text-xs"
+                        >
+                            <span
+                                class="text-nowrap"
+                                v-if="item.product?.category"
+                                >{{ item.product.category.label }}</span
+                            >&nbsp;<span class="text-2xl pb-2">.</span
+                            >&nbsp;<IconBookmarkOpen
+                                :size="16"
+                                color="currentColor"
+                            />&nbsp; <span>موجودی:</span>&nbsp;<span
+                                class="text-text-primary text-nowrap"
+                                >{{ item.product?.inventory }}
+                                {{
+                                    item.product?.unit
+                                        ? item.product?.unit.title
+                                        : "-"
+                                }}</span
+                            >
+                        </div>
                     </div>
+                    <button
+                        @click.prevent="handleRemoveProduct(index)"
+                        class="m-auto me-2 text-red-400 hover:bg-red-400/20 cursor-pointer p-1 rounded-xl w-full md:w-auto text-center justify-center flex items-center"
+                    >
+                        <IconTrash :size="25" color="currentColor" />
+                        <div class="ms-1 md:hidden">حذف</div>
+                    </button>
                 </div>
-                <div class="bg-secondary-bg m-1 rounded-2xl p-1">
+                <div class="bg-secondary-bg m-1 rounded-2xl p-1 px-2">
                     <div class="grow-1 md:w-1/2">
                         <FormCounterInput
                             :name="`order_product_${index}_quantity`"
                             v-model:value="item.quantity"
-                            :max="100"
+                            label="تعداد"
+                            :max="item.product?.inventory || 0"
                             :min="0"
                             class="grow-1"
                         />
@@ -50,20 +80,14 @@
 <script lang="ts" setup>
 import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
 import { Order } from "~/interfaces/order";
-import { ProductUnit, type IProductUnit } from "~/interfaces/product";
+import { ProductUnit } from "~/interfaces/product";
 import { useMyProductStore } from "~/stores/product";
-import { useMyWarehouseStore } from "~/stores/warehouse";
 
 definePageMeta({ layout: "new-order" });
 
 const defaultImage = "/images/no-photo.jpg";
 
-const wareHouseStore = useMyWarehouseStore();
 const productStore = useMyProductStore();
-
-const newWarehouseModalOpen = inject<{ open: boolean; preferred_name: string }>(
-    "newWarehouseModalOpen"
-);
 
 const order = ref(new Order(""));
 const imagesMap = ref<Map<string, string>>(new Map());
@@ -110,14 +134,6 @@ const processRawFile = async (file: string | File) => {
         return window.URL.createObjectURL(openFile);
     }
 };
-watch(
-    () => newWarehouseModalOpen,
-    (val) => {
-        if (val && !val.open) {
-            wareHouseStore.loadWareHouses();
-        }
-    }
-);
 
 function addItem(item: ProductUnit) {
     order.value.goods.push({ quantity: 0, product: item });
@@ -129,6 +145,9 @@ function removeItem(item: ProductUnit) {
     if (index > -1) {
         order.value.goods.splice(index, 1);
     }
+}
+function handleRemoveProduct(index: number) {
+    order.value.goods.splice(index, 1);
 }
 
 onMounted(async () => {

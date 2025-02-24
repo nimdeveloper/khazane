@@ -83,17 +83,16 @@
         <div class="h-full flex">
             <div class="w-0.5 mx-2 h-full bg-active-item-bg"></div>
             <div
-                class="h-full flex items-center text-text-secondary border-2 border-text-secondary rounded-2xl flex-row-reverse relative"
+                class="h-full flex items-center text-text-secondary flex-row-reverse relative"
             >
                 <button class="m-3 my-1 cursor-pointer">
                     <IconUser :size="24" color="currentColor" />
                 </button>
-                <div class="w-0.25 mx-0.5 h-full bg-text-secondary"></div>
                 <button
-                    class="mx-2 my-1 cursor-pointer"
+                    class="mx-2 my-1 cursor-pointer border-2 border-text-secondary rounded-xl p-1"
                     @click.stop.prevent="miniMenuOpen = !miniMenuOpen"
                 >
-                    <IconAltArrow :size="20" color="currentColor" />
+                    <IconAltArrow :size="24" color="currentColor" />
                 </button>
                 <div
                     class="absolute end-0 top-full bg-active-item-bg translate-y-2 min-w-36 px-2 py-3 rounded-2xl shadow text-text-primary"
@@ -101,6 +100,7 @@
                         block: miniMenuOpen,
                         hidden: !miniMenuOpen,
                     }"
+                    ref="dropdown_holder"
                 >
                     <SharedUpdaterButton
                         class="p-2 cursor-pointer hover:bg-primary/20 rounded-xl w-full text-start"
@@ -111,6 +111,7 @@
     </div>
 </template>
 <script setup lang="ts">
+import { onClickOutside } from "@vueuse/core";
 import {
     IconFileReport,
     IconFolder,
@@ -124,6 +125,7 @@ import { breakpointsTailwind } from "@vueuse/core";
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const lgAndLarger = breakpoints.greaterOrEqual("lg");
+const dropdownHolder = useTemplateRef("dropdown_holder");
 
 const globalState = useMyGlobalStore();
 
@@ -193,4 +195,10 @@ onBeforeMount(() => {
 const handleFilterButtonClick = () => {
     toggleSidebar();
 };
+
+onClickOutside(dropdownHolder, () => {
+    if (miniMenuOpen.value) {
+        miniMenuOpen.value = false;
+    }
+});
 </script>

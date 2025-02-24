@@ -1,8 +1,8 @@
 <template>
     <NuxtLayout name="default">
-        <WarehouseNewModal
-            v-model:is-open="newWarehouseModalOpen.open"
-            :preferred-name="newWarehouseModalOpen.preferred_name"
+        <UserNewModal
+            v-model:is-open="newUserModalOpen.open"
+            :preferred-name="newUserModalOpen.preferred_name"
         />
         <div class="flex flex-col w-full">
             <NuxtLink
@@ -69,9 +69,9 @@
                         </li>
                     </ul>
                     <div
-                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-active-item-bg h-[calc(100dvh-225px)] lg:h-[calc(100dvh-138px)] print:h-auto print:bg-transparent print:p-1 flex flex-col relative w-auto lg:w-[calc(100%-384px)]"
+                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-active-item-bg h-[calc(100dvh-225px)] lg:h-[calc(100dvh-138px)] print:h-auto print:min-h-[95dvh] print:bg-transparent print:p-0.5 flex flex-col relative w-auto lg:w-[calc(100%-384px)]"
                     >
-                        <div class="h-full pe-3 hidden print:block">
+                        <div class="h-full pe-3 hidden print:block print:p-0">
                             <slot />
                         </div>
                         <Simplebar
@@ -141,10 +141,13 @@
 <script lang="ts" setup>
 import Simplebar from "simplebar-vue";
 import { IconBox, IconDocument, IconReportFile, IconUsers } from "#components";
+import { useMyOrderStore } from "../stores/order";
 
-const newWarehouseModalOpen = ref({ open: false, preferred_name: "" });
+const newUserModalOpen = ref({ open: false, preferred_name: "" });
 
-provide(/* key */ "newWarehouseModalOpen", /* value */ newWarehouseModalOpen);
+provide(/* key */ "newUserModalOpen", /* value */ newUserModalOpen);
+
+const orderStore = useMyOrderStore();
 
 const { storage } = useTempOrder();
 const route = useRoute();
@@ -218,12 +221,12 @@ function handlePrevious() {
 }
 function saveDraft() {
     storage.value.status = "draft";
-    // productStore.addProduct(storage.value).then(() => {
-    //     storage.value = null;
-    //     navigateTo({
-    //         name: "inventory",
-    //     });
-    // });
+    orderStore.addOrder(storage.value).then(() => {
+        storage.value = null;
+        navigateTo({
+            name: "order",
+        });
+    });
 }
 function handleNext() {
     let next_step = -1;
@@ -238,12 +241,13 @@ function handleNext() {
     } else {
         if (storage.value.valid()) {
             storage.value.status = "active";
-            // productStore.addProduct(storage.value).then(() => {
-            //     storage.value = null;
-            //     navigateTo({
-            //         name: "inventory",
-            //     });
-            // });
+
+            orderStore.addOrder(storage.value).then(() => {
+                storage.value = null;
+                navigateTo({
+                    name: "order",
+                });
+            });
         }
     }
 }
