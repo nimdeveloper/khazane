@@ -65,10 +65,34 @@
                                     class="h-16 w-16 object-center object-cover"
                                 />
                             </div>
-                            <div class="me-auto my-auto ms-2">
-                                <span v-if="item.prefix"
-                                    >{{ item.prefix }}:&nbsp;</span
-                                >{{ item.label }}&nbsp;
+                            <div class="me-auto my-auto ms-2 text-start">
+                                <div>
+                                    {{ item.label }}
+                                </div>
+                                <div
+                                    class="flex items-center align-middle text-text-secondary text-xs"
+                                >
+                                    <span
+                                        class="text-nowrap"
+                                        v-if="item.category"
+                                    >
+                                        {{ item.category?.label }}
+                                    </span>
+                                    &nbsp;
+                                    <span class="text-2xl pb-2">.</span>
+                                    &nbsp;
+                                    <IconBookmarkOpen
+                                        :size="16"
+                                        color="currentColor"
+                                    />
+                                    &nbsp;
+                                    <span>موجودی:</span>
+                                    &nbsp;
+                                    <span class="text-text-primary text-nowrap">
+                                        {{ item.inventory }}
+                                        {{ item.unit ? item.unit?.title : "-" }}
+                                    </span>
+                                </div>
                             </div>
                             <div class="inline-flex">
                                 <div
@@ -124,12 +148,6 @@ import type { ProductUnit } from "~/interfaces/product";
 
 const imagesMap = ref<Map<string, string>>(new Map());
 
-interface SelectedType {
-    value: string;
-    prefix?: string;
-    label: string;
-}
-
 const defaultImage = "/images/no-photo.jpg";
 
 // Defines
@@ -140,8 +158,8 @@ const {
     searchable = false,
     addable = false,
 } = defineProps<{
-    selected: SelectedType[] | null;
-    options: Array<SelectedType>;
+    selected: ProductUnit[] | null;
+    options: Array<ProductUnit>;
     label?: string;
     searchable?: boolean;
     addable?: boolean;
@@ -161,14 +179,8 @@ const options = computed(() => {
     return defaultOptions
         .filter((each) => {
             const searchAble = each.label.replaceAll(" ", "");
-            const searchAble2 = each.prefix?.replaceAll(" ", "") || "";
-            return (
-                searchAble.startsWith(
-                    searchValue.value.trim().replaceAll(" ", "")
-                ) ||
-                searchAble2.startsWith(
-                    searchValue.value.trim().replaceAll(" ", "")
-                )
+            return searchAble.startsWith(
+                searchValue.value.trim().replaceAll(" ", "")
             );
         })
         .map((each) => {
@@ -272,18 +284,18 @@ function addNewItem() {
     const label = searchValue.value;
     emit("add", label);
 }
-function onItemClick(item: SelectedType) {
+function onItemClick(item: ProductUnit) {
     if (!selected?.find((each) => each.value === item.value)) {
         onItemSelect(item);
     } else {
         onItemRemove(item);
     }
 }
-function onItemSelect(item: SelectedType) {
+function onItemSelect(item: ProductUnit) {
     emit("new", item);
     toggleSelect();
 }
-function onItemRemove(item: SelectedType) {
+function onItemRemove(item: ProductUnit) {
     emit("remove", item);
     toggleSelect();
 }
