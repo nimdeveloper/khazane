@@ -1,12 +1,12 @@
 <template>
     <NuxtLayout name="default">
-        <WarehouseNewModal
-            v-model:is-open="newWarehouseModalOpen.open"
-            :preferred-name="newWarehouseModalOpen.preferred_name"
+        <UserNewModal
+            v-model:is-open="newUserModalOpen.open"
+            :preferred-name="newUserModalOpen.preferred_name"
         />
         <div class="flex flex-col w-full">
             <NuxtLink
-                class="inline-flex items-center mt-2 lg:mb-6 gap-0 hover:gap-1 transition-all lg:ms-4 text-text-secondary"
+                class="inline-flex items-center mt-2 lg:mb-6 gap-0 hover:gap-1 transition-all lg:ms-4 text-text-secondary print:hidden"
                 to="/order/"
             >
                 <IconNavArrowRight
@@ -14,12 +14,12 @@
                     color="currentColor"
                     class="me-2"
                 />
-                باز گشت به لیست محصولات
+                باز گشت به گردش انبار
             </NuxtLink>
             <div class="flex w-full">
                 <div class="flex flex-col lg:flex-row w-full">
                     <ul
-                        class="flex lg:block space-y space-y-4 grow-1 lg:grow-0 lg:w-96 lg:max-w-96 text-sm font-medium text-gray-500 dark:text-gray-400 lg:me-4 lg:mb-0 z-[2]"
+                        class="flex lg:block space-y space-y-4 grow-1 lg:grow-0 lg:w-96 lg:max-w-96 text-sm font-medium text-gray-500 dark:text-gray-400 lg:me-4 lg:mb-0 z-[2] print:hidden"
                     >
                         <li
                             v-for="(step, index) of steps"
@@ -69,16 +69,19 @@
                         </li>
                     </ul>
                     <div
-                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-active-item-bg h-[calc(100dvh-225px)] lg:h-[calc(100dvh-138px)] flex flex-col relative w-auto lg:w-[calc(100%-384px)]"
+                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-active-item-bg h-[calc(100dvh-225px)] lg:h-[calc(100dvh-138px)] print:h-auto print:min-h-[95dvh] print:bg-transparent print:p-0.5 flex flex-col relative w-auto lg:w-[calc(100%-384px)]"
                     >
+                        <div class="h-full pe-3 hidden print:block print:p-0">
+                            <slot />
+                        </div>
                         <Simplebar
                             data-simplebar-direction="rtl"
-                            class="h-full pe-3"
+                            class="h-full pe-3 print:hidden"
                         >
                             <slot />
                         </Simplebar>
                         <div
-                            class="absolute bottom-0 left-0 w-full h-16 py-3 pe-5 flex justify-end"
+                            class="absolute bottom-0 left-0 w-full h-16 py-3 pe-5 flex justify-end print:hidden"
                         >
                             <button
                                 @click="saveDraft"
@@ -138,10 +141,13 @@
 <script lang="ts" setup>
 import Simplebar from "simplebar-vue";
 import { IconBox, IconDocument, IconReportFile, IconUsers } from "#components";
+import { useMyOrderStore } from "../stores/order";
 
-const newWarehouseModalOpen = ref({ open: false, preferred_name: "" });
+const newUserModalOpen = ref({ open: false, preferred_name: "" });
 
-provide(/* key */ "newWarehouseModalOpen", /* value */ newWarehouseModalOpen);
+provide(/* key */ "newUserModalOpen", /* value */ newUserModalOpen);
+
+const orderStore = useMyOrderStore();
 
 const { storage } = useTempOrder();
 const route = useRoute();
@@ -157,7 +163,7 @@ const steps = ref([
     },
     {
         name: "افراد",
-        link: { name: "order-new-order-id-sale", params: { id: "-1" } },
+        link: { name: "order-new-order-id-users", params: { id: "-1" } },
         icon: shallowRef(IconUsers),
         active: false,
     },
@@ -215,12 +221,12 @@ function handlePrevious() {
 }
 function saveDraft() {
     storage.value.status = "draft";
-    // productStore.addProduct(storage.value).then(() => {
-    //     storage.value = null;
-    //     navigateTo({
-    //         name: "inventory",
-    //     });
-    // });
+    orderStore.addOrder(storage.value).then(() => {
+        storage.value = null;
+        navigateTo({
+            name: "order",
+        });
+    });
 }
 function handleNext() {
     let next_step = -1;
@@ -235,12 +241,13 @@ function handleNext() {
     } else {
         if (storage.value.valid()) {
             storage.value.status = "active";
-            // productStore.addProduct(storage.value).then(() => {
-            //     storage.value = null;
-            //     navigateTo({
-            //         name: "inventory",
-            //     });
-            // });
+
+            orderStore.addOrder(storage.value).then(() => {
+                storage.value = null;
+                navigateTo({
+                    name: "order",
+                });
+            });
         }
     }
 }

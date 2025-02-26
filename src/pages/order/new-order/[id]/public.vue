@@ -73,11 +73,25 @@
                 :options="personStore.persons"
                 :selected="order.manager"
                 :searchable="true"
-                :addable="false"
+                :addable="true"
                 @change="(e) => (order.manager = e)"
                 @toggled="(e) => !e && personStore.loadPersons()"
+                @add="
+                    (e) =>
+                        (newUserModalOpen = { open: true, preferred_name: e })
+                "
                 name="order_manager"
                 label="رابط"
+                class="grow-1"
+            />
+        </div>
+    </div>
+    <div class="flex w-full mt-3 gap-4 my-3">
+        <div class="grow-1">
+            <FormTextArea
+                name="order_type"
+                label="توضیحات"
+                v-model:value="order.description"
                 class="grow-1"
             />
         </div>
@@ -97,6 +111,10 @@ const personStore = useMyPersonStore();
 const warehouseStore = useMyWarehouseStore();
 
 const order = ref(new Order(""));
+
+const newUserModalOpen = inject<{ open: boolean; preferred_name: string }>(
+    "newUserModalOpen"
+);
 
 const { storage } = useTempOrder();
 

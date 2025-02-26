@@ -13,7 +13,7 @@ export const useMyPersonStore = defineStore("myPersonStore", {
                 this.persons.push(Person.fromInterface(each));
             }
         },
-        async addWareHouse(person: Person) {
+        async addPerson(person: Person) {
             if (!this.tauri) return;
             await this.loadPersons();
 

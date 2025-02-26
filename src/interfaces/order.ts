@@ -4,15 +4,16 @@ import { instanceOfIWareHouse, WareHouse, type IWareHouse } from "./warehouse";
 
 export interface IRole {
     name: string;
-    person: IPerson;
+    person: IPerson | null;
 }
 export interface IOrderProduct {
-    product: IProductUnit;
+    product: IProductUnit | null;
     quantity: number;
 }
 export interface IOrder {
     key: string;
     type?: string;
+    description?: string;
     delivery: IPerson | IWareHouse | null;
     recipient: IPerson | IWareHouse | null;
     citation_number?: string;
@@ -30,12 +31,13 @@ export class Order implements IOrder {
     constructor(
         public key: IOrder["key"],
         public type?: IOrder["type"],
+        public description?: IOrder["description"],
         public delivery: Person | WareHouse | null = null,
         public recipient: Person | WareHouse | null = null,
         public citation_number?: IOrder["citation_number"],
         public manager: Person | null = null,
-        public approvers: (IRole & { person: Person })[] = [],
-        public goods: (IOrderProduct & { product: ProductUnit })[] = [],
+        public approvers: (IRole & { person: Person | null })[] = [],
+        public goods: (IOrderProduct & { product: ProductUnit | null })[] = [],
         public document_date?: IOrder["document_date"],
         public document_number?: IOrder["document_number"],
         public status = "draft"
@@ -50,6 +52,7 @@ export class Order implements IOrder {
         return new this(
             data.key,
             data.type,
+            data.description,
             data.delivery ? this.autoPersonWareHouse(data.delivery) : null,
             data.recipient ? this.autoPersonWareHouse(data.recipient) : null,
             data.citation_number,
@@ -57,13 +60,17 @@ export class Order implements IOrder {
             data.approvers
                 ? data.approvers.map((each) => ({
                       name: each.name,
-                      person: Person.fromInterface(each.person),
+                      person: each.person
+                          ? Person.fromInterface(each.person)
+                          : null,
                   }))
                 : [],
             data.goods
                 ? data.goods.map((each) => ({
                       quantity: each.quantity,
-                      product: ProductUnit.fromInterface(each.product),
+                      product: each.product
+                          ? ProductUnit.fromInterface(each.product)
+                          : null,
                   }))
                 : [],
             data.document_date,
@@ -75,19 +82,20 @@ export class Order implements IOrder {
         return {
             key: this.key,
             type: this.type,
+            description: this.description,
             delivery: this.delivery ? this.delivery.toInterface() : null,
             recipient: this.recipient ? this.recipient.toInterface() : null,
             citation_number: this.citation_number,
             manager: this.manager ? this.manager.toInterface() : null,
             approvers: this.approvers
                 ? this.approvers.map((each) => ({
-                      person: each.person.toInterface(),
+                      person: each.person ? each.person.toInterface() : null,
                       name: each.name,
                   }))
                 : [],
             goods: this.goods
                 ? this.goods.map((each) => ({
-                      product: each.product.toInterface(),
+                      product: each.product ? each.product.toInterface() : null,
                       quantity: each.quantity,
                   }))
                 : [],
