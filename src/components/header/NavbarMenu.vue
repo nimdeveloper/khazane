@@ -21,7 +21,7 @@
                 'max-h-dvh py-2 px-2': menuOpen,
                 'max-h-0 p-0': !menuOpen,
             },
-            'lg:static lg:top-0 lg:w-[unset] lg:flex-row lg:bg-transparent lg:gap-0 lg:max-h-[unset] lg:p-0 lg:translate-0',
+            'lg:static lg:top-0 lg:w-[unset] lg:flex-row lg:bg-[transparent!important] lg:gap-0 lg:max-h-[unset] lg:p-0 lg:translate-0',
         ]"
     >
         <NuxtLink
