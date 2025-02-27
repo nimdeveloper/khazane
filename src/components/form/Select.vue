@@ -1,31 +1,35 @@
 <template>
     <div class="mb-2" v-if="label">{{ label }}</div>
     <div
-        class="relative flex rounded-2xl row px-2.5 p-3 bg-active-item-bg cursor-pointer items-center border-2 border-border-1 outline-0 focus:border-text-secondary"
+        class="relative flex rounded-2xl row px-2.5 p-3 bg-action-secondary dark:bg-dark-action-secondary cursor-pointer items-center border-2 border-border-1 outline-0 focus:border-secondary focus:dark:border-dark-secondary"
         @click="toggleSelect"
         v-bind="$attrs"
         ref="current-select-ref"
     >
-        <div class="me-2 text-text-secondary">
+        <div class="me-2 text-secondary dark:text-dark-secondary">
             <slot name="icon" />
         </div>
         <div v-if="selected">
-            <span class="text-text-secondary me-2" v-if="selected.prefix"
+            <span
+                class="text-secondary dark:text-dark-secondary me-2"
+                v-if="selected.prefix"
                 >{{ selected.prefix }}:</span
             ><span>{{ selected.label }}</span>
         </div>
         <div v-else>
-            <span class="text-text-secondary me-2">انتخاب کنید</span>
+            <span class="text-secondary dark:text-dark-secondary me-2"
+                >انتخاب کنید</span
+            >
         </div>
         <IconAltArrow
             :size="20"
-            class="ms-auto text-text-secondary"
+            class="ms-auto text-secondary dark:text-dark-secondary"
             color="currentColor"
             :direction="isOpen ? 'up' : 'down'"
         />
         <div
             @click.stop.prevent
-            class="absolute left-0 w-full shadow shadow-gray-700/20 border-border-1 border-2 bg-active-item-bg rounded-2xl overflow-hidden transition-all z-10 cursor-default"
+            class="absolute left-0 w-full shadow shadow-gray-700/20 border-border-1 border-2 bg-action-secondary dark:bg-dark-action-secondary rounded-2xl overflow-hidden transition-all z-10 cursor-default"
             :class="{
                 'bottom-full -translate-y-0.5': position === 'top',
                 'top-full translate-y-0.5': position === 'bottom',
@@ -37,7 +41,7 @@
             <div class="px-5 pt-3 mb-3">
                 <label
                     v-if="searchable"
-                    class="rounded-xl bg-input-bg w-full block text-text-primary relative"
+                    class="rounded-xl bg-glob-dark dark:bg-dark-glob-dark w-full block text-primary dark:text-dark-primary relative"
                     @click.stop
                 >
                     <IconMagnify
@@ -52,7 +56,7 @@
                         v-model="searchValue"
                     />
                     <div
-                        class="h-2/3 w-0.5 bg-text-secondary/10 mx-1 my-auto"
+                        class="h-2/3 w-0.5 bg-secondary/10 dark:bg-dark-secondary/10 mx-1 my-auto"
                     ></div>
                 </label>
             </div>
@@ -64,9 +68,9 @@
                     <button
                         v-for="(item, index) of options"
                         :key="index"
-                        class="py-2 px-3 hover:bg-primary-bg rounded-xl flex items-center w-full cursor-pointer"
+                        class="py-2 px-3 hover:bg-glob-primary hover:dark:bg-dark-glob-primary rounded-xl flex items-center w-full cursor-pointer"
                         :class="{
-                            'border border-primary':
+                            'border border-action-primary dark:border-dark-action-primary':
                                 selected?.value === item.value,
                         }"
                         @click.stop.prevent="onItemSelect(item)"
@@ -77,7 +81,7 @@
                             v-if="selected?.value === item.value"
                             :size="20"
                             color="currentColor"
-                            class="text-primary me-1"
+                            class="text-action-primary dark:text-dark-action-primary me-1"
                         />
                     </button>
                 </Simplebar>
@@ -88,7 +92,7 @@
             </div>
             <div
                 v-if="searchValue.length > 0 && options.length < 1 && addable"
-                class="text-primary border-t-2 border-border-1 py-4 px-9 hover:bg-primary/10 text-nowrap overflow-hidden text-ellipsis cursor-pointer"
+                class="text-action-primary dark:text-dark-action-primary border-t-2 border-border-1 py-4 px-9 hover:bg-action-primary/10 hover:dark:bg-dark-action-primary/10 text-nowrap overflow-hidden text-ellipsis cursor-pointer"
                 @click.stop="addNewItem"
             >
                 <IconPlus

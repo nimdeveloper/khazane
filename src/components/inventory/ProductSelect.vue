@@ -1,14 +1,14 @@
 <template>
     <div class="mb-2" v-if="label">{{ label }}</div>
     <div
-        class="relative flex rounded-2xl row h-14 bg-active-item-bg cursor-pointer items-center outline-0"
+        class="relative flex rounded-2xl row h-14 bg-action-secondary dark:bg-dark-action-secondary cursor-pointer items-center outline-0"
         v-bind="$attrs"
         ref="current-select-ref"
     >
         <div class="w-full h-full">
             <label
                 v-if="searchable"
-                class="rounded-xl bg-input-bg w-full block text-text-primary relative h-full"
+                class="rounded-xl bg-glob-dark dark:bg-dark-glob-dark w-full block text-primary dark:text-dark-primary relative h-full"
                 @click.stop
             >
                 <IconMagnify
@@ -27,7 +27,7 @@
         </div>
         <div
             @click.stop.prevent
-            class="absolute left-0 w-full shadow shadow-gray-700/50 border-border-1 border-2 bg-active-item-bg rounded-2xl overflow-hidden transition-all z-10 cursor-default"
+            class="absolute left-0 w-full shadow shadow-gray-700/50 border-border-1 border-2 bg-action-secondary dark:bg-dark-action-secondary rounded-2xl overflow-hidden transition-all z-10 cursor-default"
             :class="{
                 'bottom-full -translate-y-0.5': position === 'top',
                 'top-full translate-y-0.5': position === 'bottom',
@@ -44,11 +44,12 @@
                     <button
                         v-for="(item, index) of options"
                         :key="index"
-                        class="py-2 px-3 hover:bg-primary-bg bg-secondary-bg rounded-xl flex items-center w-full cursor-pointer my-3"
+                        class="py-2 px-3 hover:bg-glob-primary hover:dark:bg-dark-glob-primary bg-glob-secondary dark:bg-dark-glob-secondary rounded-xl flex items-center w-full cursor-pointer my-3"
                         :class="{
-                            'border border-primary': selected?.find(
-                                (each) => each.value === item.value
-                            ),
+                            'border border-action-primary dark:border-dark-action-primary':
+                                selected?.find(
+                                    (each) => each.value === item.value
+                                ),
                         }"
                         @click.stop.prevent="onItemClick(item)"
                     >
@@ -70,7 +71,7 @@
                                     {{ item.label }}
                                 </div>
                                 <div
-                                    class="flex items-center align-middle text-text-secondary text-xs"
+                                    class="flex items-center align-middle text-secondary dark:text-dark-secondary text-xs"
                                 >
                                     <span
                                         class="text-nowrap"
@@ -88,7 +89,9 @@
                                     &nbsp;
                                     <span>موجودی:</span>
                                     &nbsp;
-                                    <span class="text-text-primary text-nowrap">
+                                    <span
+                                        class="text-primary dark:text-dark-primary text-nowrap"
+                                    >
                                         {{ item.inventory }}
                                         {{ item.unit ? item.unit?.title : "-" }}
                                     </span>
@@ -96,7 +99,7 @@
                             </div>
                             <div class="inline-flex">
                                 <div
-                                    class="m-auto p-2 bg-active-item-bg dark:hover:bg-gray-700 dark:border-gray-600 rounded-lg ms-auto me-1"
+                                    class="m-auto p-2 bg-action-secondary dark:bg-dark-action-secondary dark:hover:bg-gray-700 dark:border-gray-600 rounded-lg ms-auto me-1"
                                 >
                                     <IconPlus
                                         v-if="
@@ -107,13 +110,13 @@
                                         "
                                         :size="18"
                                         color="currentColor"
-                                        class="text-primary"
+                                        class="text-action-primary dark:text-dark-action-primary"
                                     />
                                     <IconClose
                                         v-else
                                         :size="18"
                                         color="currentColor"
-                                        class="text-text-secondary"
+                                        class="text-secondary dark:text-dark-secondary"
                                     />
                                 </div>
                             </div>
@@ -127,7 +130,7 @@
             </div>
             <div
                 v-if="searchValue.length > 0 && options.length < 1 && addable"
-                class="text-primary border-t-2 border-border-1 py-4 px-9 hover:bg-primary/10 text-nowrap overflow-hidden text-ellipsis cursor-pointer"
+                class="text-action-primary dark:text-dark-action-primary border-t-2 border-border-1 py-4 px-9 hover:bg-action-primary/10 hover:dark:bg-dark-action-primary/10 text-nowrap overflow-hidden text-ellipsis cursor-pointer"
                 @click.stop="addNewItem"
             >
                 <IconPlus

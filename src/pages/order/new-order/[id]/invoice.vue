@@ -65,7 +65,10 @@
             </div>
         </div>
         <table class="border border-border-1 w-full text-center mb-auto">
-            <thead class="print:bg-active-item-bg/20" style="font-size: 10px">
+            <thead
+                class="print:bg-dark-action-secondary/20"
+                style="font-size: 10px"
+            >
                 <tr>
                     <th class="border border-black/60 p-0.5 text-nowrap">
                         ردیف
@@ -144,7 +147,7 @@
                 </tr>
             </tbody>
         </table>
-        <div class="border-active-item-bg border mt-5">
+        <div class="border-dark-action-secondary border mt-5">
             <div class="min-h-18">
                 <h5 class="font-bold inline me-2">توضیحات:</h5>
                 <div class="inline">
@@ -153,7 +156,7 @@
             </div>
             <div class="flex">
                 <div
-                    class="text-center print:bg-active-item-bg/20 p-1 border-e border-s-active-item-bg"
+                    class="text-center print:bg-dark-action-secondary/20 p-1 border-e border-s-dark-action-secondary"
                     style="writing-mode: vertical-rl"
                 >
                     تایید کنندگان
@@ -164,12 +167,14 @@
                         class="grow-1 text-nowrap min-w-40 text-center flex flex-col"
                     >
                         <div
-                            class="border border-primary-bg border-e-0 min-h-4"
+                            class="border border-glob-primary dark:border-dark-glob-primary-bg border-e-0 min-h-4"
                             style="font-size: 10px"
                         >
                             {{ item.name }}
                         </div>
-                        <div class="border-s border-primary-bg h-8 grow-1">
+                        <div
+                            class="border-s border-glob-primary dark:border-dark-glob-primary-bg h-8 grow-1"
+                        >
                             {{ item.person?.label }}
                         </div>
                     </div>

@@ -6,7 +6,7 @@
         />
         <div class="flex flex-col w-full">
             <NuxtLink
-                class="inline-flex items-center mt-2 lg:mb-6 gap-0 hover:gap-1 transition-all lg:ms-4 text-text-secondary print:hidden"
+                class="inline-flex items-center mt-2 lg:mb-6 gap-0 hover:gap-1 transition-all lg:ms-4 text-secondary dark:text-dark-secondary print:hidden"
                 to="/order/"
             >
                 <IconNavArrowRight
@@ -27,22 +27,25 @@
                             class="relative pt-3 lg:ps-6 lg:pt-0 grow"
                         >
                             <div
-                                class="hidden sm:block absolute h-2 w-1/3 -start-1/2 -translate-x-full -translate-y-1/2 lg:w-9 bg-gradient-to-r lg:bg-primary lg:start-0 top-1/2 rounded-full transition-transform z-[1]"
+                                class="hidden sm:block absolute h-2 w-1/3 -start-1/2 -translate-x-full -translate-y-1/2 lg:w-9 bg-gradient-to-r lg:bg-action-primary lg:dark:bg-dark-action-primary lg:start-0 top-1/2 rounded-full transition-transform z-[1]"
                                 :class="{
                                     'lg:translate-x-1/2': step.active,
                                     'lg:translate-x-full': !step.active,
                                     'hidden lg:block': index == 0,
-                                    'bg-primary': index !== 0 && step.active,
-                                    'bg-secondary-bg':
+                                    'bg-action-primary dark:bg-dark-action-primary':
+                                        index !== 0 && step.active,
+                                    'bg-glob-secondary dark:bg-dark-glob-secondary':
                                         index !== 0 && !step.active,
                                 }"
                             ></div>
                             <NuxtLink
                                 :to="step.link"
-                                class="inline-flex flex-col lg:flex-row items-center px-4 lg:ps-4 lg:pe-6 py-3 rounded-lg w-full text-nowrap hover:bg-primary/10 text-center lg:text-start z-[2] relative"
+                                class="inline-flex flex-col lg:flex-row items-center px-4 lg:ps-4 lg:pe-6 py-3 rounded-lg w-full text-nowrap hover:bg-action-primary/10 hover:dark:bg-dark-action-primary/10 text-center lg:text-start z-[2] relative"
                                 :class="{
-                                    'bg-primary/5 text-primary': step.active,
-                                    'text-text-primary': !step.active,
+                                    'bg-action-primary/5 dark:bg-dark-action-primary/5 text-action-primary dark:text-dark-action-primary':
+                                        step.active,
+                                    'text-primary dark:text-dark-primary':
+                                        !step.active,
                                 }"
                             >
                                 <component
@@ -51,13 +54,15 @@
                                     color="currentColor"
                                     class="me-2"
                                     :class="{
-                                        'text-primary': step.active,
-                                        'text-text-secondary': !step.active,
+                                        'text-action-primary dark:text-dark-action-primary':
+                                            step.active,
+                                        'text-secondary dark:text-dark-secondary':
+                                            !step.active,
                                     }"
                                 />
                                 <div class="flex flex-col">
                                     <div
-                                        class="text-text-secondary text-sm hidden lg:block"
+                                        class="text-secondary dark:text-dark-secondary text-sm hidden lg:block"
                                     >
                                         مرحله {{ index + 1 }}
                                     </div>
@@ -69,7 +74,7 @@
                         </li>
                     </ul>
                     <div
-                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-active-item-bg h-[calc(100dvh-225px)] lg:h-[calc(100dvh-138px)] print:h-auto print:min-h-[95dvh] print:bg-transparent print:p-0.5 flex flex-col relative w-auto lg:w-[calc(100%-384px)]"
+                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-action-secondary dark:bg-dark-action-secondary h-[calc(100dvh-225px)] lg:h-[calc(100dvh-138px)] print:h-auto print:min-h-[95dvh] print:bg-transparent print:p-0.5 flex flex-col relative w-auto lg:w-[calc(100%-384px)]"
                     >
                         <div class="h-full pe-3 hidden print:block print:p-0">
                             <slot />

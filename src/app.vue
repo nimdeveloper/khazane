@@ -1,6 +1,6 @@
 <template>
     <div
-        class="bg-primary-bg print:bg-white print:text-active-item-bg h-full text-text-primary font-vazir"
+        class="bg-glob-primary dark:bg-dark-glob-primary print:bg-white print:text-dark-action-secondary h-full text-primary dark:text-dark-primary font-vazir"
     >
         <NuxtRouteAnnouncer />
         <NuxtLayout>
@@ -15,7 +15,12 @@ import "simplebar-vue/dist/simplebar.min.css";
 
 <style lang="scss">
 html {
-    background-color: var(--color-primary-bg);
+    @media (prefers-color-scheme: dark) {
+        background-color: var(--color-dark-glob-primary);
+    }
+    @media (prefers-color-scheme: light) {
+        background-color: var(--color-glob-primary);
+    }
 }
 
 body {
@@ -32,5 +37,8 @@ body {
 }
 * {
     direction: rtl;
+}
+.simplebar-content-wrapper {
+    outline: none !important;
 }
 </style>

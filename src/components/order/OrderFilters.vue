@@ -1,6 +1,6 @@
 <template>
     <div
-        class="bg-primary-bg px-2 py-2.5 shadow transition-transform border-2 border-border-2 h-full flex flex-col rounded-2xl top-[5px] w-[calc(100dvw-20px)] md:w-96 lg:w-full absolute"
+        class="bg-glob-primary dark:bg-dark-glob-primary px-2 py-2.5 shadow transition-transform border-2 border-border-2 h-full flex flex-col rounded-2xl top-[5px] w-[calc(100dvw-20px)] md:w-96 lg:w-full absolute"
         :class="[
             {
                 'translate-x-[110%]': !globalState.SidebarOpen && !lgAndLarger,
@@ -14,10 +14,12 @@
             <h2 class="text-xl">محصولات</h2>
         </div>
         <div
-            class="flex w-full rounded-2xl py-4 px-2 mt-4 bg-secondary-bg flex-col overflow-hidden"
+            class="flex w-full rounded-2xl py-4 px-2 mt-4 bg-glob-secondary dark:bg-dark-glob-secondary flex-col overflow-hidden"
         >
             <Simplebar data-simplebar-direction="rtl" class="h-full pe-3">
-                <div class="text-text-secondary ps-1">نوع محصولات</div>
+                <div class="text-secondary dark:text-dark-secondary ps-1">
+                    نوع محصولات
+                </div>
                 <div class="flex flex-wrap mt-3"></div>
             </Simplebar>
         </div>

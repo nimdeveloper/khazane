@@ -46,8 +46,11 @@ async function handleUpdate() {
             }
         } else {
             const update = await check();
+
             updateInstance.value = update;
         }
+    } catch (e) {
+        console.error(e);
     } finally {
         updateLoading.value = false;
     }

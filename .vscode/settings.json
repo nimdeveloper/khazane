@@ -21,5 +21,11 @@
     },
     "cSpell.words": ["Tauri", "unlisten", "vueuse"],
     "prettier.tabWidth": 4,
-    "typescript.tsdk": "node_modules\\typescript\\lib"
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "files.associations": {
+        "*.css": "tailwindcss"
+    },
+    "editor.quickSuggestions": {
+        "strings": "on"
+    }
 }

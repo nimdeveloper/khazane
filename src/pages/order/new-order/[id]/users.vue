@@ -36,7 +36,7 @@
     <div>
         <button
             @click.prevent="handleNewUser"
-            class="cursor-pointer text-primary hover:bg-primary/10 p-3 rounded-xl"
+            class="cursor-pointer text-action-primary dark:text-dark-action-primary hover:bg-action-primary/10 hover:dark:bg-dark-action-primary/10 p-3 rounded-xl"
         >
             <IconPlus
                 :size="12"
