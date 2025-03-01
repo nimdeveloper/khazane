@@ -11,7 +11,7 @@
                 class="relative p-4 w-full max-w-xl max-h-full ms-auto pe-0 pb-0 pt-4 h-dvh"
             >
                 <div
-                    class="relative bg-white rounded-s-lg shadow-sm dark:bg-active-item-bg h-full flex flex-col transition-transform"
+                    class="relative bg-white rounded-s-lg shadow-sm bg-action-secondary dark:bg-dark-action-secondary h-full flex flex-col transition-transform"
                     :class="{
                         '-translate-x-full': animationState == 'close',
                         'translate-0': animationState == 'open',

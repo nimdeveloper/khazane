@@ -1,6 +1,6 @@
 <template>
     <div
-        class="flex bg-active-item-bg rounded-2xl p-1.5 my-2.5 max-w-2xl grow-1"
+        class="flex bg-action-secondary dark:bg-dark-action-secondary rounded-2xl p-1.5 my-2.5 max-w-2xl grow-1"
     >
         <div class="h-16 w-16 rounded-2xl bg-white overflow-hidden">
             <img
@@ -15,19 +15,23 @@
                 <div class="flex">
                     {{ title }}
                     <div
-                        class="h-2/3 w-0.5 bg-text-secondary/10 mx-2 md:mx-3 my-auto hidden sm:flex lg:hidden"
+                        class="h-2/3 w-0.5 bg-secondary/10 dark:bg-dark-secondary/10 mx-2 md:mx-3 my-auto hidden sm:flex lg:hidden"
                     ></div>
                     <div
                         class="justify-start gap-5 grow-1 hidden sm:flex lg:hidden text-xs"
                     >
                         <div class="flex justify-start items-center gap-2">
-                            <div class="text-text-secondary text-xs">
+                            <div
+                                class="text-secondary dark:text-dark-secondary text-xs"
+                            >
                                 قیمت واحد
                             </div>
                             <div>{{ basePrice }}</div>
                         </div>
                         <div class="flex justify-start items-center gap-2">
-                            <div class="text-text-secondary text-xs">
+                            <div
+                                class="text-secondary dark:text-dark-secondary text-xs"
+                            >
                                 موجودی اولیه
                             </div>
                             <div>{{ initialInventory }}</div>
@@ -35,11 +39,11 @@
                     </div>
                 </div>
                 <div
-                    class="flex items-center align-middle text-text-secondary text-xs"
+                    class="flex items-center align-middle text-secondary dark:text-dark-secondary text-xs"
                 >
                     <span
                         v-if="variantCount > 0"
-                        class="bg-blue-100 text-text-secondary font-medium px-2.5 py-0.5 rounded-md dark:bg-blue-400 dark:text-gray-900 h-5 text-nowrap"
+                        class="bg-blue-100 text-secondary dark:text-dark-secondary font-medium px-2.5 py-0.5 rounded-md dark:bg-blue-400 h-5 text-nowrap"
                     >
                         5 نوع </span
                     >&nbsp;<span class="text-2xl pb-2" v-if="variantCount > 0"
@@ -52,23 +56,27 @@
                         :size="16"
                         color="currentColor"
                     />&nbsp; <span>موجودی:</span>&nbsp;<span
-                        class="text-text-primary text-nowrap"
+                        class="text-primary dark:text-dark-primary text-nowrap"
                         >{{ inventory }} {{ unit ? unit.title : "-" }}</span
                     >
                 </div>
             </div>
             <div
-                class="h-2/3 w-0.5 bg-text-secondary/10 mx-5 my-auto hidden lg:flex"
+                class="h-2/3 w-0.5 bg-secondary/10 dark:bg-dark-secondary/10 mx-5 my-auto hidden lg:flex"
             ></div>
             <div class="justify-start gap-5 grow-1 hidden lg:flex">
                 <div class="flex flex-col justify-center items-start">
-                    <div class="text-text-secondary text-xs mb-1">
+                    <div
+                        class="text-secondary dark:text-dark-secondary text-xs mb-1"
+                    >
                         قیمت واحد
                     </div>
                     <div>{{ basePrice }}</div>
                 </div>
                 <div class="flex flex-col justify-center items-start">
-                    <div class="text-text-secondary text-xs mb-1">
+                    <div
+                        class="text-secondary dark:text-dark-secondary text-xs mb-1"
+                    >
                         موجودی اولیه
                     </div>
                     <div>{{ initialInventory }}</div>
@@ -76,7 +84,7 @@
             </div>
             <div class="p-2 flex ms-auto ps-4">
                 <button
-                    class="m-auto rounded-xl border-text-text-secondary border-2 p-1.5 text-text-secondary hover:text-amber-50 hover:border-amber-50 transition-colors cursor-pointer"
+                    class="m-auto rounded-xl border-secondary dark:border-dark-secondary border-2 p-1.5 text-secondary dark:text-dark-secondary hover:text-amber-50 hover:border-amber-50 transition-colors cursor-pointer"
                 >
                     <IconThreeDots :size="18" color="currentColor" />
                 </button>

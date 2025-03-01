@@ -31,7 +31,7 @@
                             {{ item.product?.label }}
                         </div>
                         <div
-                            class="flex items-center align-middle text-text-secondary text-xs"
+                            class="flex items-center align-middle text-secondary dark:text-dark-secondary text-xs"
                         >
                             <span
                                 class="text-nowrap"
@@ -42,7 +42,7 @@
                                 :size="16"
                                 color="currentColor"
                             />&nbsp; <span>موجودی:</span>&nbsp;<span
-                                class="text-text-primary text-nowrap"
+                                class="text-primary dark:text-dark-primary text-nowrap"
                                 >{{ item.product?.inventory }}
                                 {{
                                     item.product?.unit
@@ -60,7 +60,9 @@
                         <div class="ms-1 md:hidden">حذف</div>
                     </button>
                 </div>
-                <div class="bg-secondary-bg m-1 rounded-2xl p-1 px-2">
+                <div
+                    class="bg-glob-secondary dark:bg-dark-glob-secondary m-1 rounded-2xl p-1 px-2"
+                >
                     <div class="grow-1 md:w-1/2">
                         <FormCounterInput
                             :name="`order_product_${index}_quantity`"

@@ -5,7 +5,7 @@
             v-model="val"
             :placeholder="placeholder"
             :name="name"
-            class="bg-transparent rounded-xl border-2 border-border-1 py-2 px-3 outline-0 shadow-[none] focus:border-text-secondary mt-2 w-full grow-1"
+            class="bg-transparent rounded-xl border-2 border-border-1 py-2 px-3 outline-0 shadow-[none] focus:border-secondary focus:dark:border-dark-secondary mt-2 w-full grow-1"
         />
     </div>
 </template>

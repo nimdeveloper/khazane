@@ -71,7 +71,7 @@
                     v-else
                 >
                     <svg
-                        class="w-8 h-8 mb-4 text-primary animate-pulse-quick"
+                        class="w-8 h-8 mb-4 text-action-primary dark:text-dark-action-primary animate-pulse-quick"
                         aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"

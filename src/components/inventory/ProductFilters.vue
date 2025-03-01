@@ -1,6 +1,6 @@
 <template>
     <div
-        class="bg-primary-bg px-2 py-2.5 shadow transition-transform border-2 border-border-2 h-full flex flex-col rounded-2xl top-[5px] w-[calc(100dvw-20px)] md:w-96 lg:w-full absolute"
+        class="bg-glob-primary dark:bg-dark-glob-primary px-2 py-2.5 shadow transition-transform border-2 border-border-2 h-full flex flex-col rounded-2xl top-[5px] w-[calc(100dvw-20px)] md:w-96 lg:w-full absolute"
         :class="[
             {
                 'translate-x-[110%]': !globalState.SidebarOpen && !lgAndLarger,
@@ -16,14 +16,18 @@
                 class="border border-border-1 rounded-2xl py-1 px-2 text-xs ms-2"
             >
                 <span>{{ productStore.productsCount["all"] }}</span>
-                <span class="text-text-secondary ms-1">محصول</span>
+                <span class="text-secondary dark:text-dark-secondary ms-1"
+                    >محصول</span
+                >
             </div>
         </div>
         <div
-            class="flex w-full rounded-2xl py-4 px-2 mt-4 bg-secondary-bg flex-col overflow-hidden"
+            class="flex w-full rounded-2xl py-4 px-2 mt-4 bg-glob-secondary dark:bg-dark-glob-secondary flex-col overflow-hidden"
         >
             <Simplebar data-simplebar-direction="rtl" class="h-full pe-3">
-                <div class="text-text-secondary ps-1">نوع محصولات</div>
+                <div class="text-secondary dark:text-dark-secondary ps-1">
+                    نوع محصولات
+                </div>
                 <div class="flex flex-wrap mt-3">
                     <div
                         v-for="(item, index) of productTypeChoices"
@@ -33,7 +37,7 @@
                         <button
                             class="cursor-pointer rounded-2xl py-2 px-4 border border-border-2 w-full inline-flex items-center"
                             :class="{
-                                'border-primary bg-active-item-bg':
+                                'border-action-primary dark:border-dark-action-primary bg-action-secondary dark:bg-dark-action-secondary':
                                     (productStore.filters.status || 'all') ===
                                     item.value,
                             }"
@@ -47,10 +51,10 @@
                             <div
                                 class="rounded-lg py-1 ms-auto text-sm px-2"
                                 :class="{
-                                    'border-primary bg-primary/20 text-primary':
+                                    'border-action-primary dark:border-dark-action-primary bg-action-primary/20 dark:bg-dark-action-primary/20 text-action-primary dark:text-dark-action-primary':
                                         (productStore.filters.status ||
                                             'all') === item.value,
-                                    'bg-text-secondary/20':
+                                    'bg-secondary/20 dark:bg-dark-secondary/20':
                                         (productStore.filters.status ||
                                             'all') !== item.value,
                                 }"
@@ -60,7 +64,9 @@
                         </button>
                     </div>
                 </div>
-                <div class="mt-8 text-text-secondary ps-1">مرتب سازی</div>
+                <div class="mt-8 text-secondary dark:text-dark-secondary ps-1">
+                    مرتب سازی
+                </div>
                 <div class="ps-1 mt-3">
                     <FormSelect
                         :options="sortChoices"

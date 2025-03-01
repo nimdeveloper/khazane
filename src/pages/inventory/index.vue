@@ -9,7 +9,7 @@
             <InventoryProductFilters />
         </div>
         <div
-            class="z-10 bg-active-item-bg/30 absolute w-full h-full top-0 left-0"
+            class="z-10 bg-action-secondary/30 dark:bg-dark-action-secondary/30 absolute w-full h-full top-0 left-0"
             :class="{
                 hidden: !globalState.SidebarOpen || lgAndLarger,
             }"
@@ -21,7 +21,7 @@
         >
             <div class="flex w-full flex-col md:flex-row">
                 <div
-                    class="grow-1 bg-input-bg rounded-2xl md:me-2 justify-between flex items-center px-3 py-2 relative text-text-primary"
+                    class="grow-1 bg-glob-dark dark:bg-dark-glob-dark rounded-2xl md:me-2 justify-between flex items-center px-3 py-2 relative text-primary dark:text-dark-primary"
                 >
                     <IconMagnify
                         :size="20"
@@ -34,31 +34,31 @@
                         placeholder="جستجو"
                     />
                     <div
-                        class="h-2/3 w-0.5 bg-text-secondary/10 mx-1 my-auto"
+                        class="h-2/3 w-0.5 bg-secondary dark:bg-dark-secondary/10 mx-1 my-auto"
                         v-if="scanSupported"
                     ></div>
                     <button
-                        class="inline-flex text-xs align-middle items-center cursor-pointer active:bg-active-item-bg/50 h-full px-2 rounded transition-all"
+                        class="inline-flex text-xs align-middle items-center cursor-pointer active:bg-action-secondary/50 active:dark:bg-dark-action-secondary/50 h-full px-2 rounded transition-all"
                         v-if="scanSupported"
                     >
                         <IconScan
                             :size="25"
                             color="currentColor"
-                            class="text-primary me-1.5"
+                            class="text-action-primary dark:text-dark-action-primary me-1.5"
                         />
                         اسکن
                     </button>
                 </div>
                 <div class="flex my-3 md:my-0 items-center">
                     <div
-                        class="inline-flex rounded-xl bg-active-item-bg justify-between grow-0"
+                        class="inline-flex rounded-xl bg-action-secondary dark:bg-dark-action-secondary justify-between grow-0"
                     >
                         <button
-                            class="bg-active-item-bg p-2 border-2 text-2xl cursor-pointer rounded-xl transition-colors w-11 h-11 my-auto"
+                            class="bg-action-secondary dark:bg-dark-action-secondary p-2 border-2 text-2xl cursor-pointer rounded-xl transition-colors w-11 h-11 my-auto"
                             :class="{
-                                'border-primary text-primary':
+                                'border-action-primary dark:border-dark-action-primary text-action-primary dark:text-dark-action-primary':
                                     activeProductsView === 'list',
-                                'border-transparent text-text-secondary':
+                                'border-transparent text-secondary dark:text-dark-secondary':
                                     activeProductsView !== 'list',
                             }"
                             @click.prevent="activeProductsView = 'list'"
@@ -70,11 +70,11 @@
                             />
                         </button>
                         <button
-                            class="bg-active-item-bg px-3 py-2 border-2 text-2xl cursor-pointer rounded-xl transition-colors w-11 h-11 my-auto"
+                            class="bg-action-secondary dark:bg-dark-action-secondary px-3 py-2 border-2 text-2xl cursor-pointer rounded-xl transition-colors w-11 h-11 my-auto"
                             :class="{
-                                'border-primary text-primary':
+                                'border-action-primary dark:border-dark-action-primary text-action-primary dark:text-dark-action-primary':
                                     activeProductsView === 'grid',
-                                'border-transparent text-text-secondary':
+                                'border-transparent text-secondary dark:text-dark-secondary':
                                     activeProductsView !== 'grid',
                             }"
                             @click.prevent="activeProductsView = 'grid'"
@@ -88,12 +88,12 @@
                     </div>
                     <div class="self-stretch flex">
                         <div
-                            class="h-2/3 w-0.5 bg-text-secondary/30 mx-2 my-auto"
+                            class="h-2/3 w-0.5 bg-secondary/30 dark:bg-dark-secondary/30 mx-2 my-auto"
                         ></div>
                     </div>
                     <div class="inline-flex self-stretch">
                         <button
-                            class="rounded-xl bg-active-item-bg py-1.5 px-2 text-text-secondary hover:text-amber-50 hover:border-amber-50 transition-colors cursor-pointer min-w-full min-h-full"
+                            class="rounded-xl bg-action-secondary dark:bg-dark-action-secondary py-1.5 px-2 text-secondary dark:text-dark-secondary hover:text-amber-50 hover:border-amber-50 transition-colors cursor-pointer min-w-full min-h-full"
                         >
                             <IconThreeDots :size="28" color="currentColor" />
                         </button>
@@ -101,7 +101,7 @@
                     <div class="grow-1 ms-2 text-nowrap">
                         <NuxtLink
                             :to="{ name: 'inventory-new-product' }"
-                            class="bg-primary rounded-2xl px-4 py-2.5 text-input-bg cursor-pointer hover:bg-primary/80 font-bold min-w-full inline-block text-center"
+                            class="bg-action-primary dark:bg-dark-action-primary rounded-2xl px-4 py-2.5 text-glob-dark dark:text-dark-glob-dark cursor-pointer hover:bg-action-primary/80 hover:dark:bg-dark-action-primary/80 font-bold min-w-full inline-block text-center"
                         >
                             محصول جدید
                         </NuxtLink>
@@ -110,6 +110,7 @@
             </div>
             <InventoryProductList
                 class="max-h-[calc(100%-116px)] md:max-h-[calc(100%-48px)]"
+                :view="activeProductsView"
             />
         </div>
     </div>

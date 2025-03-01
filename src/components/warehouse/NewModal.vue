@@ -11,7 +11,7 @@
                 class="relative p-4 w-full max-w-xl max-h-full ms-auto pe-0 pb-0 pt-4 h-dvh"
             >
                 <div
-                    class="relative bg-white rounded-s-lg shadow-sm dark:bg-active-item-bg h-full flex flex-col transition-transform"
+                    class="relative bg-white rounded-s-lg shadow-sm bg-action-secondary dark:bg-dark-action-secondary h-full flex flex-col transition-transform"
                     :class="{
                         '-translate-x-full': animationState == 'close',
                         'translate-0': animationState == 'open',
@@ -69,7 +69,7 @@
                                         @click="warehouse.color = color"
                                     >
                                         <div
-                                            class="border-primary w-full h-full scale-135 left-1/2 top-1/2 -translate-1/2 border-2 absolute rounded-full"
+                                            class="border-action-primary dark:border-dark-action-primary w-full h-full scale-135 left-1/2 top-1/2 -translate-1/2 border-2 absolute rounded-full"
                                             v-if="
                                                 color.key ===
                                                 warehouse.color?.key
