@@ -11,15 +11,39 @@
 
 <script setup lang="ts">
 import "simplebar-vue/dist/simplebar.min.css";
+
+const themeMode = useLocalStorage("theme", "system", {
+    initOnMounted: true,
+    mergeDefaults(storageValue, _) {
+        return !storageValue ? "system" : storageValue;
+    },
+});
+
+watch(themeMode, (val) => {
+    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+    document.documentElement.classList.toggle(
+        "dark",
+        val === "dark" ||
+            (val === "system" &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches)
+    );
+});
+onMounted(() => {
+    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+    document.documentElement.classList.toggle(
+        "dark",
+        themeMode.value === "dark" ||
+            (themeMode.value === "system" &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches)
+    );
+});
 </script>
 
 <style lang="scss">
 html {
-    @media (prefers-color-scheme: dark) {
+    background-color: var(--color-glob-primary);
+    &.dark {
         background-color: var(--color-dark-glob-primary);
-    }
-    @media (prefers-color-scheme: light) {
-        background-color: var(--color-glob-primary);
     }
 }
 

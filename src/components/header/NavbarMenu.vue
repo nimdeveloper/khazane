@@ -15,7 +15,7 @@
     </button>
     <div
         ref="menu_holder"
-        class="flex justify-between align-middle content-between items-center text-sm absolute top-full w-full flex-col bg-glob-secondary dark:bg-dark-glob-secondary z-20 rounded-xl translate-y-3 gap-2 overflow-hidden transition-all ms-auto"
+        class="flex justify-between align-middle content-between items-center text-sm absolute top-full w-full flex-col bg-glob-secondary dark:bg-dark-glob-secondary z-20 rounded-xl translate-y-3 gap-2 overflow-hidden lg:overflow-visible transition-all ms-auto"
         :class="[
             {
                 'max-h-dvh py-2 px-2': menuOpen,

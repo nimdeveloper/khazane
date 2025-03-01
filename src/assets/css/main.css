@@ -101,6 +101,14 @@
     --color-dark-action-primary: #39db7d;
     --color-dark-action-secondary: #202e36;
 
+    --color-glob-primary: #eee5da;
+    --color-glob-secondary: #fffdf0;
+    --color-glob-dark: #f9f6e6;
+    --color-primary: #0f171a;
+    --color-secondary: #707e80;
+    --color-action-primary: #39db7d;
+    --color-action-secondary: #f0f0d7;
+
     --color-border-1: #293842;
     --color-border-2: #25333c;
 
@@ -113,3 +121,5 @@
         }
     }
 }
+
+@custom-variant dark (&:where(.dark, .dark *));
