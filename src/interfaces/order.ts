@@ -1,3 +1,4 @@
+import { Location, type ILocation } from "./location";
 import { Person, type IPerson } from "./person";
 import { ProductUnit, type IProductUnit } from "./product";
 import { instanceOfIWareHouse, WareHouse, type IWareHouse } from "./warehouse";
@@ -23,6 +24,7 @@ export interface IOrder {
     document_date?: string;
     document_number?: string;
     status: string;
+    users: (ILocation | null)[];
 }
 
 export class Order implements IOrder {
@@ -40,7 +42,8 @@ export class Order implements IOrder {
         public goods: (IOrderProduct & { product: ProductUnit | null })[] = [],
         public document_date?: IOrder["document_date"],
         public document_number?: IOrder["document_number"],
-        public status = "draft"
+        public status = "draft",
+        public users: (Location | null)[] = []
     ) {}
     static autoPersonWareHouse(data: IPerson | IWareHouse): Person | WareHouse {
         if (instanceOfIWareHouse(data)) {
@@ -75,7 +78,12 @@ export class Order implements IOrder {
                 : [],
             data.document_date,
             data.document_number,
-            data.status
+            data.status,
+            data.users
+                ? data.users
+                      .filter((each) => !!each)
+                      .map((each) => Location.fromInterface(each))
+                : []
         );
     }
     toInterface(): IOrder {
@@ -102,6 +110,11 @@ export class Order implements IOrder {
             document_date: this.document_date,
             document_number: this.document_number,
             status: this.status,
+            users: this.users
+                ? this.users
+                      .filter((each) => !!each)
+                      .map((each) => each.toInterface())
+                : [],
         };
     }
     write() {

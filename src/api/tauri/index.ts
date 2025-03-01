@@ -3,6 +3,7 @@ import type { TauriStoreAccessor } from "~/types";
 import warehouse from "./warehouse";
 import person from "./person";
 import order from "./order";
+import location from "./location";
 
 export function apiWithTauri($tauri: TauriStoreAccessor) {
     return {
@@ -10,5 +11,6 @@ export function apiWithTauri($tauri: TauriStoreAccessor) {
         warehouse: warehouse($tauri),
         person: person($tauri),
         order: order($tauri),
+        location: location($tauri),
     };
 }

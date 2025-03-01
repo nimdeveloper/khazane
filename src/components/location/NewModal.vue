@@ -24,7 +24,7 @@
                         <h3
                             class="text-xl font-semibold text-gray-900 dark:text-white"
                         >
-                            ایجاد انبار جدید
+                            ایجاد موقعیت جدید
                         </h3>
                         <button
                             type="button"
@@ -41,42 +41,10 @@
                             <div class="flex w-full">
                                 <FormInput
                                     name="product_name"
-                                    label="نام انبار"
-                                    v-model:value="warehouse.name"
+                                    label="نام"
+                                    v-model:value="location.name"
                                     class="grow-1"
                                 />
-                            </div>
-                        </div>
-                        <div class="w-full py-4">
-                            <div class="flex w-full">
-                                <FormInput
-                                    name="product_name"
-                                    label="نام کوتاه"
-                                    v-model:value="warehouse.shorthand"
-                                    class="grow-1"
-                                />
-                            </div>
-                        </div>
-                        <div class="w-full py-4">
-                            <div class="flex w-full flex-col">
-                                <div class="grow-1 w-full">رنگ</div>
-                                <div class="flex my-2">
-                                    <div
-                                        v-for="(color, index) of colors"
-                                        :key="`${color.key}_${index}`"
-                                        class="w-8 h-8 mx-2 rounded-full cursor pointer cursor-pointer box-border relative inline"
-                                        :style="{ backgroundColor: color.code }"
-                                        @click="warehouse.color = color"
-                                    >
-                                        <div
-                                            class="border-action-primary dark:border-dark-action-primary w-full h-full scale-135 left-1/2 top-1/2 -translate-1/2 border-2 absolute rounded-full"
-                                            v-if="
-                                                color.key ===
-                                                warehouse.color?.key
-                                            "
-                                        ></div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -114,39 +82,38 @@
 
 <script lang="ts" setup>
 import type { ModalInterface } from "flowbite";
+import { Location } from "~/interfaces/location";
 import { WareHouse } from "~/interfaces/warehouse";
-import { useMyWarehouseStore } from "~/stores/warehouse";
-
-const colors = WareHouse.COLOR_PALATES;
+import { useLocationStore } from "~/stores/location";
 
 const { preferredName } = defineProps<{ preferredName?: string }>();
 const $modal = ref<ModalInterface | null>(null);
 
-const wareHouseStore = useMyWarehouseStore();
+const locationStore = useLocationStore();
 
 const animationState = ref<"close" | "open">("close");
-const warehouse = ref(new WareHouse(random(20)));
+const location = ref(new Location(random(20)));
 
 watch(
     () => preferredName,
     (val) => {
-        if (warehouse.value && val) {
-            warehouse.value.name = val;
+        if (location.value && val) {
+            location.value.name = val;
         }
     }
 );
 onMounted(() => {
-    if (warehouse.value && preferredName) {
-        warehouse.value.name = preferredName;
+    if (location.value && preferredName) {
+        location.value.name = preferredName;
     }
 });
 const submit = () => {
-    wareHouseStore.addWareHouse(warehouse.value);
+    locationStore.addLocation(location.value);
     $modal.value?.hide();
 };
 const onClose = () => {
-    if (warehouse.value) {
-        warehouse.value = new WareHouse(random(20));
+    if (location.value) {
+        location.value = new WareHouse(random(20));
     }
     animationState.value = "close";
 };

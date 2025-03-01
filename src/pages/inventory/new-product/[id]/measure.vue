@@ -17,11 +17,11 @@
 
 <script lang="ts" setup>
 import { ProductUnit } from "~/interfaces/product";
-import { useMyMeasureStore } from "~/stores/measure";
+import { useMeasureStore } from "~/stores/measure";
 
 definePageMeta({ layout: "new-product" });
 
-const measurementStore = useMyMeasureStore();
+const measurementStore = useMeasureStore();
 
 const product = ref(new ProductUnit(""));
 

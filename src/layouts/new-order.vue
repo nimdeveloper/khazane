@@ -4,6 +4,10 @@
             v-model:is-open="newUserModalOpen.open"
             :preferred-name="newUserModalOpen.preferred_name"
         />
+        <LocationNewModal
+            v-model:is-open="newLocationModalOpen.open"
+            :preferred-name="newLocationModalOpen.preferred_name"
+        />
         <div class="flex flex-col w-full">
             <NuxtLink
                 class="inline-flex items-center mt-2 lg:mb-6 gap-0 hover:gap-1 transition-all lg:ms-4 text-secondary dark:text-dark-secondary print:hidden"
@@ -149,8 +153,10 @@ import { IconBox, IconDocument, IconReportFile, IconUsers } from "#components";
 import { useMyOrderStore } from "../stores/order";
 
 const newUserModalOpen = ref({ open: false, preferred_name: "" });
+const newLocationModalOpen = ref({ open: false, preferred_name: "" });
 
 provide(/* key */ "newUserModalOpen", /* value */ newUserModalOpen);
+provide(/* key */ "newLocationModalOpen", /* value */ newLocationModalOpen);
 
 const orderStore = useMyOrderStore();
 
@@ -226,7 +232,7 @@ function handlePrevious() {
 }
 function saveDraft() {
     storage.value.status = "draft";
-    orderStore.addOrder(storage.value).then(() => {
+    orderStore.addOrder(storage.value, true).then(() => {
         storage.value = null;
         navigateTo({
             name: "order",
@@ -247,12 +253,14 @@ function handleNext() {
         if (storage.value.valid()) {
             storage.value.status = "active";
 
-            orderStore.addOrder(storage.value).then(() => {
-                storage.value = null;
-                navigateTo({
-                    name: "order",
+            orderStore
+                .addOrder(storage.value, isNaN(Number(storage.value.key)))
+                .then(() => {
+                    storage.value = null;
+                    navigateTo({
+                        name: "order",
+                    });
                 });
-            });
         }
     }
 }

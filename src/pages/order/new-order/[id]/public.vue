@@ -52,7 +52,7 @@
         </div>
         <div class="grow-1 w-1/2">
             <FormInput
-                name="order_"
+                name="order_document_number"
                 label="شماره استناد"
                 v-model:value="order.document_number"
                 class="grow-1"
@@ -62,7 +62,7 @@
     <div class="flex w-full mt-3 gap-4 my-3">
         <div class="grow-1 w-1/2">
             <FormInput
-                name="order_type"
+                name="order_document_date"
                 label="تاریخ استناد"
                 v-model:value="order.document_date"
                 class="grow-1"
@@ -89,7 +89,7 @@
     <div class="flex w-full mt-3 gap-4 my-3">
         <div class="grow-1">
             <FormTextArea
-                name="order_type"
+                name="order_description"
                 label="توضیحات"
                 v-model:value="order.description"
                 class="grow-1"

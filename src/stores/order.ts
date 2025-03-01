@@ -48,9 +48,12 @@ export const useMyOrderStore = defineStore("Order", {
                 this.orders.push(Order.fromInterface(each));
             }
         },
-        async addOrder(order: Order) {
+        async addOrder(order: Order, isNew = false) {
             if (!this.tauri) return;
             await this.loadOrders();
+            if (isNew) {
+                order.key = `${this.orders.length + 1}`;
+            }
             await apiWithTauri(this.tauri).order.saveOrders([
                 ...this.orders,
                 order.toInterface(),

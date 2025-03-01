@@ -54,6 +54,16 @@
                         <div class="font-bold inline me-2">رابط:</div>
                         <div class="inline">{{ order.manager?.full_name }}</div>
                     </div>
+                    <div class="inline">
+                        <div class="font-bold inline me-2">
+                            به کار گیرندگان:
+                        </div>
+                        <div class="inline">
+                            {{
+                                order.users.map((each) => each?.name).join("،")
+                            }}
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="w-[25%] m-1 max-w-72">
@@ -191,12 +201,12 @@
 
 <script lang="ts" setup>
 import { Order } from "~/interfaces/order";
-import { useMyMeasureStore } from "~/stores/measure";
+import { useMeasureStore } from "~/stores/measure";
 import { addCommas, numberToWords } from "@persian-tools/persian-tools";
 
 definePageMeta({ layout: "new-order" });
 
-const measurementStore = useMyMeasureStore();
+const measurementStore = useMeasureStore();
 
 const order = ref(new Order(""));
 

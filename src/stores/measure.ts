@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { apiWithTauri } from "~/api/tauri";
 import { MeasurementUnit } from "~/interfaces/measurement-unit";
 
-export const useMyMeasureStore = defineStore("myMeasureStore", {
+export const useMeasureStore = defineStore("Measure", {
     state: () => ({ units: [] as MeasurementUnit[] }),
     actions: {
         async loadUnits() {

@@ -33,7 +33,7 @@
             :class="{
                 'bottom-full -translate-y-0.5': position === 'top',
                 'top-full translate-y-0.5': position === 'bottom',
-                'max-h-56 opacity-100': isOpen,
+                'max-h-66 opacity-100': isOpen,
                 'max-h-0 p-0 opacity-0': !isOpen,
             }"
             ref="current-select-dropdown-ref"

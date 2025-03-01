@@ -108,7 +108,9 @@
                     </div>
                 </div>
             </div>
-            <div class="max-h-[calc(100%-116px)] md:max-h-[calc(100%-48px)]" />
+            <InventoryOrderList
+                class="max-h-[calc(100%-116px)] md:max-h-[calc(100%-48px)]"
+            />
         </div>
     </div>
 </template>
