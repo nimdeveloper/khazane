@@ -60,7 +60,12 @@
                                 class="h-16 w-16 rounded-2xl bg-white overflow-hidden"
                             >
                                 <img
-                                    :src="imagesMap.get((<ProductUnit>item).key)||defaultImage"
+                                    :src="
+                                        imagesList.length > index &&
+                                        imagesList[index]
+                                            ? imagesList[index]
+                                            : defaultImage
+                                    "
                                     width="64"
                                     height="64"
                                     class="h-16 w-16 object-center object-cover"
@@ -149,7 +154,7 @@ import { onClickOutside } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
 import type { ProductUnit } from "~/interfaces/product";
 
-const imagesMap = ref<Map<string, string>>(new Map());
+const imagesList = ref<string[]>([]);
 
 const defaultImage = "/images/no-photo.jpg";
 
@@ -186,11 +191,18 @@ const options = computed(() => {
                 searchValue.value.trim().replaceAll(" ", "")
             );
         })
-        .map((each) => {
+        .map((each, index) => {
             if ((<ProductUnit>each).image) {
                 processRawFile((<ProductUnit>each).image || "").then((tmp) => {
                     if (tmp) {
-                        imagesMap.value.set((<ProductUnit>each).key, tmp);
+                        if (imagesList.value[index]) {
+                            try {
+                                window.URL.revokeObjectURL(
+                                    imagesList.value[index]
+                                );
+                            } catch (e) {}
+                        }
+                        imagesList.value[index] = tmp;
                     }
                 });
             }
@@ -269,7 +281,7 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener("resize", () => calculatePosition());
     document.removeEventListener("scroll", () => calculatePosition());
-    for (const each of imagesMap.value.values()) {
+    for (const each of imagesList.value.values()) {
         if (each) {
             window.URL.revokeObjectURL(each);
         }

@@ -20,7 +20,11 @@
                 <div class="flex flex-col md:flex-row">
                     <div class="rounded-xl overflow-hidden m-1">
                         <img
-                            :src="imagesMap.get(item.product!.key) || defaultImage"
+                            :src="
+                                imagesList.length > index && imagesList[index]
+                                    ? imagesList[index]
+                                    : defaultImage
+                            "
                             width="64"
                             height="64"
                             class="w-full h-36 md:h-16 md:w-16 object-center object-cover rounded-xl"
@@ -92,13 +96,13 @@ const defaultImage = "/images/no-photo.jpg";
 const productStore = useMyProductStore();
 
 const order = ref(new Order(""));
-const imagesMap = ref<Map<string, string>>(new Map());
+const imagesList = ref<string[]>([]);
 
 const { storage } = useTempOrder();
 
 watch(order, (newVal) => {
     storage.value = newVal;
-    for (const eachGood of newVal.goods) {
+    for (const [index, eachGood] of newVal.goods.entries()) {
         const product = eachGood.product;
         if (product) {
             if (product.image) {
@@ -106,15 +110,23 @@ watch(order, (newVal) => {
                 processRawFile(product.image).then((file) => {
                     console.log(file);
                     if (file) {
-                        imagesMap.value.set(product.key, file);
+                        if (imagesList.value[index]) {
+                            try {
+                                window.URL.revokeObjectURL(
+                                    imagesList.value[index]
+                                );
+                            } catch (e) {}
+                        }
+                        imagesList.value[index] = file;
                     }
                 });
             } else {
-                const oldImage = imagesMap.value.get(product.key);
-                if (oldImage) {
-                    window.URL.revokeObjectURL(oldImage);
+                if (imagesList.value[index]) {
+                    try {
+                        window.URL.revokeObjectURL(imagesList.value[index]);
+                    } catch (e) {}
                 }
-                imagesMap.value.delete(product.key);
+                delete imagesList.value[index];
             }
         }
     }

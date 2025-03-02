@@ -57,7 +57,7 @@
                         class="p-2 cursor-pointer hover:bg-action-primary/20 hover:dark:bg-dark-action-primary/20 rounded-xl w-full text-start"
                     />
                     <hr
-                        class="w-full my-2 border-0 h-0.5 bg-border-1/50 rounded"
+                        class="w-full my-2 border-0 h-0.5 bg-border-1/10 dark:bg-border-1/50 rounded"
                     />
                     <SharedThemeToggleButton
                         class="p-2 cursor-pointer hover:bg-action-primary/20 hover:dark:bg-dark-action-primary/20 rounded-xl w-full text-start"

@@ -1,6 +1,6 @@
 <template>
     <div
-        class="h-dvh bg-glob-secondary/30 dark:bg-dark-glob-secondary/30 absolute left-0 top-0 lg:hidden w-dvw -z-[1] print:hidden"
+        class="h-dvh bg-glob-secondary/30 dark:bg-dark-glob-secondary/30 fixed left-0 top-0 lg:hidden w-dvw -z-[1] print:hidden"
         :class="{ hidden: !menuOpen }"
     ></div>
     <button

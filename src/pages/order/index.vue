@@ -1,7 +1,7 @@
 <template>
     <div class="w-full flex relative">
         <div
-            class="h-[calc(100dvh-90px)] z-20 relative max-w-lg"
+            class="h-[calc(100dvh-90px)] z-20 relative max-w-lg print:hidden"
             :style="{
                 width: lgAndLarger ? `${sidebarWidth}%` : '0',
             }"
@@ -9,17 +9,18 @@
             <OrderFilters />
         </div>
         <div
-            class="z-10 bg-action-secondary/30 dark:bg-dark-action-secondary/30 absolute w-full h-full top-0 left-0"
+            class="z-10 bg-action-secondary/30 dark:bg-dark-action-secondary/30 absolute w-full h-full top-0 left-0 print:hidden"
             :class="{
                 hidden: !globalState.SidebarOpen || lgAndLarger,
             }"
         ></div>
-
         <div
-            class="p-4 flex flex-col flex-1"
+            class="p-4 flex flex-col flex-1 print:p-0 h-full"
             :style="{ width: lgAndLarger ? `${100 - sidebarWidth}%` : '100%' }"
         >
-            <div class="flex w-full flex-col md:flex-row">
+            <div
+                class="flex w-full flex-col md:flex-row print:hidden shrink grow-0 basis-auto"
+            >
                 <div
                     class="grow-1 bg-glob-dark dark:bg-dark-glob-dark rounded-2xl md:me-2 justify-between flex items-center px-3 py-2 relative text-primary dark:text-dark-primary"
                 >
@@ -108,9 +109,11 @@
                     </div>
                 </div>
             </div>
-            <InventoryOrderList
-                class="max-h-[calc(100%-116px)] md:max-h-[calc(100%-48px)]"
-            />
+            <div class="grow shrink basis-auto overflow-y-hidden">
+                <InventoryOrderList
+                    class="h-full print:h-auto print:max-h-auto"
+                />
+            </div>
         </div>
     </div>
 </template>

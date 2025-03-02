@@ -1,9 +1,11 @@
 <template>
     <div
-        class="flex bg-action-secondary dark:bg-dark-action-secondary rounded-2xl p-1.5 my-2.5 max-w-2xl grow-1 min-w-96"
+        class="flex bg-action-secondary dark:bg-dark-action-secondary rounded-2xl p-1.5 my-2.5 max-w-2xl grow-1 min-w-80 print:hidden"
     >
         <div class="flex grow-1 px-2">
-            <div class="flex flex-col items-start justify-around ps-3.5">
+            <div
+                class="flex flex-col items-start justify-around ps-3.5 print:hidden"
+            >
                 <div class="flex">
                     {{ display_key }}
                     <div
@@ -21,7 +23,7 @@
                 >
                     <span
                         v-if="goods?.length > 0"
-                        class="bg-blue-100 text-secondary dark:text-dark-secondary font-medium px-2.5 py-0.5 rounded-md dark:bg-blue-400 h-5 text-nowrap"
+                        class="bg-blue-100 text-secondary dark:text-dark-glob-secondary font-medium px-2.5 py-0.5 rounded-md dark:bg-blue-400 h-5 text-nowrap"
                     >
                         {{ goods?.length }} کالا </span
                     >&nbsp;<span class="text-2xl pb-2" v-if="goods?.length > 0"
@@ -39,25 +41,43 @@
                     >
                 </div>
             </div>
-            <div class="p-2 flex ms-auto ps-4">
+            <div
+                class="p-2 flex ms-auto ps-4 relative print:hidden"
+                ref="order-item-popup"
+            >
                 <button
                     class="m-auto rounded-xl border-secondary dark:border-dark-secondary border-2 p-1.5 text-secondary dark:text-dark-secondary hover:text-amber-50 hover:border-amber-50 transition-colors cursor-pointer"
+                    @click.stop.prevent="menuOpen = !menuOpen"
                 >
                     <IconThreeDots :size="18" color="currentColor" />
                 </button>
+                <div
+                    class="absolute end-0 top-full bg- max-w-[90dvw] w-36 bg-glob-secondary dark:bg-dark-glob-secondary p-2 rounded-2xl z-10"
+                    :class="{ hidden: !menuOpen }"
+                >
+                    <button
+                        class="p-2 cursor-pointer w-full text-start"
+                        @click.prevent.stop="handlePrint()"
+                    >
+                        پرینت
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
-import type { IOrderProduct } from "~/interfaces/order";
-import type { IPerson } from "~/interfaces/person";
-import {
-    instanceOfIWareHouse,
-    WareHouse,
-    type IWareHouse,
-} from "~/interfaces/warehouse";
+import type { Order } from "~/interfaces/order";
+import { instanceOfIWareHouse, WareHouse } from "~/interfaces/warehouse";
+
+const orderItemDropdown = useTemplateRef("order-item-popup");
+const emit = defineEmits(["print"]);
+
+onClickOutside(orderItemDropdown, () => {
+    menuOpen.value = false;
+});
+const menuOpen = ref(false);
 
 const display_key = computed(() => {
     let res = "";
@@ -75,25 +95,22 @@ const display_key = computed(() => {
     res += key;
     return res;
 });
+const { order } = defineProps<{
+    order: Order;
+}>();
 const {
     document_date,
     document_number,
     goods,
     delivery,
     recipient,
-    order_key: key,
+    key,
     manager,
     type,
-} = defineProps<{
-    document_date?: string;
-    document_number?: string;
-    goods: IOrderProduct[];
-    delivery: IPerson | IWareHouse | null;
-    recipient: IPerson | IWareHouse | null;
-    order_key: string;
-    manager: IPerson | null;
-    type?: string;
-}>();
+} = order;
+const handlePrint = () => {
+    emit("print");
+};
 </script>
 
 <style lang="scss"></style>

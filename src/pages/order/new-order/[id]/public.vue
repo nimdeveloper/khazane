@@ -61,7 +61,7 @@
     </div>
     <div class="flex w-full mt-3 gap-4 my-3">
         <div class="grow-1 w-1/2">
-            <FormInput
+            <FormDateInput
                 name="order_document_date"
                 label="تاریخ استناد"
                 v-model:value="order.document_date"

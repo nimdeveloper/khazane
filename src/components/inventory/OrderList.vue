@@ -1,20 +1,24 @@
 <template>
-    <Simplebar data-simplebar-direction="rtl" class="px-3 py-2 flex-1 w-full">
-        <div class="flex gap-3 flex-row flex-wrap justify-around pt-4">
+    <OrderPrint :order="toPrintOrder" />
+    <Simplebar
+        data-simplebar-direction="rtl"
+        force-visible="x"
+        class="px-3 py-2 flex-1 w-full print:hidden h-full"
+    >
+        <div
+            class="flex gap-3 flex-row flex-wrap justify-around pt-4 print:p-0"
+        >
             <OrderListItem
+                @print="
+                    toPrintOrder = order;
+                    handlePrint();
+                "
                 v-for="(order, index) of orders"
                 :key="`product_${order.key}_${index}`"
-                :document_date="order.document_date"
-                :document_number="order.document_number"
-                :goods="order.goods"
-                :delivery="order.delivery"
-                :recipient="order.recipient"
-                :order_key="order.key"
-                :manager="order.manager"
-                :type="order.type"
+                :order="order"
             />
             <div
-                class="pt-10 flex flex-col items-center text-center w-full justify-center text-lg"
+                class="pt-10 flex flex-col items-center text-center w-full justify-center text-lg print:hidden"
                 v-if="orders.length < 1"
             >
                 <div>
@@ -42,7 +46,7 @@
             </div>
             <div
                 v-else-if="orders.length < 1"
-                class="pt-10 flex flex-col items-center text-center w-full justify-center text-lg"
+                class="pt-10 flex flex-col items-center text-center w-full justify-center text-lg print:hidden"
             >
                 <div>
                     <IconZoomExclamation
@@ -60,10 +64,12 @@
 import { OrderListItem } from "#components";
 import { useIntervalFn } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
+import { Order } from "~/interfaces/order";
 import { useMyOrderStore } from "~/stores/order";
 
 const orderStore = useMyOrderStore();
-console.log(orderStore.orders);
+
+const toPrintOrder = ref(new Order(""));
 
 const { filteredOrders: orders } = storeToRefs(orderStore);
 
@@ -76,6 +82,10 @@ useIntervalFn(() => {
 onMounted(() => {
     orderStore.loadOrders();
 });
+
+const handlePrint = () => {
+    window?.print();
+};
 </script>
 
 <style></style>
