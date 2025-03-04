@@ -27,6 +27,7 @@ tauri-plugin-sql = { version = "2", features = ["postgres"] }
 tauri-plugin-store = "2"
 tauri-plugin-stronghold = "2"
 rust-argon2 = "2.1.0"
+surrealdb = { version = "2.2.1", features = ["kv-mem", "kv-rocksdb"] }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"

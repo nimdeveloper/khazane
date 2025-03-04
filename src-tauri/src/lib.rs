@@ -1,3 +1,9 @@
+// mod location;
+// mod orders;
+// mod person;
+// mod product;
+// mod warehouse;
+
 use argon2::{self, Config};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
