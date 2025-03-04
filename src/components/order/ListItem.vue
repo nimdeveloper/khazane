@@ -2,7 +2,17 @@
     <div
         class="flex bg-action-secondary dark:bg-dark-action-secondary rounded-2xl p-1.5 my-2.5 max-w-2xl grow-1 min-w-80 print:hidden"
     >
-        <div class="flex grow-1 px-2">
+        <div
+            class="flex grow-1 px-2 relative"
+            :class="{ ' ps-6': status === 'draft' }"
+        >
+            <div
+                class="inline text-center text-sm bg-action-primary absolute -right-1.5 -top-1.5 -bottom-1.5 px-1 py-2 rounded-r-lg"
+                style="writing-mode: vertical-rl"
+                v-if="status === 'draft'"
+            >
+                پیش نویس
+            </div>
             <div
                 class="flex flex-col items-start justify-around ps-3.5 print:hidden"
             >
@@ -56,10 +66,16 @@
                     :class="{ hidden: !menuOpen }"
                 >
                     <button
-                        class="p-2 cursor-pointer w-full text-start"
+                        class="p-2 cursor-pointer w-full text-start hover:dark:bg-dark-glob-dark hover:bg-glob-dark rounded-xl"
                         @click.prevent.stop="handlePrint()"
                     >
                         پرینت
+                    </button>
+                    <button
+                        class="p-2 cursor-pointer w-full text-start hover:dark:bg-dark-glob-dark hover:bg-glob-dark rounded-xl block"
+                        @click.prevent.stop="handleComplete"
+                    >
+                        تکمیل
                     </button>
                 </div>
             </div>
@@ -72,6 +88,7 @@ import type { Order } from "~/interfaces/order";
 import { instanceOfIWareHouse, WareHouse } from "~/interfaces/warehouse";
 
 const orderItemDropdown = useTemplateRef("order-item-popup");
+const { storage } = useTempOrder();
 const emit = defineEmits(["print"]);
 
 onClickOutside(orderItemDropdown, () => {
@@ -107,9 +124,14 @@ const {
     key,
     manager,
     type,
+    status,
 } = order;
 const handlePrint = () => {
     emit("print");
+};
+const handleComplete = () => {
+    storage.value = order;
+    navigateTo({ name: "order-new-order-id-public", params: { id: key } });
 };
 </script>
 

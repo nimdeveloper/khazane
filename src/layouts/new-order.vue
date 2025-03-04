@@ -232,12 +232,14 @@ function handlePrevious() {
 }
 function saveDraft() {
     storage.value.status = "draft";
-    orderStore.addOrder(storage.value, true).then(() => {
-        storage.value = null;
-        navigateTo({
-            name: "order",
+    orderStore
+        .addOrder(storage.value, isNaN(Number(storage.value.key)))
+        .then(() => {
+            storage.value = null;
+            navigateTo({
+                name: "order",
+            });
         });
-    });
 }
 function handleNext() {
     let next_step = -1;

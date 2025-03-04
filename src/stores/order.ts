@@ -53,6 +53,10 @@ export const useMyOrderStore = defineStore("Order", {
             await this.loadOrders();
             if (isNew) {
                 order.key = `${this.orders.length + 1}`;
+            } else {
+                this.orders = this.orders.filter(
+                    (each) => Number(each.key) !== Number(order.key)
+                );
             }
             await apiWithTauri(this.tauri).order.saveOrders([
                 ...this.orders,

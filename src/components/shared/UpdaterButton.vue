@@ -1,11 +1,19 @@
 <template>
     <button
-        class="text-nowrap"
+        class="text-nowrap relative"
         :class="{
             'cursor-pointer': !updateLoading,
         }"
         @click.prevent.stop="handleUpdate"
     >
+        <span class="absolute top-1 right-1 flex size-2.5" v-if="hasUpdate">
+            <span
+                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-action-primary opacity-75"
+            ></span>
+            <span
+                class="relative inline-flex size-2.5 rounded-full bg-action-primary"
+            ></span>
+        </span>
         <component
             :is="
                 updateInstance?.available && !updateLoading
@@ -36,6 +44,9 @@ import { IconDownload, IconSync } from "#components";
 import { Channel, invoke, Resource } from "@tauri-apps/api/core";
 import { check, Update } from "@tauri-apps/plugin-updater";
 
+const hasUpdate = defineModel<boolean>("has-update", {
+    default: false,
+});
 const updateLoading = ref(false);
 const updateDownloaded = ref(false);
 const updateInstance = ref<Partial<Update> | null>(null);
@@ -136,14 +147,17 @@ async function handleUpdate() {
                 await handleInstall();
                 updateDownloaded.value = false;
                 updateInstance.value = null;
+                hasUpdate.value = false;
             } catch {
             } finally {
             }
         } else {
             const update = await check();
-            console.log(update?.rid);
             if (update) {
+                hasUpdate.value = true;
                 updateInstance.value = { ...update, rid: update?.rid };
+            } else {
+                hasUpdate.value = false;
             }
         }
     } catch (e) {
@@ -152,6 +166,18 @@ async function handleUpdate() {
         updateLoading.value = false;
     }
 }
+useInterval(10 * 1000, {
+    async callback() {
+        console.log("HERE");
+        const update = await check();
+        if (update) {
+            hasUpdate.value = true;
+            updateInstance.value = { ...update, rid: update?.rid };
+        } else {
+            hasUpdate.value = false;
+        }
+    },
+});
 </script>
 
 <style lang="scss"></style>

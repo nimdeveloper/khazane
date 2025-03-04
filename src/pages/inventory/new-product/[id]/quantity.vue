@@ -1,6 +1,6 @@
 <template>
     <div class="flex w-full">
-        <FormInput
+        <FormNumberInput
             name="product_name"
             label="موجودی اولیه"
             v-model:value="product.initialInventory"
@@ -8,7 +8,7 @@
         />
     </div>
     <div class="flex w-full mt-3">
-        <FormInput
+        <FormNumberInput
             name="product_name"
             label="موجودی کل"
             v-model:value="product.inventory"

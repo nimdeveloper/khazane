@@ -100,8 +100,8 @@
 
 <script lang="ts" setup>
 import { Order } from "~/interfaces/order";
-import type { IPerson, Person } from "~/interfaces/person";
-import type { IWareHouse, WareHouse } from "~/interfaces/warehouse";
+import type { Person } from "~/interfaces/person";
+import type { WareHouse } from "~/interfaces/warehouse";
 import { useMyPersonStore } from "~/stores/person";
 import { useMyWarehouseStore } from "~/stores/warehouse";
 

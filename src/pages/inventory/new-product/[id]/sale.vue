@@ -1,6 +1,6 @@
 <template>
     <div class="flex w-full">
-        <FormInput
+        <FormNumberInput
             name="product_name"
             label="قیمت واحد"
             v-model:value="product.basePrice"

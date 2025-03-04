@@ -43,6 +43,17 @@
                     class="m-3 my-1 cursor-pointer flex items-center"
                     @click.stop.prevent="miniMenuOpen = !miniMenuOpen"
                 >
+                    <span
+                        class="absolute top-1 right-3 flex size-2.5"
+                        v-if="hasUpdate"
+                    >
+                        <span
+                            class="absolute inline-flex h-full w-full animate-ping rounded-full bg-action-primary opacity-75"
+                        ></span>
+                        <span
+                            class="relative inline-flex size-2.5 rounded-full bg-action-primary"
+                        ></span>
+                    </span>
                     <IconUser :size="24" color="currentColor" />
                     <IconCaretUpDown :size="16" color="currentColor" />
                 </button>
@@ -54,6 +65,7 @@
                     }"
                 >
                     <SharedUpdaterButton
+                        v-model:has-update="hasUpdate"
                         class="p-2 cursor-pointer hover:bg-action-primary/20 hover:dark:bg-dark-action-primary/20 rounded-xl w-full text-start"
                     />
                     <hr
@@ -82,6 +94,7 @@ const globalState = useMyGlobalStore();
 const { toggleSidebar } = globalState;
 
 const miniMenuOpen = ref(false);
+const hasUpdate = ref(false);
 
 const handleFilterButtonClick = () => {
     toggleSidebar();

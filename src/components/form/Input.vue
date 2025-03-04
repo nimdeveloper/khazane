@@ -27,7 +27,7 @@ const { name, placeholder, label } = defineProps({
         default: "",
     },
 });
-const val = defineModel<string | number>("value", {
+const val = defineModel<string>("value", {
     default: "",
 });
 </script>
