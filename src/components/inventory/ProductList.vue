@@ -1,22 +1,10 @@
 <template>
     <Simplebar data-simplebar-direction="rtl" class="px-3 py-2 flex-1 w-full">
         <div class="flex gap-3 flex-row flex-wrap justify-around pt-4">
-            <ProductListItem
-                v-if="view === 'list'"
+            <component
                 v-for="(product, index) of products"
-                :key="`product_${product.key}_${index}`"
-                :title="product.title"
-                :basePrice="product.basePrice"
-                :inventory="product.inventory"
-                :unit="product.unit"
-                :image="product.image"
-                :category="product.category"
-                :initialInventory="product.initialInventory"
-            />
-            <ProductGridItem
-                v-if="view === 'grid'"
-                v-for="(product, index) of products"
-                :key="`product_${product.key}_${index}`"
+                :is="view === 'list' ? ProductListItem : ProductGridItem"
+                :key="`product_${product.key}_${index}_list`"
                 :title="product.title"
                 :basePrice="product.basePrice"
                 :inventory="product.inventory"
@@ -69,6 +57,8 @@
 </template>
 
 <script lang="ts" setup>
+import { ProductGridItem } from "#components";
+import { ProductListItem } from "#components";
 import { useIntervalFn } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
 import { useMyProductStore } from "~/stores/product";

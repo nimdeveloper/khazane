@@ -5,7 +5,20 @@ use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Order<'a> {
+pub struct OrderRole<'a> {
+    name: &'a str,
+    person: Option<Person<'a>>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum OrderMixedTarget<'a> {
+    #[serde(borrow)]
+    Warehouse(Warehouse<'a>),
+    Person(Person<'a>),
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Order<'a> {
     id: RecordId,
     order_type: &'a str,
     description: &'a str,
@@ -14,24 +27,20 @@ struct Order<'a> {
     document_number: &'a str,
     status: &'a str,
 
-    delivery: Option<Warehouse<'a>>,
-    recipient: Option<Warehouse<'a>>,
+    goods: Vec<OrderProduct<'a>>,
+    delivery: Option<OrderMixedTarget<'a>>,
+    recipient: Option<OrderMixedTarget<'a>>,
+    approvers: Vec<OrderRole<'a>>,
     manager: Option<Person<'a>>,
     users: Vec<Location<'a>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct OrderProduct<'a> {
+pub struct OrderProduct<'a> {
     id: RecordId,
+    #[serde(borrow)]
     order: Option<Order<'a>>,
     quantity: i64,
 }
 
 // `type` Change to `order_type`
-
-// delivery: IPerson | IWareHouse | null;
-// recipient: IPerson | IWareHouse | null;
-
-// approvers: IRole[];
-// goods: IOrderProduct[];
-// users: (ILocation | null)[];

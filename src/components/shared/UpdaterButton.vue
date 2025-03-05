@@ -168,14 +168,15 @@ async function handleUpdate() {
 }
 useInterval(10 * 1000, {
     async callback() {
-        console.log("HERE");
-        const update = await check();
-        if (update) {
-            hasUpdate.value = true;
-            updateInstance.value = { ...update, rid: update?.rid };
-        } else {
-            hasUpdate.value = false;
-        }
+        try {
+            const update = await check();
+            if (update) {
+                hasUpdate.value = true;
+                updateInstance.value = { ...update, rid: update?.rid };
+            } else {
+                hasUpdate.value = false;
+            }
+        } catch (_) {}
     },
 });
 </script>

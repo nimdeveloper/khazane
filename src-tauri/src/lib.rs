@@ -1,10 +1,12 @@
-// mod location;
-// mod orders;
-// mod person;
-// mod product;
-// mod warehouse;
+mod location;
+mod orders;
+mod person;
+mod product;
+mod warehouse;
 
 use argon2::{self, Config};
+use surrealdb::engine::local::RocksDb;
+use surrealdb::Surreal;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -27,6 +29,13 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
+        .setup(|app| {
+            // let scope = app.fs_scope();
+
+            // let db = Surreal::new::<RocksDb>("path/to/database-folder");
+            // app.manage();
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
