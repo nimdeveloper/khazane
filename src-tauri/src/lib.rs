@@ -1,12 +1,18 @@
+mod app;
 mod location;
 mod orders;
 mod person;
 mod product;
 mod warehouse;
 
+use std::sync::Mutex;
+
 use argon2::{self, Config};
 use surrealdb::engine::local::RocksDb;
 use surrealdb::Surreal;
+use tauri::Manager;
+
+use crate::app::AppData;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -30,9 +36,25 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            app.manage(Mutex::new(AppData::default()));
+            let dir = app
+                .path()
+                .app_data_dir()
+                .expect("couldn't resolve app data dir")
+                .join("db");
             // let scope = app.fs_scope();
-
-            // let db = Surreal::new::<RocksDb>("path/to/database-folder");
+            if let Some(to_resolve_db_path) = dir.to_str() {
+                let db_path = to_resolve_db_path.to_owned();
+                let handle = app.handle().to_owned();
+                tauri::async_runtime::spawn(async move {
+                    let data = Surreal::new::<RocksDb>(db_path).await;
+                    if let Ok(db) = data {
+                        let state = handle.state::<Mutex<AppData>>();
+                        let mut state = state.lock().unwrap();
+                        state.db = Some(db.to_owned());
+                    }
+                });
+            }
             // app.manage();
             Ok(())
         })
