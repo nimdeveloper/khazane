@@ -5,41 +5,39 @@ use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct OrderRole<'a> {
-    name: &'a str,
-    person: Option<Person<'a>>,
+pub struct OrderRole {
+    name: String,
+    person: Option<Person>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub enum OrderMixedTarget<'a> {
-    #[serde(borrow)]
-    Warehouse(Warehouse<'a>),
-    Person(Person<'a>),
+pub enum OrderMixedTarget {
+    Warehouse(Warehouse),
+    Person(Person),
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Order<'a> {
+pub struct Order {
     id: RecordId,
-    order_type: &'a str,
-    description: &'a str,
-    citation_number: &'a str,
-    document_date: &'a str,
-    document_number: &'a str,
-    status: &'a str,
+    order_type: String,
+    description: String,
+    citation_number: String,
+    document_date: String,
+    document_number: String,
+    status: String,
 
-    goods: Vec<OrderProduct<'a>>,
-    delivery: Option<OrderMixedTarget<'a>>,
-    recipient: Option<OrderMixedTarget<'a>>,
-    approvers: Vec<OrderRole<'a>>,
-    manager: Option<Person<'a>>,
-    users: Vec<Location<'a>>,
+    goods: Vec<OrderProduct>,
+    delivery: Option<OrderMixedTarget>,
+    recipient: Option<OrderMixedTarget>,
+    approvers: Vec<OrderRole>,
+    manager: Option<Person>,
+    users: Vec<Location>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct OrderProduct<'a> {
+pub struct OrderProduct {
     id: RecordId,
-    #[serde(borrow)]
-    order: Option<Order<'a>>,
+    order: Option<Order>,
     quantity: i64,
 }
 

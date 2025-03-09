@@ -1,4 +1,4 @@
-use std::{future::IntoFuture, sync::Mutex};
+use std::sync::Mutex;
 
 use serde::Deserialize;
 use surrealdb::Error::{self, Db};
