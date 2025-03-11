@@ -17,6 +17,7 @@
                     class="absolute start-3 top-1/2 -translate-y-1/2 rotate-90"
                 />
                 <input
+                    autocomplete="false"
                     class="w-full bg-transparent border-0 ps-10 outline-0 shadow-[none] py-1 h-full"
                     type="text"
                     placeholder="جستجو"

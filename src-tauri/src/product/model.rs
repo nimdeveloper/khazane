@@ -6,7 +6,13 @@ use crate::warehouse::model::Warehouse;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ProductCategory {
     id: RecordId,
-    label: String,
+    pub label: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ProductWarehouse {
+    quantity: i64,
+    warehouse: Option<Warehouse>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -15,7 +21,7 @@ pub struct MeasurementUnit {
     title: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Product {
     id: RecordId,
     title: String,
@@ -28,6 +34,6 @@ pub struct Product {
     image: String,
     created_at: Datetime,
     updated_at: Datetime,
-    ware_houses: Vec<Warehouse>,
+    ware_houses: Vec<ProductWarehouse>,
     category: Option<ProductCategory>,
 }

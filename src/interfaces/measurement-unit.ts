@@ -1,15 +1,16 @@
 export interface IMeasurementUnit {
-    key: string;
+    id: string;
     title: string;
 }
-export class MeasurementUnit {
-    constructor(public key: string, public title: string) {}
+export class MeasurementUnit implements IMeasurementUnit {
+    constructor(public id: string, public title: string) {}
     static fromInterface(data: IMeasurementUnit) {
-        return new MeasurementUnit(data.key, data.title);
+        (data as any).id = normalizeId((data as any).id);
+        return new MeasurementUnit(data.id, data.title);
     }
     toInterface(): IMeasurementUnit {
         return {
-            key: this.key,
+            id: this.id,
             title: this.title,
         };
     }
@@ -17,6 +18,6 @@ export class MeasurementUnit {
         return this.title;
     }
     get value() {
-        return this.key;
+        return this.id;
     }
 }

@@ -2,13 +2,13 @@ import { MeasurementUnit, type IMeasurementUnit } from "./measurement-unit";
 import { WareHouse, type IWareHouse } from "./warehouse";
 
 export interface IProductUnit {
-    key: string;
+    id: string;
     title: string;
     code: string;
     unit: IMeasurementUnit | null;
-    basePrice: number;
+    base_price: number;
     inventory: number;
-    initialInventory: number;
+    initial_inventory: number;
     category: IProductCategory | null;
     status: "active" | "draft" | "inactive";
     image?: string | File;
@@ -26,11 +26,11 @@ export class ProductUnit implements IProductUnit {
     constructor(
         public title: string,
         public unit: MeasurementUnit | null = null,
-        public key: string = "",
+        public id: string = "",
         public code: string = "",
-        public basePrice: number = 0,
+        public base_price: number = 0,
         public inventory: number = 0,
-        public initialInventory: number = 0,
+        public initial_inventory: number = 0,
         public category: ProductCategory | null = null,
         public status: IProductUnit["status"] = "draft",
         public ware_houses: Array<
@@ -38,14 +38,15 @@ export class ProductUnit implements IProductUnit {
         > = []
     ) {}
     static fromInterface(data: IProductUnit) {
+        (data as any).id = normalizeId((data as any).id);
         let obj = new ProductUnit(
             data.title,
             data.unit ? MeasurementUnit.fromInterface(data.unit) : null,
-            data.key,
+            data.id,
             data.code,
-            Number(data.basePrice),
+            Number(data.base_price),
             Number(data.inventory),
-            Number(data.initialInventory),
+            Number(data.initial_inventory),
             data.category ? ProductCategory.fromInterface(data.category) : null,
             data.status,
             data.ware_houses
@@ -66,13 +67,13 @@ export class ProductUnit implements IProductUnit {
     }
     toInterface(): IProductUnit {
         return {
-            key: this.key,
+            id: this.id,
             title: this.title,
             unit: this.unit ? this.unit.toInterface() : null,
             code: this.code,
-            basePrice: Number(this.basePrice),
+            base_price: Number(this.base_price),
             inventory: Number(this.inventory),
-            initialInventory: Number(this.initialInventory),
+            initial_inventory: Number(this.initial_inventory),
             category: this.category ? this.category.toInterface() : null,
             ...(this.image && !(this.image instanceof File)
                 ? { image: this.image }
@@ -102,22 +103,23 @@ export class ProductUnit implements IProductUnit {
         return this.title;
     }
     get value() {
-        return this.key;
+        return this.id;
     }
 }
 
 export interface IProductCategory {
-    key: string;
+    id: string;
     label: string;
 }
 export class ProductCategory implements IProductCategory {
-    constructor(public key: string = "", public label: string = "") {}
+    constructor(public id: string = "", public label: string = "") {}
     static fromInterface(data: IProductCategory) {
-        return new ProductCategory(data.key, data.label);
+        (data as any).id = normalizeId((data as any).id);
+        return new ProductCategory(data.id, data.label);
     }
     public toInterface() {
         return {
-            key: this.key,
+            id: this.id,
             label: this.label,
         };
     }
@@ -129,6 +131,6 @@ export class ProductCategory implements IProductCategory {
         return this.fromInterface(JSON.parse(data));
     }
     get value() {
-        return this.key;
+        return this.id;
     }
 }

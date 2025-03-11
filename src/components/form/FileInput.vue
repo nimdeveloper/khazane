@@ -92,6 +92,7 @@
                     </p>
                 </div>
                 <input
+                    autocomplete="false"
                     ref="file-input-ref"
                     type="file"
                     class="hidden"

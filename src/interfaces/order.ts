@@ -12,7 +12,7 @@ export interface IOrderProduct {
     quantity: number;
 }
 export interface IOrder {
-    key: string;
+    id: string;
     type?: string;
     description?: string;
     delivery: IPerson | IWareHouse | null;
@@ -31,7 +31,7 @@ export class Order implements IOrder {
     image?: string | File;
 
     constructor(
-        public key: IOrder["key"],
+        public id: IOrder["id"],
         public type?: IOrder["type"],
         public description?: IOrder["description"],
         public delivery: Person | WareHouse | null = null,
@@ -52,8 +52,9 @@ export class Order implements IOrder {
         return Person.fromInterface(data as IPerson);
     }
     static fromInterface(data: IOrder) {
+        (data as any).id = normalizeId((data as any).id);
         return new this(
-            data.key,
+            data.id,
             data.type,
             data.description,
             data.delivery ? this.autoPersonWareHouse(data.delivery) : null,
@@ -88,7 +89,7 @@ export class Order implements IOrder {
     }
     toInterface(): IOrder {
         return {
-            key: this.key,
+            id: this.id,
             type: this.type,
             description: this.description,
             delivery: this.delivery ? this.delivery.toInterface() : null,

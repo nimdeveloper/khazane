@@ -70,7 +70,7 @@ watch(productFiles, async (newVal) => {
         if (each instanceof File) {
             const folder_path = await path.join(
                 "products",
-                storage.value.key,
+                storage.value.id,
                 "tmp"
             );
             await mkdir(folder_path, {
@@ -79,7 +79,7 @@ watch(productFiles, async (newVal) => {
             });
             const file_path = await path.join(
                 "products",
-                storage.value.key,
+                storage.value.id,
                 "tmp",
                 `${random(5)}.file`
             );

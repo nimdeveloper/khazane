@@ -10,9 +10,9 @@ definePageMeta({ layout: "new-product" });
 const { storage } = useTempOrder();
 
 onBeforeMount(() => {
-    if (!storage.value?.key) {
+    if (!storage.value?.id) {
         const id = random(30);
-        storage.value.key = id;
+        storage.value.id = id;
         navigateTo({
             name: "order-new-order-id-public",
             params: { id },
@@ -20,7 +20,7 @@ onBeforeMount(() => {
     } else {
         navigateTo({
             name: "order-new-order-id-public",
-            params: { id: storage.value.key },
+            params: { id: storage.value.id },
         });
     }
 });

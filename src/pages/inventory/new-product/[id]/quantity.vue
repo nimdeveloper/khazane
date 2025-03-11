@@ -3,7 +3,7 @@
         <FormNumberInput
             name="product_name"
             label="موجودی اولیه"
-            v-model:value="product.initialInventory"
+            v-model:value="product.initial_inventory"
             class="grow-1"
         />
     </div>

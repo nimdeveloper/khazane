@@ -29,6 +29,12 @@ tauri-plugin-stronghold = "2"
 rust-argon2 = "2.1.0"
 surrealdb = { version = "2.2.1", features = ["kv-mem", "kv-rocksdb"] }
 
+# [features]
+# js = [
+#     "wasm-bindgen",
+#     "js-sys",
+# ]
+
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
 

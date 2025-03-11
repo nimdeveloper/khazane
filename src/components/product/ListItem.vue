@@ -27,7 +27,7 @@
                                 >
                                     قیمت واحد
                                 </div>
-                                <div>{{ basePrice }}</div>
+                                <div>{{ base_price }}</div>
                             </div>
                             <div class="flex justify-start items-center gap-2">
                                 <div
@@ -35,7 +35,7 @@
                                 >
                                     موجودی اولیه
                                 </div>
-                                <div>{{ initialInventory }}</div>
+                                <div>{{ initial_inventory }}</div>
                             </div>
                         </div>
                     </div>
@@ -74,7 +74,7 @@
                         >
                             قیمت واحد
                         </div>
-                        <div>{{ basePrice }}</div>
+                        <div>{{ base_price }}</div>
                     </div>
                     <div class="flex flex-col justify-center items-start">
                         <div
@@ -82,7 +82,7 @@
                         >
                             موجودی اولیه
                         </div>
-                        <div>{{ initialInventory }}</div>
+                        <div>{{ initial_inventory }}</div>
                     </div>
                 </div>
                 <div class="p-2 flex ms-auto ps-4">
@@ -107,15 +107,23 @@ const defaultImage = "/images/no-photo.jpg";
 
 const variantCount = ref(0);
 const processedImage = ref("");
-const { title, basePrice, inventory, unit, initialInventory, category, image } =
+const {
+    title,
+    base_price,
+    inventory,
+    unit,
+    initial_inventory,
+    category,
+    image,
+} =
     defineProps<
         Pick<
             IProductUnit,
             | "title"
-            | "basePrice"
+            | "base_price"
             | "inventory"
             | "unit"
-            | "initialInventory"
+            | "initial_inventory"
             | "image"
             | "category"
         >

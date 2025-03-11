@@ -2,6 +2,7 @@
     <div class="inline-flex h-full flex-col w-full">
         <div>{{ label }}</div>
         <input
+            autocomplete="false"
             v-model="val"
             :placeholder="placeholder"
             :name="name"

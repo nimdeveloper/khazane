@@ -3,7 +3,7 @@
         <FormNumberInput
             name="product_name"
             label="قیمت واحد"
-            v-model:value="product.basePrice"
+            v-model:value="product.base_price"
             class="grow-1"
         />
     </div>

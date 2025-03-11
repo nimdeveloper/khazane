@@ -14,7 +14,7 @@
         <div
             v-for="(item, index) of order.goods"
             class="border-2 rounded-2xl border-border-1 my-2"
-            :key="`${index}_${item.product?.key}`"
+            :key="`${index}_${item.product?.id}`"
         >
             <div v-if="item.product">
                 <div class="flex flex-col md:flex-row">
@@ -154,7 +154,7 @@ function addItem(item: ProductUnit) {
 }
 function removeItem(item: ProductUnit) {
     const index = order.value.goods.findIndex(
-        (each) => each.product?.key === item.key
+        (each) => each.product?.id === item.id
     );
     if (index > -1) {
         order.value.goods.splice(index, 1);

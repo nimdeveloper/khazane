@@ -36,7 +36,6 @@ pub struct Order {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OrderProduct {
-    id: RecordId,
     order: Option<Order>,
     quantity: i64,
 }

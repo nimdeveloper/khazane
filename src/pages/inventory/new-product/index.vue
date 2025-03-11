@@ -10,9 +10,9 @@ definePageMeta({ layout: "new-product" });
 const { storage } = useTempProduct();
 
 onBeforeMount(() => {
-    if (!storage.value?.key) {
+    if (!storage.value?.id) {
         const id = random(10);
-        storage.value.key = id;
+        storage.value.id = id;
         navigateTo({
             name: "inventory-new-product-id-public",
             params: { id },
@@ -20,7 +20,7 @@ onBeforeMount(() => {
     } else {
         navigateTo({
             name: "inventory-new-product-id-public",
-            params: { id: storage.value.key },
+            params: { id: storage.value.id },
         });
     }
 });

@@ -4,14 +4,14 @@
             <component
                 v-for="(product, index) of products"
                 :is="view === 'list' ? ProductListItem : ProductGridItem"
-                :key="`product_${product.key}_${index}_list`"
+                :key="`product_${product.id}_${index}_list`"
                 :title="product.title"
-                :basePrice="product.basePrice"
+                :base_price="product.base_price"
                 :inventory="product.inventory"
                 :unit="product.unit"
                 :image="product.image"
                 :category="product.category"
-                :initialInventory="product.initialInventory"
+                :initial_inventory="product.initial_inventory"
             />
             <div
                 class="pt-10 flex flex-col items-center text-center w-full justify-center text-lg"

@@ -123,7 +123,7 @@
                         {{ index + 1 }}
                     </td>
                     <td class="border border-black/60 p-0.5">
-                        {{ item.product?.key }}
+                        {{ item.product?.id }}
                     </td>
                     <td class="border border-black/60 p-0.5">
                         {{ item.product?.code }}
@@ -144,12 +144,12 @@
                         {{ numberToWords(item.quantity) }}
                     </td>
                     <td class="border border-black/60 p-0.5">
-                        {{ addCommas(item.product?.basePrice || 0) }}
+                        {{ addCommas(item.product?.base_price || 0) }}
                     </td>
                     <td class="border border-black/60 p-0.5">
                         {{
                             addCommas(
-                                (item.product?.basePrice || 0) *
+                                (item.product?.base_price || 0) *
                                     (item.quantity || 0)
                             )
                         }}

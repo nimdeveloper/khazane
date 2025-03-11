@@ -5,20 +5,19 @@ mod person;
 mod product;
 mod warehouse;
 
-use std::sync::Mutex;
-
 use argon2::{self, Config};
 use surrealdb::engine::local::RocksDb;
 use surrealdb::Surreal;
+use tauri::async_runtime::Mutex;
 use tauri::Manager;
 
 use crate::app::AppData;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+// #[tauri::command]
+// fn greet(name: &str) -> String {
+//     format!("Hello, {}! You've been greeted from Rust!", name)
+// }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -49,8 +48,9 @@ pub fn run() {
                 tauri::async_runtime::spawn(async move {
                     let data = Surreal::new::<RocksDb>(db_path).await;
                     if let Ok(db) = data {
+                        db.use_ns("khazane").use_db("db").await.unwrap();
                         let state = handle.state::<Mutex<AppData>>();
-                        let mut state = state.lock().unwrap();
+                        let mut state = state.lock().await;
                         state.db = Some(db.to_owned());
                     }
                 });
@@ -58,7 +58,12 @@ pub fn run() {
             // app.manage();
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            product::commands::get_products,
+            product::commands::add_product,
+            product::commands::get_categories,
+            product::commands::add_category,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     // .plugin(

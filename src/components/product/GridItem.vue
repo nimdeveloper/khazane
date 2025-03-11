@@ -49,7 +49,7 @@
                         >
                             قیمت واحد
                         </div>
-                        <div>{{ basePrice }}</div>
+                        <div>{{ base_price }}</div>
                     </div>
                     <div
                         class="h-2/3 w-0.5 bg-secondary/10 dark:bg-dark-secondary/10 mx-1 md:mx-2 my-auto hidden sm:flex lg:hidden"
@@ -60,7 +60,7 @@
                         >
                             موجودی اولیه
                         </div>
-                        <div>{{ initialInventory }}</div>
+                        <div>{{ initial_inventory }}</div>
                     </div>
                 </div>
             </div>
@@ -78,15 +78,23 @@ const defaultImage = "/images/no-photo.jpg";
 
 const variantCount = ref(0);
 const processedImage = ref("");
-const { title, basePrice, inventory, unit, initialInventory, category, image } =
+const {
+    title,
+    base_price,
+    inventory,
+    unit,
+    initial_inventory,
+    category,
+    image,
+} =
     defineProps<
         Pick<
             IProductUnit,
             | "title"
-            | "basePrice"
+            | "base_price"
             | "inventory"
             | "unit"
-            | "initialInventory"
+            | "initial_inventory"
             | "image"
             | "category"
         >

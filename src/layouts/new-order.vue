@@ -233,7 +233,7 @@ function handlePrevious() {
 function saveDraft() {
     storage.value.status = "draft";
     orderStore
-        .addOrder(storage.value, isNaN(Number(storage.value.key)))
+        .addOrder(storage.value, isNaN(Number(storage.value.id)))
         .then(() => {
             storage.value = null;
             navigateTo({
@@ -256,7 +256,7 @@ function handleNext() {
             storage.value.status = "active";
 
             orderStore
-                .addOrder(storage.value, isNaN(Number(storage.value.key)))
+                .addOrder(storage.value, isNaN(Number(storage.value.id)))
                 .then(() => {
                     storage.value = null;
                     navigateTo({

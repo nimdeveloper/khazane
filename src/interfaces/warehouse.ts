@@ -5,7 +5,7 @@ export interface IWareHouse {
         code: string;
     };
     shorthand?: string;
-    key: string;
+    id: string;
 }
 export function instanceOfIWareHouse(object: any): Boolean {
     return object && "shorthand" in object;
@@ -34,27 +34,28 @@ export class WareHouse implements IWareHouse {
         },
     ];
     constructor(
-        public key: string = "",
+        public id: string = "",
         public name: string = "",
         public shorthand: string = "",
         public color: IWareHouse["color"] = undefined
     ) {}
 
     static fromInterface(data: IWareHouse) {
-        return new WareHouse(data.key, data.name, data.shorthand, data.color);
+        (data as any).id = normalizeId((data as any).id);
+        return new WareHouse(data.id, data.name, data.shorthand, data.color);
     }
     public toInterface(): IWareHouse {
         return {
             name: this.name,
             color: this.color,
             shorthand: this.shorthand,
-            key: this.key,
+            id: this.id,
         };
     }
     get label() {
         return this.shorthand ? this.shorthand : this.name;
     }
     get value() {
-        return this.key;
+        return this.id;
     }
 }

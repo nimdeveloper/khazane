@@ -1,17 +1,18 @@
 export interface IPerson {
-    key: string;
+    id: string;
     full_name: string;
 }
 
 export class Person implements IPerson {
-    constructor(public key: string, public full_name: string = "") {}
+    constructor(public id: string, public full_name: string = "") {}
 
     static fromInterface(data: IPerson) {
-        return new this(data.key, data.full_name);
+        (data as any).id = normalizeId((data as any).id);
+        return new this(data.id, data.full_name);
     }
     toInterface(): IPerson {
         return {
-            key: this.key,
+            id: this.id,
             full_name: this.full_name,
         };
     }
@@ -19,7 +20,7 @@ export class Person implements IPerson {
         return this.full_name;
     }
     get value() {
-        return this.key;
+        return this.id;
     }
     get name() {
         return this.full_name;

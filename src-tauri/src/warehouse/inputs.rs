@@ -1,16 +1,14 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::RecordId;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct WarehouseColor {
+pub struct WarehouseColorDto {
     key: String,
     code: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Warehouse {
-    id: RecordId,
+pub struct WarehouseDto {
     name: String,
     shorthand: String,
-    color: Option<WarehouseColor>,
+    color: Option<WarehouseColorDto>,
 }

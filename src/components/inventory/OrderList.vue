@@ -14,7 +14,7 @@
                     handlePrint();
                 "
                 v-for="(order, index) of orders"
-                :key="`product_${order.key}_${index}`"
+                :key="`product_${order.id}_${index}`"
                 :order="order"
             />
             <div

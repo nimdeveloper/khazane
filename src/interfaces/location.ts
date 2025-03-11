@@ -1,17 +1,18 @@
 export interface ILocation {
-    key: string;
+    id: string;
     name: string;
 }
 
 export class Location implements ILocation {
-    constructor(public key: string, public name: string = "") {}
+    constructor(public id: string, public name: string = "") {}
 
     static fromInterface(data: ILocation) {
-        return new this(data.key, data.name);
+        (data as any).id = normalizeId((data as any).id);
+        return new this(data.id, data.name);
     }
     toInterface(): ILocation {
         return {
-            key: this.key,
+            id: this.id,
             name: this.name,
         };
     }
@@ -19,6 +20,6 @@ export class Location implements ILocation {
         return this.name;
     }
     get value() {
-        return this.key;
+        return this.id;
     }
 }

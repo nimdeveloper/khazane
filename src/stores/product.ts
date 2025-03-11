@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import { defineStore } from "pinia";
 import { apiWithTauri } from "~/api/tauri";
 import {
@@ -30,7 +31,7 @@ export const useMyProductStore = defineStore("myProductStore", {
     }),
     getters: {
         filteredProducts: (state) => {
-            const products = [];
+            const products: ProductUnit[] = [];
             for (const item of state.products) {
                 if (
                     state.filters.status !== "all" &&
@@ -40,17 +41,17 @@ export const useMyProductStore = defineStore("myProductStore", {
                 }
                 if (
                     state.filters.category &&
-                    state.filters.category.key &&
-                    item.category?.key !== state.filters.category.key
+                    state.filters.category.id &&
+                    item.category?.id !== state.filters.category.id
                 ) {
                     continue;
                 }
                 if (
                     state.filters.warehouse &&
-                    state.filters.warehouse.key &&
+                    state.filters.warehouse.id &&
                     item.ware_houses.filter(
                         (each) =>
-                            each.warehouse?.key === state.filters.warehouse?.key
+                            each.warehouse?.id === state.filters.warehouse?.id
                     ).length < 1
                 ) {
                     continue;
@@ -89,22 +90,31 @@ export const useMyProductStore = defineStore("myProductStore", {
         },
         async addProduct(product: ProductUnit) {
             if (!this.tauri) return;
-            await this.loadProducts();
-            await apiWithTauri(this.tauri).products.saveProducts([
-                ...this.products,
-                product.toInterface(),
-            ]);
-            this.products.push(product);
+            try {
+                const data = await invoke("add_product", {
+                    product: { ...product, key: null },
+                });
+
+                console.log(data);
+            } catch (e) {
+                console.error(e);
+            }
+            // await this.loadProducts();
+            // await apiWithTauri(this.tauri).products.saveProducts([
+            //     ...this.products,
+            //     product.toInterface(),
+            // ]);
+            // this.products.push(product);
         },
         async addCategory(label: string) {
             if (!this.tauri) return;
-            await this.loadCategories();
             const category = new ProductCategory(random(12), label);
-            await apiWithTauri(this.tauri).products.saveProductCategories([
-                ...this.categories,
-                category.toInterface(),
-            ]);
-            this.categories.push(category);
+            let data = category.toInterface();
+            delete (data as any).key;
+            let created = await apiWithTauri(
+                this.tauri
+            ).products.saveProductCategory(data);
+            this.categories.push(ProductCategory.fromInterface(created));
         },
         async loadCategories() {
             if (!this.tauri) return;

@@ -227,10 +227,10 @@ function handlePrevious() {
 function saveDraft() {
     storage.value.status = "draft";
     productStore.addProduct(storage.value).then(() => {
-        storage.value = null;
-        navigateTo({
-            name: "inventory",
-        });
+        // storage.value = null;
+        // navigateTo({
+        //     name: "inventory",
+        // });
     });
 }
 function handleNext() {
@@ -247,10 +247,10 @@ function handleNext() {
         if (storage.value.valid()) {
             storage.value.status = "active";
             productStore.addProduct(storage.value).then(() => {
-                storage.value = null;
-                navigateTo({
-                    name: "inventory",
-                });
+                // storage.value = null;
+                // navigateTo({
+                //     name: "inventory",
+                // });
             });
         }
     }

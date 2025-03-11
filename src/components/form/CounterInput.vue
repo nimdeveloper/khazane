@@ -12,6 +12,7 @@
                 <IconMinus :size="10" color="currentColor" />
             </button>
             <input
+                autocomplete="false"
                 type="text"
                 aria-describedby="helper-text-explanation"
                 class="bg-transparent border-0 h-full font-medium text-center outline-0 shadow-[none] text-gray-900 text-sm w-full dark:border-gray-600 dark:placeholder-gray-400 dark:text-white relative bottom-1.5"
