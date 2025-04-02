@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OrderRoleDto {
-    name: String,
-    person: Option<PersonDto>,
+    pub name: String,
+    pub person: Option<PersonDto>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -17,23 +17,23 @@ pub enum OrderMixedTargetDto {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OrderDto {
-    order_type: String,
-    description: String,
-    citation_number: String,
-    document_date: String,
-    document_number: String,
-    status: String,
+    pub order_type: String,
+    pub description: String,
+    pub citation_number: String,
+    pub document_date: String,
+    pub document_number: String,
+    pub status: String,
 
-    goods: Vec<OrderProductDto>,
-    delivery: Option<OrderMixedTargetDto>,
-    recipient: Option<OrderMixedTargetDto>,
-    approvers: Vec<OrderRoleDto>,
-    manager: Option<PersonDto>,
-    users: Vec<LocationDto>,
+    pub goods: Vec<OrderProductDto>,
+    pub delivery: Option<OrderMixedTargetDto>,
+    pub recipient: Option<OrderMixedTargetDto>,
+    pub approvers: Vec<OrderRoleDto>,
+    pub manager: Option<PersonDto>,
+    pub users: Vec<LocationDto>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OrderProductDto {
-    order: Option<OrderDto>,
-    quantity: i64,
+    pub order: Option<OrderDto>,
+    pub quantity: i64,
 }

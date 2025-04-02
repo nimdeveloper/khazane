@@ -3,6 +3,6 @@ use surrealdb::RecordId;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Location {
-    id: RecordId,
-    name: String,
+    pub id: RecordId,
+    pub name: String,
 }

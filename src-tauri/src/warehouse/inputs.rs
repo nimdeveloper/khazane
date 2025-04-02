@@ -2,13 +2,13 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WarehouseColorDto {
-    key: String,
-    code: String,
+    pub key: String,
+    pub code: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WarehouseDto {
-    name: String,
-    shorthand: String,
-    color: Option<WarehouseColorDto>,
+    pub name: String,
+    pub shorthand: String,
+    pub color: Option<WarehouseColorDto>,
 }

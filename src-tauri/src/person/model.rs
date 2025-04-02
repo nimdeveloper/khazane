@@ -3,6 +3,6 @@ use surrealdb::RecordId;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Person {
-    id: RecordId,
-    full_name: String,
+    pub id: RecordId,
+    pub full_name: String,
 }

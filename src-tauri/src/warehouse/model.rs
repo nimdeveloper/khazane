@@ -3,14 +3,14 @@ use surrealdb::RecordId;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WarehouseColor {
-    key: String,
-    code: String,
+    pub key: String,
+    pub code: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Warehouse {
-    id: RecordId,
-    name: String,
-    shorthand: String,
-    color: Option<WarehouseColor>,
+    pub id: RecordId,
+    pub name: String,
+    pub shorthand: String,
+    pub color: Option<WarehouseColor>,
 }

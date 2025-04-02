@@ -6,8 +6,8 @@ use surrealdb::RecordId;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OrderRole {
-    name: String,
-    person: Option<Person>,
+    pub name: String,
+    pub person: Option<Person>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -18,26 +18,26 @@ pub enum OrderMixedTarget {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Order {
-    id: RecordId,
-    order_type: String,
-    description: String,
-    citation_number: String,
-    document_date: String,
-    document_number: String,
-    status: String,
+    pub id: RecordId,
+    pub order_type: String,
+    pub description: String,
+    pub citation_number: String,
+    pub document_date: String,
+    pub document_number: String,
+    pub status: String,
 
-    goods: Vec<OrderProduct>,
-    delivery: Option<OrderMixedTarget>,
-    recipient: Option<OrderMixedTarget>,
-    approvers: Vec<OrderRole>,
-    manager: Option<Person>,
-    users: Vec<Location>,
+    pub goods: Vec<OrderProduct>,
+    pub delivery: Option<OrderMixedTarget>,
+    pub recipient: Option<OrderMixedTarget>,
+    pub approvers: Vec<OrderRole>,
+    pub manager: Option<Person>,
+    pub users: Vec<Location>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OrderProduct {
-    order: Option<Order>,
-    quantity: i64,
+    pub order: Option<Order>,
+    pub quantity: i64,
 }
 
 // `type` Change to `order_type`

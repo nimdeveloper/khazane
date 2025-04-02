@@ -1,5 +1,6 @@
 mod app;
 mod commands;
+mod core;
 mod location;
 mod orders;
 mod person;
@@ -74,6 +75,14 @@ pub fn run() {
             product::commands::add_product,
             product::commands::get_categories,
             product::commands::add_category,
+            warehouse::commands::list_warehouses,
+            warehouse::commands::create_warehouse,
+            location::commands::list_locations,
+            location::commands::create_location,
+            person::commands::list_people,
+            person::commands::create_person,
+            orders::commands::list_orders,
+            orders::commands::create_order,
             commands::set_complete,
         ])
         .run(tauri::generate_context!())
