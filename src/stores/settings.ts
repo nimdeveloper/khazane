@@ -1,7 +1,6 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
-export const useMySettingsStore = defineStore({
-  id: 'mySettingsStore',
-  state: () => ({ }),
-  actions: {}
-})
+export const useMySettingsStore = defineStore("mySettingsStore", {
+    state: () => ({}),
+    actions: {},
+});

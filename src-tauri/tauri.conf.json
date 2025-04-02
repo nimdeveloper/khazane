@@ -1,13 +1,14 @@
 {
     "$schema": "https://schema.tauri.app/config/2",
     "productName": "khazane",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "identifier": "com.khazane.app",
     "build": {
         "beforeDevCommand": "yarn dev",
         "beforeBuildCommand": "yarn generate",
         "devUrl": "http://localhost:3000",
-        "frontendDist": "../src/dist"
+        "frontendDist": "../src/dist",
+        "removeUnusedCommands": true
     },
     "app": {
         "windows": [
