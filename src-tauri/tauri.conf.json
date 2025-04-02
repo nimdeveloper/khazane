@@ -12,11 +12,24 @@
     "app": {
         "windows": [
             {
+                "label": "main",
                 "title": "خزانه",
                 "width": 800,
                 "height": 600,
                 "minHeight": 650,
-                "minWidth": 350
+                "minWidth": 350,
+                "center": true,
+                "visible": false
+            },
+            {
+                "width": 300,
+                "height": 400,
+                "decorations": false,
+                "resizable": false,
+                "url": "/splashscreen.html",
+                "label": "splashscreen",
+                "center": true,
+                "closable": false
             }
         ],
         "security": {

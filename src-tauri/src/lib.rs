@@ -1,4 +1,5 @@
 mod app;
+mod commands;
 mod location;
 mod orders;
 mod person;
@@ -6,18 +7,28 @@ mod product;
 mod warehouse;
 
 use argon2::{self, Config};
+
 use surrealdb::engine::local::RocksDb;
 use surrealdb::Surreal;
+
 use tauri::async_runtime::Mutex;
 use tauri::Manager;
 
+use wasm_bindgen::prelude::*;
+
 use crate::app::AppData;
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-// #[tauri::command]
-// fn greet(name: &str) -> String {
-//     format!("Hello, {}! You've been greeted from Rust!", name)
-// }
+#[wasm_bindgen]
+extern "C" {
+    // invoke without arguments
+    #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"], js_name = invoke)]
+    async fn invoke_without_args(cmd: &str) -> JsValue;
+
+    // invoke with arguments (default)
+    #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"])]
+    async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -63,6 +74,7 @@ pub fn run() {
             product::commands::add_product,
             product::commands::get_categories,
             product::commands::add_category,
+            commands::set_complete,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
