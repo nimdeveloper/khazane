@@ -72,14 +72,14 @@
                         class="py-2 px-3 hover:bg-glob-primary hover:dark:bg-dark-glob-primary rounded-xl flex items-center w-full cursor-pointer"
                         :class="{
                             'border border-action-primary dark:border-dark-action-primary':
-                                selected?.value === item.value,
+                                selected?.key === item.key,
                         }"
                         @click.stop.prevent="onItemSelect(item)"
                     >
                         <span v-if="item.prefix">{{ item.prefix }}:&nbsp;</span
                         >{{ item.label }}&nbsp;
                         <IconCheckSquare
-                            v-if="selected?.value === item.value"
+                            v-if="selected?.key === item.key"
                             :size="20"
                             color="currentColor"
                             class="text-action-primary dark:text-dark-action-primary me-1"
@@ -111,7 +111,7 @@ import { onClickOutside } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
 
 interface SelectedType {
-    value: string;
+    key: string;
     prefix?: string;
     label: string;
 }

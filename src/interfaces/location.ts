@@ -1,25 +1,27 @@
+import { ComplexID, type IComplexID } from "./_base";
+
 export interface ILocation {
-    id: string;
+    id: IComplexID | null;
     name: string;
 }
 
 export class Location implements ILocation {
-    constructor(public id: string, public name: string = "") {}
+    constructor(public id: ComplexID, public name: string = "") {}
 
     static fromInterface(data: ILocation) {
-        (data as any).id = normalizeId((data as any).id);
-        return new this(data.id, data.name);
+        // (data as any).id = normalizeId((data as any).id);
+        return new this(ComplexID.fromInterface(data.id), data.name);
     }
     toInterface(): ILocation {
         return {
-            id: this.id,
+            id: this.id.toInterface(),
             name: this.name,
         };
     }
     get label() {
         return this.name;
     }
-    get value() {
-        return this.id;
+    get key() {
+        return this.id.id;
     }
 }

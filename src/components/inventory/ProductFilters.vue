@@ -39,9 +39,9 @@
                             :class="{
                                 'border-action-primary dark:border-dark-action-primary bg-action-secondary dark:bg-dark-action-secondary':
                                     (productStore.filters.status || 'all') ===
-                                    item.value,
+                                    item.key,
                             }"
-                            @click="changeProductTypeFilter(item.value)"
+                            @click="changeProductTypeFilter(item.key)"
                         >
                             <div
                                 class="text-nowrap text-ellipsis overflow-hidden text-sm"
@@ -53,13 +53,13 @@
                                 :class="{
                                     'border-action-primary dark:border-dark-action-primary bg-action-primary/20 dark:bg-dark-action-primary/20 text-action-primary dark:text-dark-action-primary':
                                         (productStore.filters.status ||
-                                            'all') === item.value,
+                                            'all') === item.key,
                                     'bg-secondary/20 dark:bg-dark-secondary/20':
                                         (productStore.filters.status ||
-                                            'all') !== item.value,
+                                            'all') !== item.key,
                                 }"
                             >
-                                {{ productStore.productsCount[item.value] }}
+                                {{ productStore.productsCount[item.key] }}
                             </div>
                         </button>
                     </div>
@@ -120,6 +120,7 @@ import { breakpointsTailwind, onClickOutside } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
 import { ProductCategory, type IProductUnit } from "~/interfaces/product";
 import { WareHouse } from "~/interfaces/warehouse";
+import { ComplexID } from "~/interfaces/_base";
 import { useMyGlobalStore } from "~/stores/global";
 import { useMyProductStore } from "~/stores/product";
 import { useMyWarehouseStore } from "~/stores/warehouse";
@@ -129,8 +130,8 @@ const lgAndLarger = breakpoints.greaterOrEqual("lg");
 
 const globalState = useMyGlobalStore();
 
-const defaultInventory = ref(new WareHouse("", "همه"));
-const defaultCategory = ref(new ProductCategory("", "همه"));
+const defaultInventory = ref(new WareHouse(ComplexID.empty(), "همه"));
+const defaultCategory = ref(new ProductCategory(ComplexID.empty(), "همه"));
 
 const productStore = useMyProductStore();
 const wareHouseStore = useMyWarehouseStore();
@@ -155,14 +156,14 @@ const sortChoices = [
     {
         prefix: "الفبایی",
         label: "آ-ی",
-        value: "alphabetical-des",
+        key: "alphabetical-des",
         sorter: (a: IProductUnit, b: IProductUnit) =>
             -b.title.localeCompare(a.title),
     },
     {
         prefix: "الفبایی",
         label: "ی-آ",
-        value: "alphabetical-asc",
+        key: "alphabetical-asc",
         sorter: (a: IProductUnit, b: IProductUnit) =>
             b.title.localeCompare(a.title),
     },
@@ -178,21 +179,21 @@ const inventoryChoices = computed(() => [
 const productTypeChoices = [
     {
         label: "همه",
-        value: "all",
+        key: "all",
     },
     {
         label: "فعال",
-        value: "active",
+        key: "active",
     },
     {
         label: "غیر فعال",
-        value: "inactive",
+        key: "inactive",
     },
     {
         label: "پیش نویس",
-        value: "draft",
+        key: "draft",
     },
-] as { label: string; value: "all" | "draft" | "inactive" | "active" }[];
+] as { label: string; key: "all" | "draft" | "inactive" | "active" }[];
 
 // Function
 function changeProductTypeFilter(val: string) {

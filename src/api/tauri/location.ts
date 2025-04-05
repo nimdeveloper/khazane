@@ -1,15 +1,29 @@
+import { invoke } from "@tauri-apps/api/core";
 import type { ILocation } from "~/interfaces/location";
-import type { TauriStoreAccessor } from "~/types";
 
-export default ($tauri: TauriStoreAccessor) => {
+export default () => {
     return {
         async getLocations() {
-            let res = await $tauri.get<ILocation[]>("locations");
-            if (!res) return [];
-            return res;
+            try {
+                let data = await invoke<ILocation[]>("list_locations", {
+                    filters: {},
+                });
+                return data;
+            } catch (e) {
+                console.error(e);
+                return [];
+            }
         },
-        async saveLocations(locations: ILocation[]) {
-            return await $tauri.set("locations", locations);
+        async saveLocation(location: ILocation) {
+            try {
+                let data = await invoke<ILocation>("create_location", {
+                    location,
+                });
+                return data;
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
         },
     };
 };

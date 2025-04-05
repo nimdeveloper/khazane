@@ -1,15 +1,29 @@
+import { invoke } from "@tauri-apps/api/core";
 import type { IOrder } from "~/interfaces/order";
-import type { TauriStoreAccessor } from "~/types";
 
-export default ($tauri: TauriStoreAccessor) => {
+export default () => {
     return {
         async getOrders() {
-            let res = await $tauri.get<IOrder[]>("orders");
-            if (!res) return [];
-            return res;
+            try {
+                let data = await invoke<IOrder[]>("list_orders", {
+                    filters: {},
+                });
+                return data;
+            } catch (e) {
+                console.error(e);
+                return [];
+            }
         },
-        async saveOrders(orders: IOrder[]) {
-            return await $tauri.set("orders", orders);
+        async saveOrder(order: IOrder) {
+            try {
+                let data = await invoke<IOrder>("create_order", {
+                    order,
+                });
+                return data;
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
         },
     };
 };

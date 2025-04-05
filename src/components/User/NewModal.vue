@@ -82,6 +82,7 @@
 
 <script lang="ts" setup>
 import type { ModalInterface } from "flowbite";
+import { ComplexID } from "~/interfaces/_base";
 import { Person } from "~/interfaces/person";
 import { useMyPersonStore } from "~/stores/person";
 
@@ -91,7 +92,7 @@ const $modal = ref<ModalInterface | null>(null);
 const personStore = useMyPersonStore();
 
 const animationState = ref<"close" | "open">("close");
-const person = ref(new Person(random(20)));
+const person = ref(new Person(ComplexID.empty()));
 
 watch(
     () => preferredName,
@@ -112,7 +113,7 @@ const submit = () => {
 };
 const onClose = () => {
     if (person.value) {
-        person.value = new Person(random(20));
+        person.value = new Person(ComplexID.empty());
     }
     animationState.value = "close";
 };

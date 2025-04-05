@@ -48,9 +48,7 @@
                         class="py-2 px-3 hover:bg-glob-primary hover:dark:bg-dark-glob-primary bg-glob-secondary dark:bg-dark-glob-secondary rounded-xl flex items-center w-full cursor-pointer my-3"
                         :class="{
                             'border border-action-primary dark:border-dark-action-primary':
-                                selected?.find(
-                                    (each) => each.value === item.value
-                                ),
+                                selected?.find((each) => each.key === item.key),
                         }"
                         @click.stop.prevent="onItemClick(item)"
                     >
@@ -110,8 +108,7 @@
                                     <IconPlus
                                         v-if="
                                             !selected?.find(
-                                                (each) =>
-                                                    each.value === item.value
+                                                (each) => each.key === item.key
                                             )
                                         "
                                         :size="18"
@@ -301,7 +298,7 @@ function addNewItem() {
     emit("add", label);
 }
 function onItemClick(item: ProductUnit) {
-    if (!selected?.find((each) => each.value === item.value)) {
+    if (!selected?.find((each) => each.key === item.key)) {
         onItemSelect(item);
     } else {
         onItemRemove(item);

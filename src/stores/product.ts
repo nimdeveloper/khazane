@@ -1,6 +1,6 @@
-import { invoke } from "@tauri-apps/api/core";
 import { defineStore } from "pinia";
 import { apiWithTauri } from "~/api/tauri";
+import { ComplexID } from "~/interfaces/_base";
 import {
     ProductCategory,
     ProductUnit,
@@ -22,7 +22,7 @@ export const useMyProductStore = defineStore("myProductStore", {
             sort: {
                 prefix: string;
                 label: string;
-                value: string;
+                key: string;
                 sorter: (a: IProductUnit, b: IProductUnit) => number;
             } | null;
             category: ProductCategory | null;
@@ -78,49 +78,45 @@ export const useMyProductStore = defineStore("myProductStore", {
         },
     },
     actions: {
+        // Product
         async loadProducts() {
             if (!this.tauri) return;
-            let products = await apiWithTauri(
-                this.tauri
-            ).products.getProducts();
+            let products = await apiWithTauri().products.getProducts();
             this.products = [];
             for (const each of products) {
                 this.products.push(ProductUnit.fromInterface(each));
             }
         },
         async addProduct(product: ProductUnit) {
-            if (!this.tauri) return;
-            try {
-                const data = await invoke("add_product", {
-                    product: { ...product, key: null },
-                });
-
-                console.log(data);
-            } catch (e) {
-                console.error(e);
+            await this.loadProducts();
+            let new_product = await apiWithTauri().products.saveProduct(
+                product
+            );
+            let instance: ProductUnit | null = null;
+            if (new_product) {
+                instance = ProductUnit.fromInterface(new_product);
+                this.products.push();
             }
-            // await this.loadProducts();
-            // await apiWithTauri(this.tauri).products.saveProducts([
-            //     ...this.products,
-            //     product.toInterface(),
-            // ]);
-            // this.products.push(product);
+            return instance;
         },
+        // Category
         async addCategory(label: string) {
             if (!this.tauri) return;
-            const category = new ProductCategory(random(12), label);
+            const category = new ProductCategory(ComplexID.empty(), label);
             let data = category.toInterface();
             delete (data as any).key;
-            let created = await apiWithTauri(
-                this.tauri
-            ).products.saveProductCategory(data);
-            this.categories.push(ProductCategory.fromInterface(created));
+            let res = await apiWithTauri().products.saveProductCategory(data);
+            let instance: ProductCategory | null = null;
+            if (res) {
+                instance = ProductCategory.fromInterface(res);
+                this.categories.push(instance);
+            }
+            return instance;
         },
         async loadCategories() {
             if (!this.tauri) return;
-            let categories = await apiWithTauri(
-                this.tauri
-            ).products.getProductCategories();
+            let categories =
+                await apiWithTauri().products.getProductCategories();
             this.categories = [];
             for (const each of categories) {
                 this.categories.push(ProductCategory.fromInterface(each));

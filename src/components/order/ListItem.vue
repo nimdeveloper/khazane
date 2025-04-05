@@ -121,7 +121,7 @@ const {
     goods,
     delivery,
     recipient,
-    id: key,
+    key,
     manager,
     type,
     status,

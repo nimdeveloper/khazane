@@ -7,7 +7,7 @@ export const useMyPersonStore = defineStore("myPersonStore", {
     actions: {
         async loadPersons() {
             if (!this.tauri) return;
-            let persons = await apiWithTauri(this.tauri).person.getPersons();
+            let persons = await apiWithTauri().person.getPersons();
             this.persons = [];
             for (const each of persons) {
                 this.persons.push(Person.fromInterface(each));
@@ -17,11 +17,15 @@ export const useMyPersonStore = defineStore("myPersonStore", {
             if (!this.tauri) return;
             await this.loadPersons();
 
-            await apiWithTauri(this.tauri).person.savePersons([
-                ...this.persons,
-                person.toInterface(),
-            ]);
-            this.persons.push(person);
+            let res = await apiWithTauri().person.savePerson(
+                person.toInterface()
+            );
+            let instance: Person | null = null;
+            if (res) {
+                instance = Person.fromInterface(res);
+                this.persons.push(instance);
+            }
+            return instance;
         },
     },
 });

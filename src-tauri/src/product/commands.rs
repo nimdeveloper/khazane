@@ -9,8 +9,8 @@ use crate::{
 };
 
 use super::{
-    inputs::{ProductCategoryDto, ProductDto},
-    model::Product,
+    inputs::{MeasurementUnitDto, ProductCategoryDto, ProductDto},
+    model::{MeasurementUnit, Product},
 };
 
 #[derive(Deserialize, Debug)]
@@ -27,7 +27,7 @@ pub async fn get_categories(
 }
 
 #[tauri::command]
-pub async fn add_category(
+pub async fn create_category(
     state: State<'_, Mutex<AppData>>,
     category: ProductCategoryDto,
 ) -> Result<Option<ProductCategory>, Error> {
@@ -47,11 +47,31 @@ pub async fn get_products(
 }
 
 #[tauri::command]
-pub async fn add_product(
+pub async fn create_product(
     state: State<'_, Mutex<AppData>>,
     product: ProductDto,
 ) -> Result<Option<Product>, Error> {
     let db = repository::get_db(&state).await?;
     let repository = Repository::<Product>::new("product");
     repository.create(&db, product).await
+}
+
+#[tauri::command]
+pub async fn get_measure_units(
+    state: State<'_, Mutex<AppData>>,
+    filters: FilterOptions,
+) -> Result<Vec<MeasurementUnit>, Error> {
+    let db = repository::get_db(&state).await?;
+    let repository = Repository::<MeasurementUnit>::new("measure_unit");
+    repository.find_all(&db).await
+}
+
+#[tauri::command]
+pub async fn create_measure_unit(
+    state: State<'_, Mutex<AppData>>,
+    unit: MeasurementUnitDto,
+) -> Result<Option<MeasurementUnit>, Error> {
+    let db = repository::get_db(&state).await?;
+    let repository = Repository::<MeasurementUnit>::new("measure_unit");
+    repository.create(&db, unit).await
 }

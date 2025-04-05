@@ -6,24 +6,24 @@ export const useMyWarehouseStore = defineStore("myWarehouseStore", {
     state: () => ({ warehouses: [] as WareHouse[] }),
     actions: {
         async loadWareHouses() {
-            if (!this.tauri) return;
-            let warehouses = await apiWithTauri(
-                this.tauri
-            ).warehouse.getWarehouses();
+            let warehouses = await apiWithTauri().warehouse.getWarehouses();
             this.warehouses = [];
             for (const each of warehouses) {
                 this.warehouses.push(WareHouse.fromInterface(each));
             }
         },
         async addWareHouse(wareHouse: WareHouse) {
-            if (!this.tauri) return;
             await this.loadWareHouses();
 
-            await apiWithTauri(this.tauri).warehouse.saveWarehouses([
-                ...this.warehouses,
-                wareHouse.toInterface(),
-            ]);
-            this.warehouses.push(wareHouse);
+            let res = await apiWithTauri().warehouse.saveWareHouse(
+                wareHouse.toInterface()
+            );
+            let instance = null;
+            if (res) {
+                instance = WareHouse.fromInterface(res);
+                this.warehouses.push(instance);
+            }
+            return instance;
         },
     },
 });

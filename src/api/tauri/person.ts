@@ -1,15 +1,29 @@
+import { invoke } from "@tauri-apps/api/core";
 import type { IPerson } from "~/interfaces/person";
-import type { TauriStoreAccessor } from "~/types";
 
-export default ($tauri: TauriStoreAccessor) => {
+export default () => {
     return {
         async getPersons() {
-            let res = await $tauri.get<IPerson[]>("persons");
-            if (!res) return [];
-            return res;
+            try {
+                let data = await invoke<IPerson[]>("list_people", {
+                    filters: {},
+                });
+                return data;
+            } catch (e) {
+                console.error(e);
+                return [];
+            }
         },
-        async savePersons(persons: IPerson[]) {
-            return await $tauri.set("persons", persons);
+        async savePerson(person: IPerson) {
+            try {
+                let data = await invoke<IPerson>("create_person", {
+                    person,
+                });
+                return data;
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
         },
     };
 };

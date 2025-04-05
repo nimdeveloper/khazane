@@ -1,10 +1,11 @@
 import { useStorage } from "@vueuse/core";
+import { ComplexID } from "~/interfaces/_base";
 import { Order } from "~/interfaces/order";
 
 export const useTempOrder = () => {
     const storage = useStorage(
         "new-order-temp-item",
-        new Order(""),
+        new Order(ComplexID.empty()),
         sessionStorage,
         {
             serializer: {

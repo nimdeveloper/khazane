@@ -42,7 +42,7 @@ export const useMyOrderStore = defineStore("Order", {
     actions: {
         async loadOrders() {
             if (!this.tauri) return;
-            let orders = await apiWithTauri(this.tauri).order.getOrders();
+            let orders = await apiWithTauri().order.getOrders();
             this.orders = [];
             for (const each of orders) {
                 this.orders.push(Order.fromInterface(each));
@@ -58,11 +58,13 @@ export const useMyOrderStore = defineStore("Order", {
                     (each) => Number(each.id) !== Number(order.id)
                 );
             }
-            await apiWithTauri(this.tauri).order.saveOrders([
-                ...this.orders,
-                order.toInterface(),
-            ]);
-            this.orders.push(order);
+            let res = await apiWithTauri().order.saveOrder(order.toInterface());
+            let instance: Order | null = null;
+            if (res) {
+                instance = Order.fromInterface(res);
+                this.orders.push(instance);
+            }
+            return instance;
         },
     },
 });

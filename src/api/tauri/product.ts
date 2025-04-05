@@ -1,9 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { IMeasurementUnit } from "~/interfaces/measurement-unit";
 import type { IProductCategory, IProductUnit } from "~/interfaces/product";
-import type { TauriStoreAccessor } from "~/types";
 
-export default ($tauri: TauriStoreAccessor) => {
+export default () => {
     return {
         async getProducts() {
             try {
@@ -16,16 +15,44 @@ export default ($tauri: TauriStoreAccessor) => {
                 return [];
             }
         },
-        async saveProducts(products: IProductUnit[]) {
-            return await $tauri.set("products", products);
+        async saveProduct(product: IProductUnit) {
+            try {
+                let data = await invoke<IProductUnit>("create_product", {
+                    product,
+                });
+                return data;
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
         },
         async getMeasurementUnits() {
-            let res = await $tauri.get<IMeasurementUnit[]>("measure_units");
-            if (!res) return [];
-            return res;
+            try {
+                let data = await invoke<IMeasurementUnit[]>(
+                    "get_measure_units",
+                    {
+                        filters: {},
+                    }
+                );
+                return data;
+            } catch (e) {
+                console.error(e);
+                return [];
+            }
         },
-        async saveMeasurementUnits(units: IMeasurementUnit[]) {
-            return await $tauri.set("measure_units", units);
+        async saveMeasurementUnit(unit: IMeasurementUnit) {
+            try {
+                let data = await invoke<IMeasurementUnit>(
+                    "create_measure_unit",
+                    {
+                        unit,
+                    }
+                );
+                return data;
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
         },
         async getProductCategories() {
             try {
@@ -40,10 +67,13 @@ export default ($tauri: TauriStoreAccessor) => {
         },
         async saveProductCategory(category: Omit<IProductCategory, "key">) {
             try {
-                let data: any = await invoke<IProductCategory>("add_category", {
-                    category: category,
-                });
-                data.id = normalizeId(data.id);
+                let data: any = await invoke<IProductCategory>(
+                    "create_category",
+                    {
+                        category: category,
+                    }
+                );
+                // data.id = normalizeId(data.id);
                 return data;
             } catch (e) {
                 console.error(e);

@@ -5,22 +5,24 @@
 </template>
 
 <script lang="ts" setup>
+import { ComplexID } from "~/interfaces/_base";
+
 definePageMeta({ layout: "new-product" });
 
 const { storage } = useTempProduct();
 
 onBeforeMount(() => {
     if (!storage.value?.id) {
-        const id = random(10);
+        const id = ComplexID.empty();
         storage.value.id = id;
         navigateTo({
             name: "inventory-new-product-id-public",
-            params: { id },
+            params: { id: id.id },
         });
     } else {
         navigateTo({
             name: "inventory-new-product-id-public",
-            params: { id: storage.value.id },
+            params: { id: storage.value.id.id },
         });
     }
 });

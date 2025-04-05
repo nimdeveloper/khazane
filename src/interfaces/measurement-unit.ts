@@ -1,23 +1,28 @@
+import { ComplexID, type IComplexID } from "./_base";
+
 export interface IMeasurementUnit {
-    id: string;
+    id: IComplexID | null;
     title: string;
 }
 export class MeasurementUnit implements IMeasurementUnit {
-    constructor(public id: string, public title: string) {}
+    constructor(public id: ComplexID, public title: string) {}
     static fromInterface(data: IMeasurementUnit) {
-        (data as any).id = normalizeId((data as any).id);
-        return new MeasurementUnit(data.id, data.title);
+        // (data as any).id = normalizeId((data as any).id);
+        return new MeasurementUnit(
+            ComplexID.fromInterface(data.id),
+            data.title
+        );
     }
     toInterface(): IMeasurementUnit {
         return {
-            id: this.id,
+            id: this.id.toInterface(),
             title: this.title,
         };
     }
     get label() {
         return this.title;
     }
-    get value() {
-        return this.id;
+    get key() {
+        return this.id.id;
     }
 }

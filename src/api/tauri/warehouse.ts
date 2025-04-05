@@ -1,15 +1,29 @@
+import { invoke } from "@tauri-apps/api/core";
 import type { IWareHouse } from "~/interfaces/warehouse";
-import type { TauriStoreAccessor } from "~/types";
 
-export default ($tauri: TauriStoreAccessor) => {
+export default () => {
     return {
         async getWarehouses() {
-            let res = await $tauri.get<IWareHouse[]>("warehouses");
-            if (!res) return [];
-            return res;
+            try {
+                let data = await invoke<IWareHouse[]>("list_warehouses", {
+                    filters: {},
+                });
+                return data;
+            } catch (e) {
+                console.error(e);
+                return [];
+            }
         },
-        async saveWarehouses(products: IWareHouse[]) {
-            return await $tauri.set("warehouses", products);
+        async saveWareHouse(warehouse: IWareHouse) {
+            try {
+                let data = await invoke<IWareHouse>("create_warehouse", {
+                    warehouse,
+                });
+                return data;
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
         },
     };
 };

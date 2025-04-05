@@ -7,9 +7,7 @@ export const useMeasureStore = defineStore("Measure", {
     actions: {
         async loadUnits() {
             if (!this.tauri) return;
-            let units = await apiWithTauri(
-                this.tauri
-            ).products.getMeasurementUnits();
+            let units = await apiWithTauri().products.getMeasurementUnits();
             this.units = [];
             for (const each of units) {
                 this.units.push(MeasurementUnit.fromInterface(each));
@@ -19,12 +17,15 @@ export const useMeasureStore = defineStore("Measure", {
             if (!(unit instanceof MeasurementUnit)) {
                 unit = new MeasurementUnit(random(12), unit);
             }
-            if (!this.tauri) return;
-            await this.loadUnits();
-            await apiWithTauri(this.tauri).products.saveMeasurementUnits([
-                ...this.units,
-                unit.toInterface(),
-            ]);
+            let res = await apiWithTauri().products.saveMeasurementUnit(
+                unit.toInterface()
+            );
+            let instance: MeasurementUnit | null = null;
+            if (res) {
+                instance = MeasurementUnit.fromInterface(res);
+                this.units.push(instance);
+            }
+            return instance;
         },
     },
 });
