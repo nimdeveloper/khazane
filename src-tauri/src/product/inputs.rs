@@ -1,35 +1,38 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use surrealdb::Datetime;
 
 use crate::warehouse::inputs::WarehouseDto;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ProductCategoryDto {
-    label: String,
+    pub id: Option<String>,
+    pub label: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ProductWarehouseDto {
-    quantity: i64,
-    warehouse: Option<WarehouseDto>,
+    pub quantity: i64,
+    pub warehouse: Option<WarehouseDto>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MeasurementUnitDto {
-    title: String,
+    pub id: Option<String>,
+    pub title: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProductDto {
-    title: String,
-    code: String,
-    unit: Option<MeasurementUnitDto>,
-    base_price: i64,
-    inventory: i64,
-    initial_inventory: i64,
-    status: String,
-    image: String,
-    updated_at: Option<Datetime>,
-    ware_houses: Vec<ProductWarehouseDto>,
-    category: Option<ProductCategoryDto>,
+    pub id: Option<String>,
+    pub title: String,
+    pub code: String,
+    pub unit: Option<MeasurementUnitDto>,
+    pub base_price: i64,
+    pub inventory: i64,
+    pub initial_inventory: i64,
+    pub status: String,
+    pub image: String,
+    pub updated_at: Option<DateTime<Utc>>,
+    pub ware_houses: Vec<ProductWarehouseDto>,
+    pub category: Option<ProductCategoryDto>,
 }

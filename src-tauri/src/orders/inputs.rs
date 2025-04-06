@@ -17,6 +17,7 @@ pub enum OrderMixedTargetDto {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OrderDto {
+    pub id: Option<String>,
     pub order_type: String,
     pub description: String,
     pub citation_number: String,

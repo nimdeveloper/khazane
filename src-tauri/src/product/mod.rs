@@ -1,3 +1,4 @@
 pub mod commands;
-mod inputs;
+pub mod inputs;
+pub mod migration;
 pub mod model;

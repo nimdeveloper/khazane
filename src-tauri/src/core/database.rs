@@ -1,114 +1,104 @@
-use crate::app::AppData;
+use super::error::{Error, ErrorSource, Result};
+use duckdb::Connection;
+use std::collections::HashMap;
 use std::path::PathBuf;
-use surrealdb::{engine::local::Db, Error, Surreal};
-use tauri::{async_runtime::Mutex, Manager, Runtime};
+use std::sync::{Arc, LazyLock, Mutex};
+use tauri::{AppHandle, Manager};
 
-#[cfg(any(target_os = "android", target_os = "ios"))]
-use surrealdb::engine::local::Mem;
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use surrealdb::engine::local::RocksDb;
+// Global connection pool
+type ConnectionPool = HashMap<String, Arc<Mutex<Connection>>>;
+static CONNECTION_POOL: LazyLock<Mutex<ConnectionPool>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
 
 /// Get the appropriate database directory based on platform
-fn get_db_path<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<PathBuf, Error> {
-    let app_data_dir = app.path().app_data_dir().map_err(|_| {
-        Error::Api(surrealdb::error::Api::Query(
-            "Failed to get app data directory".to_string(),
-        ))
+pub fn get_db_path(app: &AppHandle, db_name: &str) -> Result<PathBuf> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| Error {
+        source: ErrorSource::DatabaseInitialize,
+        message: format!("Failed to get app data directory: {}", e),
+        cause: None,
     })?;
 
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    {
-        // Desktop platform - store in app data directory
-        Ok(app_data_dir.join("db"))
-    }
-
-    #[cfg(any(target_os = "android", target_os = "ios"))]
-    {
-        // Mobile platform - store in app cache directory for better management
-        let cache_dir = app.path().app_cache_dir().map_err(|_| {
-            Error::Api(surrealdb::error::Api::Query(
-                "Failed to get app cache directory".to_string(),
-            ))
-        })?;
-
-        Ok(cache_dir.join("db_cache"))
-    }
+    // Desktop platform - store in app data directory
+    Ok(app_data_dir.join(db_name))
 }
 
-/// Initialize the database based on the platform
-pub async fn initialize_db<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<(), Error> {
-    let db_path = get_db_path(app)?;
+/// Get a connection from the pool, or create one if it doesn't exist
+pub fn get_connection(db_path: &str) -> Result<Connection> {
+    let pool = CONNECTION_POOL.lock().unwrap();
 
-    // Create directory if it doesn't exist
-    if let Some(parent) = db_path.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| {
-            Error::Api(surrealdb::error::Api::Query(format!(
-                "Failed to create database directory: {}",
-                e
-            )))
-        })?;
-    }
-
-    let handle = app.clone();
-
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
-    {
-        // Desktop platform - use RocksDB
-        let db_path_str = db_path.to_string_lossy().to_string();
-        tauri::async_runtime::spawn(async move {
-            match Surreal::new::<RocksDb>(&db_path_str).await {
-                Ok(db) => {
-                    if let Err(e) = db.use_ns("khazane").use_db("db").await {
-                        eprintln!("Failed to use namespace and database: {}", e);
-                        return;
-                    }
-
-                    let state = handle.state::<Mutex<AppData>>();
-                    let mut state = state.lock().await;
-                    state.db = Some(db);
-                    println!("Desktop database initialized successfully");
-                }
-                Err(e) => {
-                    eprintln!("Failed to initialize desktop database: {}", e);
-                }
-            }
-        });
-    }
-
-    #[cfg(any(target_os = "android", target_os = "ios"))]
-    {
-        // Mobile platform - use in-memory database for performance
-        tauri::async_runtime::spawn(async move {
-            match Surreal::new::<Mem>(()).await {
-                Ok(db) => {
-                    if let Err(e) = db.use_ns("khazane").use_db("db").await {
-                        eprintln!("Failed to use namespace and database: {}", e);
-                        return;
-                    }
-
-                    let state = handle.state::<Mutex<AppData>>();
-                    let mut state = state.lock().await;
-                    state.db = Some(db);
-                    println!("Mobile database initialized successfully");
-                }
-                Err(e) => {
-                    eprintln!("Failed to initialize mobile database: {}", e);
-                }
-            }
-        });
-    }
-
-    Ok(())
-}
-
-/// Get the database connection from the application state
-pub async fn get_db(state: &Mutex<AppData>) -> Result<Surreal<Db>, Error> {
-    let app_data = state.lock().await;
-    if let Some(db) = &app_data.db {
-        Ok(db.clone())
+    if let Some(conn) = pool.get(db_path) {
+        // Return a clone of the connection
+        conn.lock().unwrap().try_clone().map_err(Error::from)
     } else {
-        Err(Error::Api(surrealdb::error::Api::Query(
-            "Database not initialized".to_string(),
-        )))
+        // Connection not found, create a new one
+        drop(pool); // Release the lock
+        create_connection(db_path)
     }
+}
+
+/// Create a new connection and add it to the pool
+pub fn create_connection(db_path: &str) -> Result<Connection> {
+    // Create parent directory if it doesn't exist
+    let path = PathBuf::from(db_path);
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
+    // Create a new connection
+    let conn = Connection::open(db_path)?;
+
+    // Configure the connection
+    conn.execute_batch(
+        "
+        PRAGMA enable_progress_bar=false;
+        PRAGMA enable_profiling=no_output;
+        PRAGMA threads=4;
+        ",
+    )?;
+
+    // Clone the connection for the return value
+    let return_conn = conn.try_clone()?;
+
+    // Add the connection to the pool
+    let mut pool = CONNECTION_POOL.lock().unwrap();
+    pool.insert(db_path.to_string(), Arc::new(Mutex::new(conn)));
+
+    println!("Database connection created and added to pool: {}", db_path);
+    Ok(return_conn)
+}
+
+/// Initialize the database
+pub async fn initialize_db(app: &AppHandle, db_name: &str) -> Result<String> {
+    let db_path = get_db_path(app, db_name)?;
+    let db_path_str = db_path.to_string_lossy().to_string();
+
+    // Create a connection and add it to the pool
+    create_connection(&db_path_str)?;
+
+    println!("Database initialized successfully at {}", db_path_str);
+    Ok(db_path_str)
+}
+
+/// Simple function to check if a table exists
+pub fn table_exists(conn: &Connection, table_name: &str) -> Result<bool> {
+    let query = format!(
+        "SELECT count(*) FROM information_schema.tables WHERE table_name = '{}'",
+        table_name
+    );
+
+    let mut stmt = conn.prepare(&query)?;
+    let mut rows = stmt.query([])?;
+
+    if let Some(row) = rows.next()? {
+        let count: i64 = row.get(0)?;
+        Ok(count > 0)
+    } else {
+        Ok(false)
+    }
+}
+
+/// Execute a SQL statement that doesn't return results
+pub fn execute(conn: &Connection, sql: &str) -> Result<()> {
+    conn.execute_batch(sql)?;
+    Ok(())
 }

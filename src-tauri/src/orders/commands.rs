@@ -1,5 +1,5 @@
+use crate::core::error::Result;
 use serde::Deserialize;
-use surrealdb::Error;
 use tauri::{async_runtime::Mutex, State};
 
 use crate::{
@@ -15,19 +15,14 @@ pub struct FilterOptions {}
 #[tauri::command]
 pub async fn list_orders(
     state: State<'_, Mutex<AppData>>,
-    filters: FilterOptions,
-) -> Result<Vec<Order>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<Order>::new("order");
-    repository.find_all(&db).await
+    _filters: FilterOptions,
+) -> Result<Vec<Order>> {
+    let repo = repository::get_repository::<Order>(&state).await?;
+    repo.find_all().await
 }
 
 #[tauri::command]
-pub async fn create_order(
-    state: State<'_, Mutex<AppData>>,
-    order: OrderDto,
-) -> Result<Option<Order>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<Order>::new("order");
-    repository.create(&db, order).await
+pub async fn create_order(state: State<'_, Mutex<AppData>>, order: OrderDto) -> Result<Order> {
+    let repo = repository::get_repository::<Order>(&state).await?;
+    repo.create(order).await
 }

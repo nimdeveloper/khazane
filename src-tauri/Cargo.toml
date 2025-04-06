@@ -27,11 +27,16 @@ tauri-plugin-sql = { version = "2", features = ["postgres"] }
 tauri-plugin-store = "2"
 tauri-plugin-stronghold = "2"
 rust-argon2 = "2.1.0"
-surrealdb = { version = "2.2.1", features = ["kv-mem", "kv-rocksdb"] }
 tokio = "1.44.1"
 wasm-bindgen = "0.2.100"
 wasm-bindgen-futures = "0.4.50"
 thiserror = "2.0.12"
+duckdb = { version = "1.2.1", features = ["bundled"] }
+chrono = { version = "0.4.40", features = ["serde"] }
+uuid = { version = "1.16.0", features = ["serde", "v4"] }
+async-trait = "0.1.88"
+# once_cell = "1.19.0"
+# futures = "0.3.29"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"

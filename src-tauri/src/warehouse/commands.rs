@@ -1,10 +1,12 @@
 use serde::Deserialize;
-use surrealdb::Error;
 use tauri::{async_runtime::Mutex, State};
 
 use crate::{
     app::AppData,
-    core::repository::{self, Repository},
+    core::{
+        error::Result,
+        repository::{self, Repository},
+    },
 };
 
 use super::{inputs::WarehouseDto, model::Warehouse};
@@ -15,19 +17,17 @@ pub struct FilterOptions {}
 #[tauri::command]
 pub async fn list_warehouses(
     state: State<'_, Mutex<AppData>>,
-    filters: FilterOptions,
-) -> Result<Vec<Warehouse>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<Warehouse>::new("warehouse");
-    repository.find_all(&db).await
+    _filters: FilterOptions,
+) -> Result<Vec<Warehouse>> {
+    let repo = repository::get_repository::<Warehouse>(&state).await?;
+    repo.find_all().await
 }
 
 #[tauri::command]
 pub async fn create_warehouse(
     state: State<'_, Mutex<AppData>>,
     warehouse: WarehouseDto,
-) -> Result<Option<Warehouse>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<Warehouse>::new("warehouse");
-    repository.create(&db, warehouse).await
+) -> Result<Warehouse> {
+    let repo = repository::get_repository::<Warehouse>(&state).await?;
+    repo.create(warehouse).await
 }

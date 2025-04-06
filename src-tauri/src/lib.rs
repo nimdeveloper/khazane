@@ -15,7 +15,7 @@ use tauri::Manager;
 use wasm_bindgen::prelude::*;
 
 use crate::app::AppData;
-use crate::core::database;
+use tauri::async_runtime;
 
 /// WASM bindings for Tauri invoke
 #[wasm_bindgen]
@@ -29,8 +29,34 @@ extern "C" {
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
 }
 
-/// Main entry point for the application
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub async fn init(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize the database
+    let db_name = "khazane.db";
+
+    // Initialize the database with the default db name
+    match core::database::initialize_db(app, db_name).await {
+        Ok(db_path) => {
+            // Store the path in app state
+            let state = app.state::<async_runtime::Mutex<AppData>>();
+            let mut app_data = state.lock().await;
+            app_data.db_path = Some(db_path.clone());
+
+            // Run migrations
+            if let Err(e) = core::migration::run_migrations(&state).await {
+                eprintln!("Error running migrations: {}", e);
+                return Err(Box::new(e));
+            }
+
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("Failed to initialize database: {}", e);
+            Err(Box::new(e))
+        }
+    }
+}
+
+/// Main application entry point
 pub fn run() {
     let salt = b"somesalt";
 
@@ -52,11 +78,11 @@ pub fn run() {
             // Initialize app state
             app.manage(Mutex::new(AppData::default()));
 
-            // Initialize database based on platform
-            let app_clone: tauri::AppHandle = app.handle().clone();
+            // Use a non-blocking task to init database and migrations
+            let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
-                if let Err(e) = database::initialize_db(&app_clone).await {
-                    eprintln!("Failed to initialize database: {}", e);
+                if let Err(e) = init(&app_handle).await {
+                    eprintln!("Initialization error: {}", e);
                 }
             });
 
@@ -66,9 +92,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             // Product commands
             product::commands::get_products,
-            product::commands::create_product,
+            product::commands::add_product,
             product::commands::get_categories,
-            product::commands::create_category,
+            product::commands::add_category,
             product::commands::get_measure_units,
             product::commands::create_measure_unit,
             // Warehouse commands
@@ -85,6 +111,9 @@ pub fn run() {
             orders::commands::create_order,
             // Other commands
             commands::set_complete,
+            commands::check_migrations,
+            commands::initialize_database,
+            commands::test_connection_pool,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

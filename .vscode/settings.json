@@ -19,7 +19,14 @@
         "editor.formatOnSave": true,
         "editor.formatOnPaste": true
     },
-    "cSpell.words": ["Tauri", "unlisten", "vueuse"],
+    "cSpell.words": [
+        "flowbite",
+        "Nuxt",
+        "Simplebar",
+        "Tauri",
+        "unlisten",
+        "vueuse"
+    ],
     "prettier.tabWidth": 4,
     "typescript.tsdk": "node_modules\\typescript\\lib",
     "files.associations": {

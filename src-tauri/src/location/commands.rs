@@ -1,10 +1,12 @@
 use serde::Deserialize;
-use surrealdb::Error;
 use tauri::{async_runtime::Mutex, State};
 
 use crate::{
     app::AppData,
-    core::repository::{self, Repository},
+    core::{
+        error::Result,
+        repository::{self, Repository},
+    },
 };
 
 use super::{inputs::LocationDto, model::Location};
@@ -15,19 +17,17 @@ pub struct FilterOptions {}
 #[tauri::command]
 pub async fn list_locations(
     state: State<'_, Mutex<AppData>>,
-    filters: FilterOptions,
-) -> Result<Vec<Location>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<Location>::new("location");
-    repository.find_all(&db).await
+    _filters: FilterOptions,
+) -> Result<Vec<Location>> {
+    let repo = repository::get_repository::<Location>(&state).await?;
+    repo.find_all().await
 }
 
 #[tauri::command]
 pub async fn create_location(
     state: State<'_, Mutex<AppData>>,
     location: LocationDto,
-) -> Result<Option<Location>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<Location>::new("location");
-    repository.create(&db, location).await
+) -> Result<Location> {
+    let repo = repository::get_repository::<Location>(&state).await?;
+    repo.create(location).await
 }

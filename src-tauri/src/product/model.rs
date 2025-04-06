@@ -1,39 +1,71 @@
-use serde::{Deserialize, Serialize};
-use surrealdb::{sql::Datetime, RecordId};
-
+use crate::core::repository::Model;
 use crate::warehouse::model::Warehouse;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ProductCategory {
-    id: RecordId,
+    pub id: String,
     pub label: String,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
+}
+
+impl Model for ProductCategory {
+    fn get_id(&self) -> String {
+        self.id.clone()
+    }
+
+    fn get_table_name() -> &'static str {
+        "category"
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ProductWarehouse {
-    quantity: i64,
-    warehouse: Option<Warehouse>,
+    pub quantity: i64,
+    pub warehouse: Option<Warehouse>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MeasurementUnit {
-    id: RecordId,
-    title: String,
+    pub id: String,
+    pub title: String,
+}
+
+impl Model for MeasurementUnit {
+    fn get_id(&self) -> String {
+        self.id.clone()
+    }
+
+    fn get_table_name() -> &'static str {
+        "measure_unit"
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Product {
-    id: RecordId,
-    title: String,
-    code: String,
-    unit: Option<MeasurementUnit>,
-    base_price: i64,
-    inventory: i64,
-    initial_inventory: i64,
-    status: String,
-    image: String,
-    created_at: Datetime,
-    updated_at: Datetime,
-    ware_houses: Vec<ProductWarehouse>,
-    category: Option<ProductCategory>,
+    pub id: String,
+    pub title: String,
+    pub code: String,
+    pub unit: Option<MeasurementUnit>,
+    pub base_price: i64,
+    pub inventory: i64,
+    pub initial_inventory: i64,
+    pub status: String,
+    pub image: String,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
+    pub ware_houses: Vec<ProductWarehouse>,
+    pub category: Option<ProductCategory>,
+}
+
+impl Model for Product {
+    fn get_id(&self) -> String {
+        self.id.clone()
+    }
+
+    fn get_table_name() -> &'static str {
+        "product"
+    }
 }

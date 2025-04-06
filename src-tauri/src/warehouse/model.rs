@@ -1,5 +1,6 @@
+use crate::core::repository::Model;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use surrealdb::RecordId;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WarehouseColor {
@@ -9,8 +10,20 @@ pub struct WarehouseColor {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Warehouse {
-    pub id: RecordId,
+    pub id: String,
     pub name: String,
     pub shorthand: String,
     pub color: Option<WarehouseColor>,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
+}
+
+impl Model for Warehouse {
+    fn get_id(&self) -> String {
+        self.id.clone()
+    }
+
+    fn get_table_name() -> &'static str {
+        "warehouse"
+    }
 }

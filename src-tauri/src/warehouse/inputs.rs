@@ -8,6 +8,7 @@ pub struct WarehouseColorDto {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WarehouseDto {
+    pub id: Option<String>,
     pub name: String,
     pub shorthand: String,
     pub color: Option<WarehouseColorDto>,

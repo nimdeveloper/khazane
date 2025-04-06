@@ -1,16 +1,15 @@
+use crate::core::error::Result;
 use serde::Deserialize;
-use surrealdb::Error;
 use tauri::{async_runtime::Mutex, State};
 
 use crate::{
     app::AppData,
     core::repository::{self, Repository},
-    product::model::ProductCategory,
 };
 
 use super::{
     inputs::{MeasurementUnitDto, ProductCategoryDto, ProductDto},
-    model::{MeasurementUnit, Product},
+    model::{MeasurementUnit, Product, ProductCategory},
 };
 
 #[derive(Deserialize, Debug)]
@@ -19,59 +18,50 @@ pub struct FilterOptions {}
 #[tauri::command]
 pub async fn get_categories(
     state: State<'_, Mutex<AppData>>,
-    filters: FilterOptions,
-) -> Result<Vec<ProductCategory>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<ProductCategory>::new("category");
-    repository.find_all(&db).await
+    _filters: FilterOptions,
+) -> Result<Vec<ProductCategory>> {
+    let repo = repository::get_repository::<ProductCategory>(&state).await?;
+    repo.find_all().await
 }
 
 #[tauri::command]
-pub async fn create_category(
+pub async fn add_category(
     state: State<'_, Mutex<AppData>>,
     category: ProductCategoryDto,
-) -> Result<Option<ProductCategory>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<ProductCategory>::new("category");
-    repository.create(&db, category).await
+) -> Result<ProductCategory> {
+    let repo = repository::get_repository::<ProductCategory>(&state).await?;
+    repo.create(category).await
 }
 
 #[tauri::command]
 pub async fn get_products(
     state: State<'_, Mutex<AppData>>,
-    filters: FilterOptions,
-) -> Result<Vec<Product>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<Product>::new("product");
-    repository.find_all(&db).await
+    _filters: FilterOptions,
+) -> Result<Vec<Product>> {
+    let repo = repository::get_repository::<Product>(&state).await?;
+    repo.find_all().await
 }
 
 #[tauri::command]
-pub async fn create_product(
-    state: State<'_, Mutex<AppData>>,
-    product: ProductDto,
-) -> Result<Option<Product>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<Product>::new("product");
-    repository.create(&db, product).await
+pub async fn add_product(state: State<'_, Mutex<AppData>>, product: ProductDto) -> Result<Product> {
+    let repo = repository::get_repository::<Product>(&state).await?;
+    repo.create(product).await
 }
 
 #[tauri::command]
 pub async fn get_measure_units(
     state: State<'_, Mutex<AppData>>,
-    filters: FilterOptions,
-) -> Result<Vec<MeasurementUnit>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<MeasurementUnit>::new("measure_unit");
-    repository.find_all(&db).await
+    _filters: FilterOptions,
+) -> Result<Vec<MeasurementUnit>> {
+    let repo = repository::get_repository::<MeasurementUnit>(&state).await?;
+    repo.find_all().await
 }
 
 #[tauri::command]
 pub async fn create_measure_unit(
     state: State<'_, Mutex<AppData>>,
     unit: MeasurementUnitDto,
-) -> Result<Option<MeasurementUnit>, Error> {
-    let db = repository::get_db(&state).await?;
-    let repository = Repository::<MeasurementUnit>::new("measure_unit");
-    repository.create(&db, unit).await
+) -> Result<MeasurementUnit> {
+    let repo = repository::get_repository::<MeasurementUnit>(&state).await?;
+    repo.create(unit).await
 }
