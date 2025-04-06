@@ -29,6 +29,18 @@ extern "C" {
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
 }
 
+// Initialize all migrations from each module
+async fn init_migrations() {
+    // Register migrations from each module
+    product::migration::register_migrations().await;
+    warehouse::migration::register_migrations().await;
+    location::migration::register_migrations().await;
+    person::migration::register_migrations().await;
+    orders::migration::register_migrations().await;
+
+    println!("All migrations registered successfully");
+}
+
 pub async fn init(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     // Initialize the database
     let db_name = "khazane.db";
@@ -40,6 +52,9 @@ pub async fn init(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
             let state = app.state::<async_runtime::Mutex<AppData>>();
             let mut app_data = state.lock().await;
             app_data.db_path = Some(db_path.clone());
+
+            // Register all migrations
+            init_migrations().await;
 
             // Run migrations
             if let Err(e) = core::migration::run_migrations(&state).await {
