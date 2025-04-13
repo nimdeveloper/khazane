@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
 use duckdb::params;
 use duckdb::Connection;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -21,8 +20,8 @@ pub trait Model: Serialize + DeserializeOwned + Send + Sync {
 /// Timestamps for models
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Timestamps {
-    pub created_at: Option<DateTime<Utc>>,
-    pub updated_at: Option<DateTime<Utc>>,
+    pub created_at: Option<chrono::NaiveDateTime>,
+    pub updated_at: Option<chrono::NaiveDateTime>,
 }
 
 /// Repository trait for database operations

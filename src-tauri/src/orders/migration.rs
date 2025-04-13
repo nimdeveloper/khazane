@@ -2,42 +2,11 @@ use crate::register_migration;
 
 // Register all migrations for orders service
 pub async fn register_migrations() {
-    // Migration 1: Create order_role sequence
-    register_migration!(
-        "orders",
-        "Create order_role sequence",
-        1,
-        r#"
-        CREATE SEQUENCE order_role_id_seq START WITH 1 INCREMENT BY 1;
-        "#,
-        "DROP SEQUENCE IF EXISTS order_role_id_seq"
-    )
-    .await;
-
-    // Migration 2: Create order_role table
-    register_migration!(
-        "orders",
-        "Create order_role table",
-        2,
-        r#"
-        CREATE TABLE order_role (
-            id INTEGER PRIMARY KEY DEFAULT nextval('order_role_id_seq'),
-            name TEXT NOT NULL,
-            person_id INTEGER,
-            created_at TIMESTAMP,
-            updated_at TIMESTAMP,
-            FOREIGN KEY (person_id) REFERENCES person(id)
-        )
-        "#,
-        "DROP TABLE IF EXISTS order_role"
-    )
-    .await;
-
     // Migration 3: Create order sequence
     register_migration!(
         "orders",
         "Create order sequence",
-        3,
+        1,
         r#"
         CREATE SEQUENCE order_id_seq START WITH 1 INCREMENT BY 1;
         "#,
@@ -49,7 +18,7 @@ pub async fn register_migrations() {
     register_migration!(
         "orders",
         "Create order table",
-        4,
+        2,
         r#"
         CREATE TABLE order_table (
             id INTEGER PRIMARY KEY DEFAULT nextval('order_id_seq'),
@@ -70,6 +39,39 @@ pub async fn register_migrations() {
         )
         "#,
         "DROP TABLE IF EXISTS order_table"
+    )
+    .await;
+
+    // Migration 1: Create order_role sequence
+    register_migration!(
+        "orders",
+        "Create order_role sequence",
+        3,
+        r#"
+        CREATE SEQUENCE order_role_id_seq START WITH 1 INCREMENT BY 1;
+        "#,
+        "DROP SEQUENCE IF EXISTS order_role_id_seq"
+    )
+    .await;
+
+    // Migration 2: Create order_role table
+    register_migration!(
+        "orders",
+        "Create order_role table",
+        4,
+        r#"
+        CREATE TABLE order_role (
+            id INTEGER PRIMARY KEY DEFAULT nextval('order_role_id_seq'),
+            name TEXT NOT NULL,
+            person_id INTEGER,
+            order_id INTEGER,
+            created_at TIMESTAMP,
+            updated_at TIMESTAMP,
+            FOREIGN KEY (person_id) REFERENCES person(id),
+            FOREIGN KEY (order_id) REFERENCES order_table(id)
+        )
+        "#,
+        "DROP TABLE IF EXISTS order_role"
     )
     .await;
 
@@ -96,8 +98,6 @@ pub async fn register_migrations() {
             order_id INTEGER NOT NULL,
             product_id INTEGER NOT NULL,
             quantity INTEGER NOT NULL,
-            created_at TIMESTAMP,
-            updated_at TIMESTAMP,
             FOREIGN KEY (order_id) REFERENCES order_table(id),
             FOREIGN KEY (product_id) REFERENCES product(id)
         )
@@ -106,43 +106,11 @@ pub async fn register_migrations() {
     )
     .await;
 
-    // Migration 7: Create order_approver sequence
-    register_migration!(
-        "orders",
-        "Create order_approver sequence",
-        7,
-        r#"
-        CREATE SEQUENCE order_approver_id_seq START WITH 1 INCREMENT BY 1;
-        "#,
-        "DROP SEQUENCE IF EXISTS order_approver_id_seq"
-    )
-    .await;
-
-    // Migration 8: Create order_approver table (many-to-many relationship)
-    register_migration!(
-        "orders",
-        "Create order_approver table",
-        8,
-        r#"
-        CREATE TABLE order_approver (
-            id INTEGER PRIMARY KEY DEFAULT nextval('order_approver_id_seq'),
-            order_id INTEGER NOT NULL,
-            role_id INTEGER NOT NULL,
-            created_at TIMESTAMP,
-            updated_at TIMESTAMP,
-            FOREIGN KEY (order_id) REFERENCES order_table(id),
-            FOREIGN KEY (role_id) REFERENCES order_role(id)
-        )
-        "#,
-        "DROP TABLE IF EXISTS order_approver"
-    )
-    .await;
-
     // Migration 9: Create order_user sequence
     register_migration!(
         "orders",
         "Create order_user sequence",
-        9,
+        7,
         r#"
         CREATE SEQUENCE order_user_id_seq START WITH 1 INCREMENT BY 1;
         "#,
@@ -154,14 +122,12 @@ pub async fn register_migrations() {
     register_migration!(
         "orders",
         "Create order_user table",
-        10,
+        8,
         r#"
         CREATE TABLE order_user (
             id INTEGER PRIMARY KEY DEFAULT nextval('order_user_id_seq'),
             order_id INTEGER NOT NULL,
             location_id INTEGER NOT NULL,
-            created_at TIMESTAMP,
-            updated_at TIMESTAMP,
             FOREIGN KEY (order_id) REFERENCES order_table(id),
             FOREIGN KEY (location_id) REFERENCES location(id)
         )

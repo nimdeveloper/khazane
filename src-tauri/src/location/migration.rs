@@ -23,12 +23,8 @@ pub async fn register_migrations() {
         CREATE TABLE location (
             id INTEGER PRIMARY KEY DEFAULT nextval('location_id_seq'),
             name TEXT NOT NULL,
-            description TEXT,
-            address TEXT,
-            location_id INTEGER,
             created_at TIMESTAMP,
-            updated_at TIMESTAMP,
-            FOREIGN KEY (location_id) REFERENCES location(id)
+            updated_at TIMESTAMP
         )
         "#,
         "DROP TABLE IF EXISTS location"

@@ -10,7 +10,7 @@ use tauri::async_runtime::{Mutex, RwLock};
 // Migration record structure
 pub struct Migration {
     pub id: String,
-    pub applied_at: chrono::DateTime<chrono::Utc>,
+    pub applied_at: chrono::NaiveDateTime,
     pub service: String,
     pub name: String,
     pub version: i32,

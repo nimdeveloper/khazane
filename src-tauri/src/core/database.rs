@@ -1,4 +1,5 @@
 use super::error::{Error, ErrorSource, Result};
+use duckdb::types::{FromSql, FromSqlError, ValueRef};
 use duckdb::Connection;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -101,4 +102,29 @@ pub fn table_exists(conn: &Connection, table_name: &str) -> Result<bool> {
 pub fn execute(conn: &Connection, sql: &str) -> Result<()> {
     conn.execute_batch(sql)?;
     Ok(())
+}
+
+pub fn value_ref_to_type<T>(input: ValueRef) -> Result<T> {
+    FromSql::column_result(input).map_err(|err| match err {
+        FromSqlError::InvalidType => Error {
+            source: ErrorSource::Database,
+            message: "Invalid target type for converting db returned type".to_owned(),
+            cause: None,
+        },
+        FromSqlError::OutOfRange(i) => Error {
+            source: ErrorSource::Database,
+            message: "Destination integer type is small! can't convert.".to_owned(),
+            cause: None,
+        },
+        FromSqlError::Other(err) => Error {
+            source: ErrorSource::Database,
+            message: "Failed to convert db returned type".to_owned(),
+            cause: None,
+        },
+        _ => Error {
+            source: ErrorSource::Database,
+            message: "Unknown conversion error!".to_owned(),
+            cause: None,
+        },
+    })
 }

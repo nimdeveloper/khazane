@@ -1,4 +1,3 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::warehouse::inputs::WarehouseDto;
@@ -32,7 +31,7 @@ pub struct ProductDto {
     pub initial_inventory: i64,
     pub status: String,
     pub image: String,
-    pub updated_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<chrono::NaiveDateTime>,
     pub ware_houses: Vec<ProductWarehouseDto>,
     pub category: Option<ProductCategoryDto>,
 }
