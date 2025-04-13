@@ -35,6 +35,14 @@ duckdb = { version = "1.2.1", features = ["bundled"] }
 chrono = { version = "0.4.40", features = ["serde"] }
 uuid = { version = "1.16.0", features = ["serde", "v4"] }
 async-trait = "0.1.88"
+# sea-orm = { version = "1.1.0", features = [
+#     "sqlx-sqlite",
+#     "sqlx-postgres",
+#     "runtime-tokio-rustls",
+#     "with-chrono",
+#     "with-json",
+#     "macros",
+# ] }
 # once_cell = "1.19.0"
 # futures = "0.3.29"
 
@@ -46,7 +54,7 @@ incremental = true # Compile your binary in smaller steps.
 
 [profile.release]
 codegen-units = 1 # Allows LLVM to perform better optimization.
-lto = true # Enables link-time-optimizations.
-opt-level = "s" # Prioritizes small binary size. Use `3` if you prefer speed.
-panic = "abort" # Higher performance by disabling panic handlers.
-strip = true # Ensures debug symbols are removed.
+lto = true        # Enables link-time-optimizations.
+opt-level = "s"   # Prioritizes small binary size. Use `3` if you prefer speed.
+panic = "abort"   # Higher performance by disabling panic handlers.
+strip = true      # Ensures debug symbols are removed.

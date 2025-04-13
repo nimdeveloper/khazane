@@ -2,6 +2,7 @@
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use duckdb::params;
+use duckdb::Connection;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::marker::PhantomData;
 use tauri::async_runtime::Mutex;
@@ -49,6 +50,9 @@ impl<T: Model> DuckDbRepository<T> {
             db_path,
             _marker: PhantomData,
         }
+    }
+    pub fn get_connection(&self) -> Result<Connection> {
+        database::get_connection(self.db_path.as_str())
     }
 }
 

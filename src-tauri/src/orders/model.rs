@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OrderRole {
+    pub id: String,
     pub name: String,
     pub person: Option<Person>,
 }
@@ -26,12 +27,12 @@ pub struct Order {
     pub document_date: String,
     pub document_number: String,
     pub status: String,
-    pub goods: Vec<OrderProduct>,
+    pub goods: Vec<OrderProduct>, // Related using order_product table
     pub delivery: Option<OrderMixedTarget>,
     pub recipient: Option<OrderMixedTarget>,
-    pub approvers: Vec<OrderRole>,
+    pub approvers: Vec<OrderRole>, // Related using order_approver table
     pub manager: Option<Person>,
-    pub users: Vec<Location>,
+    pub users: Vec<Location>, // Related using order_user table
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
 }
@@ -48,6 +49,7 @@ impl Model for Order {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OrderProduct {
+    pub id: String,
     pub order: Option<Order>,
     pub quantity: i64,
 }
