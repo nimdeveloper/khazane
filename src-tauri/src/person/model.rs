@@ -5,7 +5,7 @@ use crate::core::{
     error::{custom_error, Error},
     repository::Model,
 };
-use duckdb::{types::ValueRef, Statement};
+use duckdb::{params, types::ValueRef, Statement};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -22,7 +22,6 @@ pub struct Person {
 }
 
 impl Person {
-    pub const MODEL_QUERY_PREFIX: &'static str = "person_";
     fn get_columns() {}
     fn load_as_related() {}
 
@@ -39,6 +38,30 @@ impl Person {
             "updated_at",
         ]
     }
+
+    pub fn get_insert_query(&self) -> (String, _) {
+        if self.id == -1 {
+            return (
+                format!(
+                    "INSERT INTO {} (first_name,last_name,national_code,phone,email,address,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?) RETURNING id", Self::TABLE_NAME
+                ),
+                params![&self.first_name, &self.last_name, &self.national_code, &self.phone, &self.email, &self.address, &self.created_at, &self.updated_at],
+            );
+        }
+        // todo: add Result for cleaner code
+        return ("".to_string(), params![]);
+    }
+    pub fn get_update_query(&self) -> (String, _) {
+        if self.id == -1 {
+            return (
+                format!("UPDATE {} SET first_name = ? , last_name = ? , national_code = ? , phone = ? , email = ? , address = ? , updated_at = ? WHERE id = ?", Self::TABLE_NAME),
+                params![&self.first_name, &self.last_name, &self.national_code, &self.phone, &self.email, &self.address, &self.updated_at, &self.id],
+            );
+        }
+        // todo: add Result for cleaner code
+        return ("".to_string(), params![]);
+    }
+
     pub fn from_row(row: &duckdb::Row, stmt: &Statement) -> Self {
         Person {
             id: row.get(stmt.column_index("id")?)?,
@@ -135,11 +158,9 @@ impl Person {
     }
 }
 impl Model for Person {
+    const MODEL_QUERY_PREFIX: String = String::from("person_");
+    const TABLE_NAME: String = String::from("person");
     fn get_id(&self) -> String {
         self.id.clone()
-    }
-
-    fn get_table_name() -> &'static str {
-        "person"
     }
 }

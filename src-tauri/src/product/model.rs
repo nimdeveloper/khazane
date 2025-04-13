@@ -16,7 +16,6 @@ pub struct ProductCategory {
     pub updated_at: Option<chrono::NaiveDateTime>,
 }
 impl ProductCategory {
-    const MODEL_QUERY_PREFIX: &'static str = "category_";
     pub fn get_columns() -> [&'static str; 4] {
         ["id", "label", "created_at", "updated_at"]
     }
@@ -70,12 +69,10 @@ impl ProductCategory {
     }
 }
 impl Model for ProductCategory {
+    const MODEL_QUERY_PREFIX: String = String::from("category_");
+    const TABLE_NAME: String = String::from("category");
     fn get_id(&self) -> String {
         self.id.clone()
-    }
-
-    fn get_table_name() -> &'static str {
-        "category"
     }
 }
 
@@ -147,7 +144,6 @@ pub struct MeasurementUnit {
     pub updated_at: Option<chrono::NaiveDateTime>,
 }
 impl MeasurementUnit {
-    const MODEL_QUERY_PREFIX: &'static str = "unit_";
     pub fn get_columns() -> [&'static str; 4] {
         ["id", "title", "created_at", "updated_at"]
     }
@@ -201,12 +197,10 @@ impl MeasurementUnit {
     }
 }
 impl Model for MeasurementUnit {
+    const MODEL_QUERY_PREFIX: String = String::from("unit_");
+    const TABLE_NAME: String = String::from("measure_unit");
     fn get_id(&self) -> String {
         self.id.clone()
-    }
-
-    fn get_table_name() -> &'static str {
-        "measure_unit"
     }
 }
 
@@ -227,17 +221,14 @@ pub struct Product {
     pub category: Option<ProductCategory>,
 }
 impl Model for Product {
+    const MODEL_QUERY_PREFIX: String = String::from("product_");
+    const TABLE_NAME: String = String::from("product");
     fn get_id(&self) -> String {
         self.id.clone()
-    }
-
-    fn get_table_name() -> &'static str {
-        "product"
     }
 }
 
 impl Product {
-    pub const MODEL_QUERY_PREFIX: &'static str = "product_";
     pub fn from_map(m: HashMap<String, ValueRef>, load_relations: bool) -> Result<Self, Error> {
         let id: Result<String> = value_ref_to_type(m.get("id").unwrap()).map_err(Error::from);
         if let Err(e) = id {

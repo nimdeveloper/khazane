@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 use async_trait::async_trait;
+use chrono::Utc;
 use duckdb::params;
 use duckdb::Connection;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -13,8 +14,9 @@ use crate::core::error::{custom_error, Error, Result};
 
 /// Base model trait that all models must implement
 pub trait Model: Serialize + DeserializeOwned + Send + Sync {
+    const MODEL_QUERY_PREFIX: String;
+    const TABLE_NAME: String;
     fn get_id(&self) -> String;
-    fn get_table_name() -> &'static str;
 }
 
 /// Timestamps for models

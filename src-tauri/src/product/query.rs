@@ -1,12 +1,13 @@
 use crate::core::error::Result;
 use crate::core::repository::Repository;
+use chrono::Utc;
+use duckdb::ToSql;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use uuid::Uuid;
-use chrono::Utc;
 
-use super::model::{Product, ProductCategory, MeasurementUnit, ProductWarehouse};
-use super::inputs::{ProductDto, ProductCategoryDto, MeasurementUnitDto};
+use super::inputs::{MeasurementUnitDto, ProductCategoryDto, ProductDto};
+use super::model::{MeasurementUnit, Product, ProductCategory, ProductWarehouse};
 
 #[derive(Deserialize, Debug)]
 pub struct FilterOptions {
@@ -21,10 +22,20 @@ pub struct FilterOptions {
 
 pub fn get_product_with_filter(
     repo: &impl Repository<Product>,
-    filters: &FilterOptions
-) -> Result<Vec<Product>, Box<dyn Error>> {
+    filters: &FilterOptions,
+) -> Result<Vec<Product>> {
     let conn = repo.get_connection()?;
-    
+
+    let mut query = String::from(format!(
+        "
+            SELECT
+                {}
+            FROM location l
+            WHERE 1=1
+        ",
+        Location::get_select_for("l".to_string(), "".to_string())
+    ));
+
     let mut query = String::from("
         SELECT p.id, p.title, p.code, p.base_price, p.inventory, p.initial_inventory, 
                p.status, p.image, p.created_at, p.updated_at,
@@ -37,31 +48,31 @@ pub fn get_product_with_filter(
     ");
 
     let mut params: Vec<Box<dyn ToSql>> = Vec::new();
-    
+
     if let Some(status) = &filters.status {
         query.push_str(" AND p.status = ?");
         params.push(Box::new(status.clone()));
     }
-    
+
     if let Some(category_id) = &filters.category_id {
         query.push_str(" AND p.category_id = ?");
         params.push(Box::new(category_id.clone()));
     }
-    
+
     if let Some(search_term) = &filters.search_term {
         query.push_str(" AND (p.title LIKE ? OR p.code LIKE ?)");
         let search_pattern = format!("%{}%", search_term);
         params.push(Box::new(search_pattern.clone()));
         params.push(Box::new(search_pattern));
     }
-    
+
     // Add sorting
     if let (Some(sort_by), Some(sort_order)) = (&filters.sort_by, &filters.sort_order) {
         query.push_str(&format!(" ORDER BY p.{} {}", sort_by, sort_order));
     } else {
         query.push_str(" ORDER BY p.updated_at DESC");
     }
-    
+
     // Add pagination
     if let (Some(limit), Some(offset)) = (filters.limit, filters.offset) {
         query.push_str(" LIMIT ? OFFSET ?");
@@ -73,7 +84,13 @@ pub fn get_product_with_filter(
     }
 
     let mut stmt = conn.prepare(&query)?;
-    let mut rows = stmt.query(params.into_iter().map(|p| p.as_ref()).collect::<Vec<_>>().as_slice())?;
+    let mut rows = stmt.query(
+        params
+            .into_iter()
+            .map(|p| p.as_ref())
+            .collect::<Vec<_>>()
+            .as_slice(),
+    )?;
 
     let mut products = Vec::new();
     while let Some(row) = rows.next()? {
@@ -92,7 +109,7 @@ pub fn get_product_with_filter(
             category: None,
             ware_houses: Vec::new(),
         };
-        
+
         // Parse category if available
         if let Ok(category_id) = row.get::<_, Option<String>>(10) {
             if let Some(category_id) = category_id {
@@ -104,7 +121,7 @@ pub fn get_product_with_filter(
                 });
             }
         }
-        
+
         // Parse unit if available
         if let Ok(unit_id) = row.get::<_, Option<String>>(14) {
             if let Some(unit_id) = unit_id {
@@ -114,7 +131,7 @@ pub fn get_product_with_filter(
                 });
             }
         }
-        
+
         // Load warehouses for this product in a separate query
         let warehouse_query = "
             SELECT pw.quantity, w.id, w.name, w.shorthand, w.color_key, w.color_code
@@ -122,10 +139,10 @@ pub fn get_product_with_filter(
             JOIN warehouse w ON pw.warehouse_id = w.id
             WHERE pw.product_id = ?
         ";
-        
+
         let mut warehouse_stmt = conn.prepare(warehouse_query)?;
         let mut warehouse_rows = warehouse_stmt.query(&[&product.id])?;
-        
+
         let mut warehouses = Vec::new();
         while let Some(warehouse_row) = warehouse_rows.next()? {
             let quantity: i64 = warehouse_row.get(0)?;
@@ -136,13 +153,13 @@ pub fn get_product_with_filter(
                 color_key: warehouse_row.get(4)?,
                 color_code: warehouse_row.get(5)?,
             };
-            
+
             warehouses.push(ProductWarehouse {
                 quantity,
                 warehouse: Some(warehouse),
             });
         }
-        
+
         product.ware_houses = warehouses;
         products.push(product);
     }
@@ -152,10 +169,10 @@ pub fn get_product_with_filter(
 
 pub fn get_product_by_id(
     repo: &impl Repository<Product>,
-    id: &str
+    id: &str,
 ) -> Result<Option<Product>, Box<dyn Error>> {
     let conn = repo.get_connection()?;
-    
+
     let query = "
         SELECT p.id, p.title, p.code, p.base_price, p.inventory, p.initial_inventory, 
                p.status, p.image, p.created_at, p.updated_at,
@@ -166,10 +183,10 @@ pub fn get_product_by_id(
         LEFT JOIN measure_unit u ON p.unit_id = u.id
         WHERE p.id = ?
     ";
-    
+
     let mut stmt = conn.prepare(query)?;
     let mut rows = stmt.query(&[id])?;
-    
+
     if let Some(row) = rows.next()? {
         let mut product = Product {
             id: row.get(0)?,
@@ -186,7 +203,7 @@ pub fn get_product_by_id(
             category: None,
             ware_houses: Vec::new(),
         };
-        
+
         // Parse category if available
         if let Ok(category_id) = row.get::<_, Option<String>>(10) {
             if let Some(category_id) = category_id {
@@ -198,7 +215,7 @@ pub fn get_product_by_id(
                 });
             }
         }
-        
+
         // Parse unit if available
         if let Ok(unit_id) = row.get::<_, Option<String>>(14) {
             if let Some(unit_id) = unit_id {
@@ -208,7 +225,7 @@ pub fn get_product_by_id(
                 });
             }
         }
-        
+
         // Load warehouses for this product
         let warehouse_query = "
             SELECT pw.quantity, w.id, w.name, w.shorthand, w.color_key, w.color_code
@@ -216,10 +233,10 @@ pub fn get_product_by_id(
             JOIN warehouse w ON pw.warehouse_id = w.id
             WHERE pw.product_id = ?
         ";
-        
+
         let mut warehouse_stmt = conn.prepare(warehouse_query)?;
         let mut warehouse_rows = warehouse_stmt.query(&[&product.id])?;
-        
+
         let mut warehouses = Vec::new();
         while let Some(warehouse_row) = warehouse_rows.next()? {
             let quantity: i64 = warehouse_row.get(0)?;
@@ -230,13 +247,13 @@ pub fn get_product_by_id(
                 color_key: warehouse_row.get(4)?,
                 color_code: warehouse_row.get(5)?,
             };
-            
+
             warehouses.push(ProductWarehouse {
                 quantity,
                 warehouse: Some(warehouse),
             });
         }
-        
+
         product.ware_houses = warehouses;
         Ok(Some(product))
     } else {
@@ -246,14 +263,14 @@ pub fn get_product_by_id(
 
 pub fn create_product(
     repo: &impl Repository<Product>,
-    product_dto: &ProductDto
+    product_dto: &ProductDto,
 ) -> Result<Product, Box<dyn Error>> {
     let conn = repo.get_connection()?;
-    
+
     // Generate new UUID
     let id = Uuid::new_v4().to_string();
     let now = Utc::now();
-    
+
     // Create the product with basic fields
     let mut product = Product {
         id,
@@ -270,7 +287,7 @@ pub fn create_product(
         created_at: Some(now),
         updated_at: Some(now),
     };
-    
+
     // Handle category relation if provided
     if let Some(category_id) = &product_dto.category_id {
         if !category_id.is_empty() {
@@ -284,7 +301,7 @@ pub fn create_product(
             }
         }
     }
-    
+
     // Handle unit relation if provided
     if let Some(unit_id) = &product_dto.unit_id {
         if !unit_id.is_empty() {
@@ -298,13 +315,13 @@ pub fn create_product(
             }
         }
     }
-    
+
     // Insert the product
     let product_json = serde_json::to_string(&product)?;
     let insert_product_sql = "INSERT INTO product (data) VALUES (?)";
     let mut stmt = conn.prepare(insert_product_sql)?;
     stmt.execute(&[&product_json])?;
-    
+
     // Handle warehouse relations if any
     if let Some(warehouses) = &product_dto.warehouses {
         for warehouse_dto in warehouses {
@@ -316,7 +333,7 @@ pub fn create_product(
                     quantity: warehouse_dto.quantity,
                     warehouse: None, // We'll load this when querying
                 };
-                
+
                 // Store relation with IDs
                 let product_warehouse_json = serde_json::json!({
                     "id": product_warehouse_id,
@@ -326,40 +343,40 @@ pub fn create_product(
                     "created_at": now.to_rfc3339(),
                     "updated_at": now.to_rfc3339()
                 });
-                
+
                 let insert_warehouse_sql = "INSERT INTO product_warehouse (data) VALUES (?)";
                 let mut wh_stmt = conn.prepare(insert_warehouse_sql)?;
                 wh_stmt.execute(&[&product_warehouse_json.to_string()])?;
             }
         }
     }
-    
+
     // Return the complete product with relations
     get_product_by_id(repo, &product.id)?.ok_or(Box::new(std::io::Error::new(
         std::io::ErrorKind::NotFound,
-        "Product not found after creation"
+        "Product not found after creation",
     )))
 }
 
 pub fn update_product(
     repo: &impl Repository<Product>,
     id: &str,
-    product_dto: &ProductDto
+    product_dto: &ProductDto,
 ) -> Result<Product, Box<dyn Error>> {
     let conn = repo.get_connection()?;
-    
+
     // Check if product exists
     let product_check = get_product_by_id(repo, id)?;
     if product_check.is_none() {
         return Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::NotFound,
-            format!("Product with id {} not found", id)
+            format!("Product with id {} not found", id),
         )));
     }
-    
+
     let mut product = product_check.unwrap();
     let now = Utc::now();
-    
+
     // Update basic fields
     product.title = product_dto.title.clone();
     product.code = product_dto.code.clone();
@@ -368,11 +385,11 @@ pub fn update_product(
     product.status = product_dto.status.clone();
     product.image = product_dto.image.clone();
     product.updated_at = Some(now);
-    
+
     // Handle category relation if provided and ID changed
     if let Some(category_id) = &product_dto.category_id {
         let current_category_id = product.category.as_ref().map(|c| c.id.clone());
-        
+
         if current_category_id != Some(category_id.clone()) && !category_id.is_empty() {
             // Category ID changed, look up new category
             let category_query = "SELECT data FROM category WHERE JSON_EXTRACT(data, '$.id') = ?";
@@ -388,11 +405,11 @@ pub fn update_product(
             product.category = None;
         }
     }
-    
+
     // Handle unit relation if provided and ID changed
     if let Some(unit_id) = &product_dto.unit_id {
         let current_unit_id = product.unit.as_ref().map(|u| u.id.clone());
-        
+
         if current_unit_id != Some(unit_id.clone()) && !unit_id.is_empty() {
             // Unit ID changed, look up new unit
             let unit_query = "SELECT data FROM measure_unit WHERE JSON_EXTRACT(data, '$.id') = ?";
@@ -408,26 +425,27 @@ pub fn update_product(
             product.unit = None;
         }
     }
-    
+
     // Update the product
     let product_json = serde_json::to_string(&product)?;
     let update_product_sql = "UPDATE product SET data = ? WHERE JSON_EXTRACT(data, '$.id') = ?";
     let mut stmt = conn.prepare(update_product_sql)?;
     stmt.execute(&[&product_json, id])?;
-    
+
     // Handle warehouse relations if any
     if let Some(warehouses) = &product_dto.warehouses {
         // First, delete all existing warehouse relations
-        let delete_warehouses_sql = "DELETE FROM product_warehouse WHERE JSON_EXTRACT(data, '$.product_id') = ?";
+        let delete_warehouses_sql =
+            "DELETE FROM product_warehouse WHERE JSON_EXTRACT(data, '$.product_id') = ?";
         let mut delete_stmt = conn.prepare(delete_warehouses_sql)?;
         delete_stmt.execute(&[id])?;
-        
+
         // Create new warehouse relations
         for warehouse_dto in warehouses {
             let warehouse_id = warehouse_dto.warehouse_id.clone();
             if !warehouse_id.is_empty() {
                 let product_warehouse_id = Uuid::new_v4().to_string();
-                
+
                 // Store relation with IDs
                 let product_warehouse_json = serde_json::json!({
                     "id": product_warehouse_id,
@@ -437,28 +455,28 @@ pub fn update_product(
                     "created_at": now.to_rfc3339(),
                     "updated_at": now.to_rfc3339()
                 });
-                
+
                 let insert_warehouse_sql = "INSERT INTO product_warehouse (data) VALUES (?)";
                 let mut wh_stmt = conn.prepare(insert_warehouse_sql)?;
                 wh_stmt.execute(&[&product_warehouse_json.to_string()])?;
             }
         }
     }
-    
+
     // Return the updated product with relations
     get_product_by_id(repo, id)?.ok_or(Box::new(std::io::Error::new(
         std::io::ErrorKind::NotFound,
-        "Product not found after update"
+        "Product not found after update",
     )))
 }
 
 // Category functions
 pub fn get_category_by_id(
     repo: &impl Repository<ProductCategory>,
-    id: &str
+    id: &str,
 ) -> Result<Option<ProductCategory>, Box<dyn Error>> {
     let conn = repo.get_connection()?;
-    
+
     let query = "SELECT data FROM category WHERE JSON_EXTRACT(data, '$.id') = ?";
     let mut stmt = conn.prepare(query)?;
     let mut rows = stmt.query(&[id])?;
@@ -474,14 +492,14 @@ pub fn get_category_by_id(
 
 pub fn create_category(
     repo: &impl Repository<ProductCategory>,
-    category_dto: &ProductCategoryDto
+    category_dto: &ProductCategoryDto,
 ) -> Result<ProductCategory, Box<dyn Error>> {
     let conn = repo.get_connection()?;
-    
+
     // Generate new UUID
     let id = Uuid::new_v4().to_string();
     let now = Utc::now();
-    
+
     // Create the category
     let category = ProductCategory {
         id,
@@ -489,55 +507,55 @@ pub fn create_category(
         created_at: Some(now),
         updated_at: Some(now),
     };
-    
+
     // Insert the category
     let category_json = serde_json::to_string(&category)?;
     let insert_sql = "INSERT INTO category (data) VALUES (?)";
     let mut stmt = conn.prepare(insert_sql)?;
     stmt.execute(&[&category_json])?;
-    
+
     Ok(category)
 }
 
 pub fn update_category(
     repo: &impl Repository<ProductCategory>,
     id: &str,
-    category_dto: &ProductCategoryDto
+    category_dto: &ProductCategoryDto,
 ) -> Result<ProductCategory, Box<dyn Error>> {
     let conn = repo.get_connection()?;
-    
+
     // Check if category exists
     let category_check = get_category_by_id(repo, id)?;
     if category_check.is_none() {
         return Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::NotFound,
-            format!("Category with id {} not found", id)
+            format!("Category with id {} not found", id),
         )));
     }
-    
+
     let mut category = category_check.unwrap();
     let now = Utc::now();
-    
+
     // Update fields
     category.label = category_dto.label.clone();
     category.updated_at = Some(now);
-    
+
     // Update the category
     let category_json = serde_json::to_string(&category)?;
     let update_sql = "UPDATE category SET data = ? WHERE JSON_EXTRACT(data, '$.id') = ?";
     let mut stmt = conn.prepare(update_sql)?;
     stmt.execute(&[&category_json, id])?;
-    
+
     Ok(category)
 }
 
 // Measurement Unit functions
 pub fn get_measurement_unit_by_id(
     repo: &impl Repository<MeasurementUnit>,
-    id: &str
+    id: &str,
 ) -> Result<Option<MeasurementUnit>, Box<dyn Error>> {
     let conn = repo.get_connection()?;
-    
+
     let query = "SELECT data FROM measure_unit WHERE JSON_EXTRACT(data, '$.id') = ?";
     let mut stmt = conn.prepare(query)?;
     let mut rows = stmt.query(&[id])?;
@@ -553,64 +571,54 @@ pub fn get_measurement_unit_by_id(
 
 pub fn create_measurement_unit(
     repo: &impl Repository<MeasurementUnit>,
-    unit_dto: &MeasurementUnitDto
+    unit_dto: &MeasurementUnitDto,
 ) -> Result<MeasurementUnit, Box<dyn Error>> {
     let conn = repo.get_connection()?;
-    
+
     // Generate new UUID
     let id = Uuid::new_v4().to_string();
-    
+
     // Create the unit
     let unit = MeasurementUnit {
         id,
         title: unit_dto.title.clone(),
     };
-    
+
     // Insert the unit
     let unit_json = serde_json::to_string(&unit)?;
     let insert_sql = "INSERT INTO measure_unit (data) VALUES (?)";
     let mut stmt = conn.prepare(insert_sql)?;
     stmt.execute(&[&unit_json])?;
-    
+
     Ok(unit)
 }
 
 pub fn update_measurement_unit(
     repo: &impl Repository<MeasurementUnit>,
     id: &str,
-    unit_dto: &MeasurementUnitDto
+    unit_dto: &MeasurementUnitDto,
 ) -> Result<MeasurementUnit, Box<dyn Error>> {
     let conn = repo.get_connection()?;
-    
+
     // Check if unit exists
     let unit_check = get_measurement_unit_by_id(repo, id)?;
     if unit_check.is_none() {
         return Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::NotFound,
-            format!("Measurement unit with id {} not found", id)
+            format!("Measurement unit with id {} not found", id),
         )));
     }
-    
+
     let mut unit = unit_check.unwrap();
-    
+
     // Update fields
     unit.title = unit_dto.title.clone();
-    
+
     // Update the unit
     let unit_json = serde_json::to_string(&unit)?;
     let update_sql = "UPDATE measure_unit SET data = ? WHERE JSON_EXTRACT(data, '$.id') = ?";
     let mut stmt = conn.prepare(update_sql)?;
     stmt.execute(&[&unit_json, id])?;
-    
+
     Ok(unit)
 }
-
-trait ToSql {
-    fn as_ref(&self) -> &dyn rusqlite::ToSql;
-}
-
-impl<T: rusqlite::ToSql + ?Sized> ToSql for T {
-    fn as_ref(&self) -> &dyn rusqlite::ToSql {
-        self
-    }
-} 

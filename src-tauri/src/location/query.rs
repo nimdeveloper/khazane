@@ -1,6 +1,7 @@
 use crate::core::error::{custom_error, Result};
 use crate::core::repository::DuckDbRepository;
 use chrono::Utc;
+use duckdb::ToSql;
 use serde::Deserialize;
 
 use super::inputs::LocationDto;
@@ -28,10 +29,10 @@ pub fn get_location_with_filter(
             FROM location l
             WHERE 1=1
         ",
-        Location::get_select_for("l".to_string(), "".to_string())
+        &Location::get_select_for("l".to_string(), "".to_string())
     ));
 
-    let mut params: Vec<Box<Location>> = Vec::new();
+    let mut params: Vec<Box<dyn ToSql>> = Vec::new();
 
     if let Some(search_term) = &filters.search_term {
         query.push_str(" AND l.name LIKE ?");
@@ -67,8 +68,10 @@ pub fn get_location_with_filter(
 
     let mut locations = Vec::new();
     while let Some(row) = rows.next()? {
-        let location: Location = Location::from_row(row, &stmt)?;
-        locations.push(location);
+        let location: Location = Location::from_row(row, &stmt);
+        if !(locations.iter().filter(|&e| e.id == location.id).count() > 0) {
+            locations.push(location);
+        }
     }
 
     Ok(locations)

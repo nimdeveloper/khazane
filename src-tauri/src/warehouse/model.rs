@@ -5,7 +5,7 @@ use crate::core::{
     error::{custom_error, Error},
     repository::Model,
 };
-use duckdb::{types::ValueRef, Statement};
+use duckdb::{params, types::ValueRef, Statement};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,7 +24,57 @@ pub struct Warehouse {
     pub updated_at: Option<chrono::NaiveDateTime>,
 }
 impl Warehouse {
-    pub const MODEL_QUERY_PREFIX: &'static str = "warehouse_";
+    pub fn get_select_for(selector: String, sub_rel: String) {
+        return (format!(
+            "#
+            {selector}.id AS {sub_rel}{query_prefix}id,
+            {selector}.name AS {sub_rel}{query_prefix}name,
+            {selector}.shorthand AS {sub_rel}{query_prefix}shorthand,
+            {selector}.color_code AS {sub_rel}{query_prefix}color_code,
+            {selector}.color_key AS {sub_rel}{query_prefix}color_key,
+            {selector}.created_at AS {sub_rel}{query_prefix}created_at,
+            {selector}.updated_at AS {sub_rel}{query_prefix}updated_at,
+        #",
+            selector = selector,
+            sub_rel = sub_rel,
+            query_prefix = Self::MODEL_QUERY_PREFIX.to_string(),
+        ),);
+    }
+    pub fn get_insert_query(&self) -> (String, _) {
+        if self.id == -1 {
+            let mut color_code = None;
+            let mut color_key = None;
+            if let Some(color) = &self.color {
+                color_code = Some(color.code.clone());
+                color_key = Some(color.key.clone());
+            }
+            return (
+                format!(
+                    "INSERT INTO warehouse (name,shorthand,color_code,color_key,updated_at,created_at) VALUES (?,?,?,?,?,?) RETURNING id"
+                ),
+                params![&self.name,&self.shorthand,&color_code,&color_key,&self.updated_at,&self.created_at],
+            );
+        }
+        // todo: add Result for cleaner code
+        return ("".to_string(), params![]);
+    }
+    pub fn get_update_query(&self) -> (String, _) {
+        if self.id != -1 {
+            let mut color_code = None;
+            let mut color_key = None;
+            if let Some(color) = &self.color {
+                color_code = Some(color.code.clone());
+                color_key = Some(color.key.clone());
+            }
+            return (
+                format!("UPDATE {} SET name = ? , shorthand = ? , color_code = ? , color_key = ? , updated_at = ? WHERE id = ?", Self::TABLE_NAME),
+                params![&self.name,&self.shorthand,&color_code,&color_key,&self.created_at, &self.updated_at, &self.id],
+            );
+        }
+        // todo: add Result for cleaner code
+        return ("".to_string(), params![&self.name, &self.updated_at]);
+    }
+
     pub fn get_columns() -> [&'static str; 4] {
         [
             "id",
@@ -128,11 +178,9 @@ impl Warehouse {
 }
 
 impl Model for Warehouse {
+    const MODEL_QUERY_PREFIX: String = String::from("warehouse_");
+    const TABLE_NAME: String = String::from("warehouse");
     fn get_id(&self) -> String {
         self.id.clone()
-    }
-
-    fn get_table_name() -> &'static str {
-        "warehouse"
     }
 }

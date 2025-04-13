@@ -104,8 +104,8 @@ pub fn execute(conn: &Connection, sql: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn value_ref_to_type<T>(input: ValueRef) -> Result<T> {
-    FromSql::column_result(input).map_err(|err| match err {
+pub fn value_ref_to_type<T: FromSql>(input: &ValueRef) -> Result<T> {
+    FromSql::column_result(*input).map_err(|err| match err {
         FromSqlError::InvalidType => Error {
             source: ErrorSource::Database,
             message: "Invalid target type for converting db returned type".to_owned(),

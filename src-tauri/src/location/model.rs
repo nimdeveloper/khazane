@@ -1,12 +1,11 @@
-use std::{any, collections::HashMap};
-
 use crate::core::{
     database::value_ref_to_type,
-    error::{custom_error, Error},
+    error::{custom_error, Error, Result},
     repository::Model,
 };
-use duckdb::{params, types::ValueRef, Statement};
+use duckdb::{params, types::ValueRef, Statement, ToSql};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Location {
@@ -17,8 +16,7 @@ pub struct Location {
 }
 
 impl Location {
-    const MODEL_QUERY_PREFIX: &'static str = "location_";
-    pub fn get_select_for(selector: String, sub_rel: String) {
+    pub fn get_select_for(selector: String, sub_rel: String) -> (std::string::String,) {
         return (format!(
             "#
             {selector}.id AS {sub_rel}{query_prefix}id,
@@ -31,7 +29,7 @@ impl Location {
             query_prefix = Self::MODEL_QUERY_PREFIX.to_string(),
         ),);
     }
-    pub fn get_insert_query(&self) -> (String, _) {
+    pub fn get_insert_query(&self) -> (String, &[&dyn ToSql]) {
         if self.id == -1 {
             return (
                 format!(
@@ -41,12 +39,9 @@ impl Location {
             );
         }
         // todo: add Result for cleaner code
-        return (
-            "".to_string(),
-            params![&self.name, &self.created_at, &self.updated_at],
-        );
+        return ("".to_string(), params![]);
     }
-    pub fn get_update_query(&self) -> (String, _) {
+    pub fn get_update_query(&self) -> (String, &[&dyn ToSql]) {
         if self.id == -1 {
             return (
                 format!("UPDATE location SET name=? , updated_at=? WHERE id = ?"),
@@ -68,7 +63,7 @@ impl Location {
             updated_at: row.get(stmt.column_index("updated_at")?)?,
         }
     }
-    pub fn from_map(m: HashMap<String, ValueRef>) -> Result<Self, Error> {
+    pub fn from_map(m: HashMap<String, ValueRef>) -> Result<Self> {
         if Self::get_columns().iter().any(|&e| !m.contains_key(e)) {
             return Err(custom_error(
                 "Failed to construct MeasurementUnit from HasMap! Some keys missing!",
@@ -110,12 +105,10 @@ impl Location {
 }
 
 impl Model for Location {
+    const MODEL_QUERY_PREFIX: String = String::from("location_");
+    const TABLE_NAME: String = String::from("location");
     fn get_id(&self) -> String {
         Location::id.to_string();
         self.id.clone()
-    }
-
-    fn get_table_name() -> &'static str {
-        "location"
     }
 }
