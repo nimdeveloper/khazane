@@ -1,10 +1,37 @@
+use rand::Rng;
 use std::collections::HashMap;
 
-pub fn flatten_with_prefix<T>(prefix: String, m: HashMap<String, T>) -> HashMap<String, T> {
-    let result = HashMap::<String, T>::new();
+const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+pub fn random_string(count: u128) -> String {
+    let mut rng = rand::rng();
+
+    return (0..count)
+        .map(|_| {
+            let idx = rng.random_range(0..CHARSET.len());
+            CHARSET[idx] as char
+        })
+        .collect();
+}
+
+pub fn flatten_with_prefix<T: Copy + Clone>(
+    prefix: String,
+    m: HashMap<String, T>,
+) -> HashMap<String, T> {
+    let mut result = HashMap::<String, T>::new();
     m.keys().for_each(|each| {
-        if each.starts_with(prefix) {
-            result.insert(each.strip_prefix(prefix), m.get_mut(each)?)
+        if each.starts_with(prefix.as_str()) {
+            match m.get(each) {
+                Some(data) => {
+                    result.insert(
+                        each.strip_prefix(prefix.as_str())
+                            .unwrap_or(&each)
+                            .to_string(),
+                        *data,
+                    );
+                }
+                None => (),
+            }
         }
     });
     result

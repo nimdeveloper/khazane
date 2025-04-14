@@ -1,5 +1,6 @@
 use crate::core::error::{custom_error, Result};
 use crate::core::repository::DuckDbRepository;
+use crate::core::selector::{Internal, OderDirection, Operations};
 use chrono::Utc;
 use duckdb::ToSql;
 use serde::Deserialize;
@@ -20,51 +21,42 @@ pub fn get_location_with_filter(
     repo: &DuckDbRepository<Location>,
     filters: &FilterOptions,
 ) -> Result<Vec<Location>> {
-    let conn = repo.get_connection()?;
+    let conn: duckdb::Connection = repo.get_connection()?;
 
-    let mut query = String::from(format!(
-        "
-            SELECT
-                {}
-            FROM location l
-            WHERE 1=1
-        ",
-        &Location::get_select_for("l".to_string(), "".to_string())
-    ));
+    let mut query = Location::select();
 
-    let mut params: Vec<Box<dyn ToSql>> = Vec::new();
+    // let mut params: Vec<Box<dyn ToSql>> = Vec::new();
 
     if let Some(search_term) = &filters.search_term {
-        query.push_str(" AND l.name LIKE ?");
-        let search_pattern = format!("%{}%", search_term);
-        params.push(Box::new(search_pattern));
+        query.filter(
+            Internal::Field("name".into()),
+            Operations::Like,
+            Internal::Value(format!("%{}%", search_term).into()),
+        );
+        // query.push_str(" AND l.name LIKE ?");
     }
 
     // Add sorting
-    if let (Some(sort_by), Some(sort_order)) = (&filters.sort_by, &filters.sort_order) {
-        query.push_str(&format!(" ORDER BY l.{} {}", sort_by, sort_order));
+    if let (Some(sort_by), Some(sort_order)) = (filters.sort_by, filters.sort_order) {
+        // query.push_str(&format!(" ORDER BY l.{} {}", sort_by, sort_order));
+        query.order(sort_by.into(), sort_order.into());
     } else {
-        query.push_str(" ORDER BY l.id DESC");
+        query.order("id".into(), OderDirection::DESC);
+        // query.push_str(" ORDER BY l.id DESC");
     }
 
     // Add pagination
     if let (Some(limit), Some(offset)) = (filters.limit, filters.offset) {
-        query.push_str(" LIMIT ? OFFSET ?");
-        params.push(Box::new(limit));
-        params.push(Box::new(offset));
+        query.paginate(limit, Some(offset));
+        // query.push_str(" LIMIT ? OFFSET ?");
+        // params.push(Box::new(limit));
+        // params.push(Box::new(offset));
     } else if let Some(limit) = filters.limit {
-        query.push_str(" LIMIT ?");
-        params.push(Box::new(limit));
+        query.paginate(limit, None);
+        // query.push_str(" LIMIT ?");
+        // params.push(Box::new(limit));
     }
-
-    let mut stmt = conn.prepare(&query)?;
-    let mut rows = stmt.query(
-        params
-            .into_iter()
-            .map(|p| p.as_ref())
-            .collect::<Vec<_>>()
-            .as_slice(),
-    )?;
+    query.all(conn);
 
     let mut locations = Vec::new();
     while let Some(row) = rows.next()? {

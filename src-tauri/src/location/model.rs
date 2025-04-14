@@ -1,8 +1,10 @@
 use crate::core::{
     database::value_ref_to_type,
     error::{custom_error, Error, Result},
-    repository::Model,
+    repository::{DuckDbRepository, Model},
+    selector::Selector,
 };
+use chrono::Utc;
 use duckdb::{params, types::ValueRef, Statement, ToSql};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -16,84 +18,71 @@ pub struct Location {
 }
 
 impl Location {
-    pub fn get_select_for(selector: String, sub_rel: String) -> (std::string::String,) {
-        return (format!(
-            "#
-            {selector}.id AS {sub_rel}{query_prefix}id,
-            {selector}.name AS {sub_rel}{query_prefix}name,
-            {selector}.created_at AS {sub_rel}{query_prefix}created_at,
-            {selector}.updated_at AS {sub_rel}{query_prefix}updated_at,
-        #",
-            selector = selector,
-            sub_rel = sub_rel,
-            query_prefix = Self::MODEL_QUERY_PREFIX.to_string(),
-        ),);
+    pub fn select() -> Selector {
+        let mut selector = Selector::default();
+        selector.select(Self::get_columns().to_vec(), Self::TABLE_NAME);
+        selector
     }
-    pub fn get_insert_query(&self) -> (String, &[&dyn ToSql]) {
-        if self.id == -1 {
-            return (
-                format!(
-                    "INSERT INTO location (name,created_at,updated_at) VALUES (?,?,?) RETURNING id"
-                ),
-                params![&self.name, &self.created_at, &self.updated_at],
-            );
-        }
-        // todo: add Result for cleaner code
-        return ("".to_string(), params![]);
-    }
-    pub fn get_update_query(&self) -> (String, &[&dyn ToSql]) {
-        if self.id == -1 {
-            return (
-                format!("UPDATE location SET name=? , updated_at=? WHERE id = ?"),
-                params![&self.name, &self.updated_at],
-            );
-        }
-        // todo: add Result for cleaner code
-        return ("".to_string(), params![&self.name, &self.updated_at]);
-    }
+    // pub fn get_insert_query<'a>(&'a self) -> (String, &'a [&dyn ToSql]) {
+    //     if self.id == -1 {
+    //         let params: &'a Vec<dyn ToSql> = [
+    //             &self.name.into(),
+    //             &self.created_at.into(),
+    //             &self.updated_at.into(),
+    //         ]
+    //         .into();
+    //         return (
+    //             format!(
+    //                 "INSERT INTO location (name,created_at,updated_at) VALUES (?,?,?) RETURNING id"
+    //             ),
+    //             &params,
+    //         );
+    //     }
+    //     // todo: add Result for cleaner code
+    //     return ("".to_string(), params![]);
+    // }
+    // pub fn get_update_query(&self) -> (String, &[&dyn ToSql]) {
+    //     if self.id == -1 {
+    //         return (
+    //             format!("UPDATE location SET name=? , updated_at=? WHERE id = ?"),
+    //             params![&self.name, &self.updated_at],
+    //         );
+    //     }
+    //     // todo: add Result for cleaner code
+    //     return ("".to_string(), params![&self.name, &self.updated_at]);
+    // }
 
-    pub fn get_columns() -> [&'static str; 4] {
-        ["id", "name", "created_at", "updated_at"]
+    pub fn get_columns() -> [String; 4] {
+        [
+            "id".to_string(),
+            "name".to_string(),
+            "created_at".to_string(),
+            "updated_at".to_string(),
+        ]
     }
-    pub fn from_row(row: &duckdb::Row, stmt: &Statement) -> Self {
-        Location {
+    pub fn from_row(row: &duckdb::Row, stmt: &Statement) -> Result<Self> {
+        Ok(Location {
             id: row.get(stmt.column_index("id")?)?,
             name: row.get(stmt.column_index("name")?)?,
             created_at: row.get(stmt.column_index("created_at")?)?,
             updated_at: row.get(stmt.column_index("updated_at")?)?,
-        }
+        })
     }
     pub fn from_map(m: HashMap<String, ValueRef>) -> Result<Self> {
-        if Self::get_columns().iter().any(|&e| !m.contains_key(e)) {
+        if Self::get_columns().iter().any(|e| !m.contains_key(e)) {
             return Err(custom_error(
                 "Failed to construct MeasurementUnit from HasMap! Some keys missing!",
             ));
         }
-        let id: Result<i64> = value_ref_to_type(m.get("id").unwrap()).map_err(Error::from);
-        if let Err(e) = id {
-            return Err(e);
-        }
-        let id = id.unwrap();
+        let id: i64 = value_ref_to_type(m.get("id").unwrap()).map_err(Error::from)?;
 
-        let name: Result<String> = value_ref_to_type(m.get("name").unwrap()).map_err(Error::from);
-        if let Err(e) = name {
-            return Err(e);
-        }
-        let name = name.unwrap();
+        let name: String = value_ref_to_type(m.get("name").unwrap()).map_err(Error::from)?;
 
-        let created_at: Result<chrono::NaiveDateTime> =
-            value_ref_to_type(m.get("created_at").unwrap()).map_err(Error::from);
-        if let Err(e) = created_at {
-            return Err(e);
-        }
-        let created_at = created_at.unwrap();
+        let created_at: chrono::NaiveDateTime =
+            value_ref_to_type(m.get("created_at").unwrap()).map_err(Error::from)?;
 
-        let updated_at: Result<chrono::NaiveDateTime> =
-            value_ref_to_type(m.get("updated_at").unwrap()).map_err(Error::from);
-        if let Err(e) = updated_at {
-            return Err(e);
-        }
-        let updated_at = updated_at.unwrap();
+        let updated_at: chrono::NaiveDateTime =
+            value_ref_to_type(m.get("updated_at").unwrap()).map_err(Error::from)?;
 
         Ok(Location {
             id,
@@ -105,10 +94,8 @@ impl Location {
 }
 
 impl Model for Location {
-    const MODEL_QUERY_PREFIX: String = String::from("location_");
-    const TABLE_NAME: String = String::from("location");
+    const TABLE_NAME: &str = "location";
     fn get_id(&self) -> String {
-        Location::id.to_string();
-        self.id.clone()
+        self.id.to_string().clone()
     }
 }

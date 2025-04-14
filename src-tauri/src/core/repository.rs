@@ -14,8 +14,7 @@ use crate::core::error::{custom_error, Error, Result};
 
 /// Base model trait that all models must implement
 pub trait Model: Serialize + DeserializeOwned + Send + Sync {
-    const MODEL_QUERY_PREFIX: String;
-    const TABLE_NAME: String;
+    const TABLE_NAME: &str;
     fn get_id(&self) -> String;
 }
 
@@ -61,7 +60,7 @@ impl<T: Model> DuckDbRepository<T> {
 impl<T: Model + 'static> Repository<T> for DuckDbRepository<T> {
     async fn ensure_table_exists(&self) -> Result<()> {
         let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::get_table_name();
+        let table_name = T::TABLE_NAME;
 
         if !database::table_exists(&conn, table_name)? {
             // Create the table if it doesn't exist
@@ -76,7 +75,7 @@ impl<T: Model + 'static> Repository<T> for DuckDbRepository<T> {
     async fn delete(&self, id: &str) -> Result<bool> {
         self.ensure_table_exists().await?;
         let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::get_table_name();
+        let table_name = T::TABLE_NAME;
         let sql = format!("DELETE FROM {} WHERE data->>'id' = ?", table_name);
 
         let mut stmt = conn.prepare(&sql)?;
@@ -88,7 +87,7 @@ impl<T: Model + 'static> Repository<T> for DuckDbRepository<T> {
     async fn find_all(&self) -> Result<Vec<T>> {
         self.ensure_table_exists().await?;
         let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::get_table_name();
+        let table_name = T::TABLE_NAME;
         let sql = format!("SELECT data FROM {}", table_name);
 
         let mut stmt = conn.prepare(&sql)?;
@@ -108,7 +107,7 @@ impl<T: Model + 'static> Repository<T> for DuckDbRepository<T> {
     async fn find_by_id(&self, id: &str) -> Result<Option<T>> {
         self.ensure_table_exists().await?;
         let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::get_table_name();
+        let table_name = T::TABLE_NAME;
         let sql = format!("SELECT data FROM {} WHERE data->>'id' = ?", table_name);
 
         let mut stmt = conn.prepare(&sql)?;
@@ -127,7 +126,7 @@ impl<T: Model + 'static> Repository<T> for DuckDbRepository<T> {
     async fn create<D: Serialize + Send>(&self, item: D) -> Result<T> {
         self.ensure_table_exists().await?;
         let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::get_table_name();
+        let table_name = T::TABLE_NAME;
 
         // Generate UUID for the new entity
         let id = Uuid::new_v4().to_string();
@@ -169,7 +168,7 @@ impl<T: Model + 'static> Repository<T> for DuckDbRepository<T> {
     async fn update<D: Serialize + Send>(&self, id: &str, item: D) -> Result<T> {
         self.ensure_table_exists().await?;
         let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::get_table_name();
+        let table_name = T::TABLE_NAME;
 
         // Get existing record to preserve created_at
         let sql = format!("SELECT data FROM {} WHERE data->>'id' = ?", table_name);
