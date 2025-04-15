@@ -2,10 +2,10 @@ mod app;
 mod commands;
 mod core;
 mod location;
-mod orders;
-mod person;
-mod product;
-mod warehouse;
+// mod orders;
+// mod person;
+// mod product;
+// mod warehouse;
 
 use argon2::{self, Config};
 
@@ -32,11 +32,11 @@ extern "C" {
 // Initialize all migrations from each module
 async fn init_migrations() {
     // Register migrations from each module
-    product::migration::register_migrations().await;
-    warehouse::migration::register_migrations().await;
+    // product::migration::register_migrations().await;
+    // warehouse::migration::register_migrations().await;
     location::migration::register_migrations().await;
-    person::migration::register_migrations().await;
-    orders::migration::register_migrations().await;
+    // person::migration::register_migrations().await;
+    // orders::migration::register_migrations().await;
 
     println!("All migrations registered successfully");
 }
@@ -52,6 +52,7 @@ pub async fn init(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
             let state = app.state::<async_runtime::Mutex<AppData>>();
             let mut app_data = state.lock().await;
             app_data.db_path = Some(db_path.clone());
+            drop(app_data);
 
             // Register all migrations
             init_migrations().await;
@@ -106,24 +107,24 @@ pub fn run() {
         // Register command handlers
         .invoke_handler(tauri::generate_handler![
             // Product commands
-            product::commands::get_products,
-            product::commands::add_product,
-            product::commands::get_categories,
-            product::commands::add_category,
-            product::commands::get_measure_units,
-            product::commands::create_measure_unit,
+            // product::commands::get_products,
+            // product::commands::add_product,
+            // product::commands::get_categories,
+            // product::commands::add_category,
+            // product::commands::get_measure_units,
+            // product::commands::create_measure_unit,
             // Warehouse commands
-            warehouse::commands::list_warehouses,
-            warehouse::commands::create_warehouse,
+            // warehouse::commands::list_warehouses,
+            // warehouse::commands::create_warehouse,
             // Location commands
             location::commands::list_locations,
             location::commands::create_location,
             // Person commands
-            person::commands::list_people,
-            person::commands::create_person,
+            // person::commands::list_people,
+            // person::commands::create_person,
             // Order commands
-            orders::commands::list_orders,
-            orders::commands::create_order,
+            // orders::commands::list_orders,
+            // orders::commands::create_order,
             // Other commands
             commands::set_complete,
             commands::check_migrations,

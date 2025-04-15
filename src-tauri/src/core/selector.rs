@@ -1,13 +1,36 @@
-use std::{collections::HashMap, ops::Deref};
-
-use duckdb::{Connection, ToSql};
-
 use super::{
     error::{Error, Result},
     helpers::random_string,
 };
+use duckdb::{params_from_iter, Connection, Rows, Statement, ToSql};
+use std::{collections::HashMap, ops::Deref, rc::Rc};
 
-struct Field {
+const REL_DETERMINER: &str = "__";
+
+fn resolve_field_string(f: String, rel_map: &HashMap<String, String>, current: String) -> String {
+    let mut res = "".to_string();
+    let parts: Vec<&str> = f.split(REL_DETERMINER).collect();
+    if parts.len() > 1 {
+        let column = parts.last().unwrap();
+        let relation = parts[..parts.len() - 1].join(REL_DETERMINER);
+        let scoped_relation = format!("{}{}{}", current, REL_DETERMINER, relation);
+        if rel_map.contains_key(&scoped_relation) {
+            res += &format!("{}_{}", rel_map.get(&scoped_relation).unwrap(), column);
+        } else {
+            res += &f;
+        }
+    } else {
+        let scoped_relation = current.to_string();
+        if rel_map.contains_key(&scoped_relation) {
+            res += &format!("{}_{}", rel_map.get(&scoped_relation).unwrap(), f);
+        } else {
+            res += &f;
+        }
+    }
+    res
+}
+
+pub struct Field {
     inner: Box<String>,
 }
 impl From<String> for Field {
@@ -24,14 +47,19 @@ impl From<&str> for Field {
         }
     }
 }
+impl Field {
+    fn resolve(&self, rel_map: &HashMap<String, String>, current: String) -> String {
+        resolve_field_string(*self.inner.to_owned(), rel_map, current)
+    }
+}
 
-struct Value {
-    inner: Box<dyn ToSql>,
+pub struct Value {
+    inner: Rc<dyn ToSql>,
 }
 impl<T: ToSql + Clone + 'static> From<T> for Value {
     fn from(item: T) -> Self {
         return Self {
-            inner: Box::new(item.to_owned()),
+            inner: Rc::new(item.to_owned()),
         };
     }
 }
@@ -57,8 +85,8 @@ impl From<String> for OderDirection {
 
 pub struct Selector {
     select: Option<Query>,
-    joins: Vec<Join>,
-    conditions: Option<Box<Condition>>,
+    joins: HashMap<String, Join>,
+    conditions: Vec<Condition>,
     rel_map: HashMap<String, String>,
     order: Option<Field>,
     order_direction: OderDirection,
@@ -69,8 +97,8 @@ impl Default for Selector {
     fn default() -> Self {
         return Self {
             select: None,
-            joins: Vec::new(),
-            conditions: None,
+            joins: HashMap::new(),
+            conditions: Vec::new(),
             rel_map: HashMap::new(),
             order: None,
             order_direction: OderDirection::ASC,
@@ -89,7 +117,7 @@ impl Selector {
         self.select = Some(query);
         self
     }
-    pub fn join(&mut self, mut with: Join, join_as: String) {
+    pub fn with(&mut self, join: Join, join_as: String) {
         let mut join_prefix;
         loop {
             join_prefix = random_string(4);
@@ -98,8 +126,7 @@ impl Selector {
                 break;
             }
         }
-        with.set_shorthand(join_prefix.to_owned());
-        self.joins.push(with);
+        self.joins.insert(join_prefix, join);
     }
     pub fn order(&mut self, column: Field, direction: OderDirection) -> &mut Self {
         self.order = Some(column);
@@ -117,94 +144,153 @@ impl Selector {
         operation: Operations,
         compared: Internal,
     ) -> &mut Condition {
-        let new_condition = Box::new(Condition {
+        let new_condition = Condition {
             comparable: Box::new(comparable),
             operation,
             compared: Box::new(compared),
             and: None,
             or: None,
-        });
-        self.conditions = Some(new_condition);
-        self.conditions.as_deref_mut().unwrap()
+        };
+        self.conditions.push(new_condition);
+        self.conditions.last_mut().unwrap()
     }
-    pub fn all<'a>(&mut self, connection: &'a Connection) -> Result<()> {
-        let query = self.get_sql();
-        let mut stmt = connection.prepare(&query).map_err(Error::from)?;
-        // params_from_iter
-        let mut rows = stmt.query(
-            params
-                .into_iter()
-                .map(|p| p.as_ref())
-                .collect::<Vec<_>>()
-                .as_slice(),
-        )?;
-        Ok(())
+    pub fn all<'a>(&mut self, connection: &'a Connection) -> Result<Statement<'a>> {
+        let (query, params) = self.get_sql();
+        let mut stmt: Statement<'a> = connection.prepare(&query).map_err(Error::from)?;
+        stmt.execute(params_from_iter(params.into_iter()))
+            .map_err(Error::from)?;
+        return Ok(stmt);
     }
 }
 impl Selector {
-    fn get_sql(&self) -> String {
-        let selections = self.get_selection();
-        "".to_string()
-    }
-    fn get_conditions(&self) -> Option<String> {
-        match self.conditions {
-            Some(cond) => Some(cond.get_sql("".to_string(), |e| {
-                if self.select.is_some() {
-                    let selection = self.select.unwrap();
-                    if selection.columns.contains(x)
+    fn get_rel_map(&self, scope_shorthand: String) -> HashMap<String, String> {
+        let mut res = HashMap::new();
+        match &self.select {
+            Some(s) => {
+                for (rel, shorthand) in self.rel_map.iter() {
+                    let scope_rel = rel.to_owned();
+                    let scope_shorthand = scope_shorthand.to_owned() + REL_DETERMINER + &shorthand;
+                    res.insert(scope_rel.to_owned(), scope_shorthand.to_owned());
+                    if let Some(v) = self.joins.get(rel) {
+                        let value = v
+                            .get_rel_map(scope_rel.to_owned(), scope_shorthand.to_owned())
+                            .to_owned();
+                        for (k, v) in value.iter() {
+                            res.insert(k.to_owned(), v.to_owned());
+                        }
+                    }
                 }
-            })),
-            None => None,
-        }
+            }
+            None => {}
+        };
+        res
     }
-    fn get_selection(&self) -> String {
+    fn get_sql(&self) -> (String, Vec<Rc<dyn ToSql>>) {
+        if let Some(super_select) = &self.select {
+            let scope = random_string(1);
+            let mut value_registry: Vec<Rc<dyn ToSql>> = Vec::new();
+            let rel_map = self.get_rel_map(scope.to_owned());
+            let selections = self.get_selection(&rel_map, scope.to_owned());
+            let joins = self.get_joins(scope.to_owned(), &mut value_registry);
+            let conditions = self.get_conditions(&rel_map, scope.to_owned(), &mut value_registry);
+            let mut res = format!(
+                "
+                SELECT
+                    {}
+                FROM {} {}
+                {}
+                WHERE
+                    {}
+            ",
+                selections, super_select.table_name, scope, joins, conditions
+            )
+            .to_string();
+            if let Some(order) = &self.order {
+                res += format!("\nORDER BY {}", order.resolve(&rel_map, scope)).as_str();
+            }
+            if let Some(limit) = self.limit {
+                res += format!("\nLIMIT {}", limit).as_str();
+            }
+            if let Some(offset) = self.offset {
+                res += format!("\nOFFSET {}", offset).as_str();
+            }
+            return (res, value_registry);
+        }
+        ("".to_string(), Vec::new())
+    }
+    fn get_conditions(
+        &self,
+        rel_map: &HashMap<String, String>,
+        current: String,
+        registry: &mut Vec<Rc<dyn ToSql>>,
+    ) -> String {
+        let mut res = "".to_string();
+        res += self
+            .conditions
+            .iter()
+            .map(|e| "(".to_string() + &e.get_sql(rel_map, current.to_owned(), registry) + ")")
+            .collect::<Vec<String>>()
+            .join("AND")
+            .as_str();
+        res
+    }
+    fn get_selection(&self, rel_map: &HashMap<String, String>, current: String) -> String {
         let mut res = "".to_string();
         if self.select.is_some() {
             match &self.select {
                 Some(selections) => {
-                    res += selections.get_sql().as_str();
-                },
-                None => {},
+                    res += selections.get_sql(current.to_owned()).as_str();
+                    res += "\n";
+                }
+                None => {}
             };
         }
-        
+
         if self.joins.len() > 0 {
             res += self
-                    .joins
-                    .iter()
-                    .map(|e| e.get_selections())
-                    .collect::<Vec<String>>()
-                    .join("\n")
-                    .as_str();
+                .joins
+                .iter()
+                .map(|(scope, e)| {
+                    e.get_selections(&rel_map, current.to_owned() + REL_DETERMINER + &*scope)
+                })
+                .collect::<Vec<String>>()
+                .join("\n")
+                .as_str();
         }
         res
+    }
+    fn get_joins(&self, scope: String, registry: &mut Vec<Rc<dyn ToSql>>) -> String {
+        self.joins
+            .iter()
+            .map(|(rel, e)| e.get_joins(scope.to_owned() + REL_DETERMINER + &*rel, registry))
+            .collect::<Vec<String>>()
+            .join("\n")
     }
 }
 
 struct Query {
     columns: Vec<String>,
     table_name: String,
-    shorthand: String,
 }
 impl Default for Query {
     fn default() -> Self {
         return Self {
             columns: Vec::new(),
             table_name: "".to_string(),
-            shorthand: "".to_string(),
         };
     }
 }
 impl Query {}
 impl Query {
-    pub fn get_sql(&self) -> String {
+    pub fn get_sql(&self, scope: String) -> String {
         self.columns
             .iter()
             .map(|e| {
-                format!(
-                    "\t{shorthand}.{e} AS {shorthand}_{e}",
-                    shorthand = self.shorthand,
-                )
+                if scope.len() > 0 {
+                    format!("\t{scope}{REL_DETERMINER}.{e} AS {scope}{REL_DETERMINER}{e}",)
+                } else {
+                    format!("\t{e} AS {e}")
+                }
             })
             .collect::<Vec<String>>()
             .join("\n")
@@ -224,7 +310,7 @@ impl Into<&str> for Operations {
         }
     }
 }
-struct Condition {
+pub struct Condition {
     comparable: Box<Internal>,
     operation: Operations,
     compared: Box<Internal>,
@@ -266,18 +352,21 @@ impl Condition {
     }
 }
 impl Condition {
-    fn get_sql<T>(&self, scope: String, field_resolver: T) -> String
-    where
-        T: Fn(String, &Field) -> String,
-    {
+    fn get_sql(
+        &self,
+        rel_map: &HashMap<String, String>,
+        current: String,
+        registry: &mut Vec<Rc<dyn ToSql>>,
+    ) -> String {
         let mut res = "".to_string();
         match self.comparable.deref() {
             Internal::Field(name) => {
-                let tmp = field_resolver(scope.to_owned(), name);
+                let tmp = name.resolve(rel_map, current.to_owned());
                 res += tmp.as_str();
             }
-            Internal::Value(_) => {
+            Internal::Value(v) => {
                 res += "?";
+                registry.push(v.inner.to_owned());
             }
         };
         res += " ";
@@ -285,25 +374,30 @@ impl Condition {
         res += " ";
         match self.compared.deref() {
             Internal::Field(name) => {
-                let tmp = field_resolver(scope.to_owned(), name);
+                let tmp = name.resolve(rel_map, current.to_owned());
                 res += tmp.as_str();
             }
-            Internal::Value(_) => {
+            Internal::Value(v) => {
                 res += "?";
+                registry.push(v.inner.to_owned());
             }
         };
         if self.and.is_some() {
             res += " ";
             let and_cond = self.and.as_ref().unwrap();
             res += "AND (";
-            res += and_cond.get_sql(scope.to_owned(), &field_resolver).as_str();
+            res += and_cond
+                .get_sql(rel_map, current.to_owned(), registry)
+                .as_str();
             res += ")";
         }
         if self.or.is_some() {
             res += " ";
             let or_cond = self.or.as_ref().unwrap();
             res += "AND (";
-            res += or_cond.get_sql(scope.to_owned(), &field_resolver).as_str();
+            res += or_cond
+                .get_sql(rel_map, current.to_owned(), registry)
+                .as_str();
             res += ")";
         }
         res
@@ -321,28 +415,52 @@ impl Default for Condition {
     }
 }
 
-
+#[derive(Clone, Copy)]
 enum JoinMethod {
     LeftJoin,
     RightJoin,
     FullJoin,
 }
+impl Into<&str> for JoinMethod {
+    fn into(self) -> &'static str {
+        match self {
+            JoinMethod::LeftJoin => "LEFT JOIN",
+            JoinMethod::RightJoin => "RIGHT JOIN",
+            JoinMethod::FullJoin => "JOIN",
+        }
+    }
+}
 struct Join {
     select: Option<Query>,
+    joins: HashMap<String, Join>,
     table_name: String,
-    shorthand: String,
     join_on: Condition,
+    rel_map: HashMap<String, String>,
     join_method: JoinMethod,
 }
 impl Join {
-    pub fn to(table_name: &str, join_method: JoinMethod, join_on: Condition) -> Self {
-        return Self {
+    pub fn to<T>(
+        table_name: &str,
+        join_method: JoinMethod,
+        join_on: Condition,
+        caller: Option<T>,
+    ) -> Self
+    where
+        T: FnOnce(&Join) -> (),
+    {
+        let res = Self {
             table_name: table_name.to_string(),
-            shorthand: "".to_string(),
             join_method,
             join_on,
-            select: None
+            rel_map: HashMap::new(),
+            joins: HashMap::new(),
+            select: None,
         };
+        if caller.is_some() {
+            let caller = caller.unwrap();
+            caller(&res);
+        }
+        res
     }
     pub fn select(&mut self, cols: Vec<String>) -> &mut Self {
         let query = Query {
@@ -353,15 +471,96 @@ impl Join {
         self.select = Some(query);
         self
     }
+    pub fn with(&mut self, join: Join, join_as: String) {
+        let mut join_prefix;
+        if self.rel_map.contains_key(&join_as) {
+            // TODO: maybe add warning?
+            return;
+        }
+        loop {
+            join_prefix = random_string(4);
+            if self
+                .rel_map
+                .values()
+                .find(|&e| *e == join_prefix.to_owned())
+                .is_none()
+            {
+                self.rel_map.insert(join_as, join_prefix.to_owned());
+                break;
+            }
+        }
+        self.joins.insert(join_prefix, join);
+    }
 }
 impl Join {
-    fn set_shorthand(&mut self, shorthand: String) {
-        self.shorthand = shorthand;
-    }
-    fn get_selections(&self) -> String {
-        if self.select.is_some() {
-            return self.select.as_ref().unwrap().get_sql();
+    fn get_rel_map(&self, scope_rel: String, scope_shorthand: String) -> HashMap<String, String> {
+        let mut res = HashMap::new();
+        for (rel, shorthand) in self.rel_map.iter() {
+            let tmp_scope_rel;
+            let tmp_scope_shorthand;
+            if scope_rel.len() > 0 {
+                tmp_scope_rel = scope_rel.to_owned() + REL_DETERMINER + &rel;
+            } else {
+                tmp_scope_rel = rel.to_owned();
+            }
+            if scope_shorthand.len() > 0 {
+                tmp_scope_shorthand = scope_shorthand.to_owned() + REL_DETERMINER + &shorthand;
+            } else {
+                tmp_scope_shorthand = rel.to_owned();
+            }
+            res.insert(tmp_scope_rel.to_owned(), tmp_scope_shorthand.to_owned());
+            if let Some(v) = self.joins.get(rel) {
+                let value = v
+                    .get_rel_map(tmp_scope_rel.to_owned(), tmp_scope_shorthand.to_owned())
+                    .to_owned();
+                for (k, v) in value.iter() {
+                    res.insert(k.to_owned(), v.to_owned());
+                }
+            }
         }
-        return "".to_string();
+        res
+    }
+    fn get_selections(&self, rel_map: &HashMap<String, String>, current: String) -> String {
+        let mut res = "".to_string();
+        if self.select.is_some() {
+            res += self
+                .select
+                .as_ref()
+                .unwrap()
+                .get_sql(current.to_owned())
+                .as_str();
+        }
+        if self.joins.len() > 0 {
+            res += "\n";
+            res += self
+                .joins
+                .iter()
+                .map(|(rel, e)| {
+                    e.get_selections(&rel_map, current.to_owned() + REL_DETERMINER + &*rel)
+                })
+                .collect::<Vec<String>>()
+                .join("\n")
+                .as_str();
+        }
+        return res;
+    }
+    fn get_joins(&self, scope: String, registry: &mut Vec<Rc<dyn ToSql>>) -> String {
+        let mut local_rel = self.get_rel_map(String::new(), scope.to_owned());
+        local_rel.insert("0".to_string(), scope.to_owned());
+        let mut res = format!(
+            "{} {} {} ON {}",
+            <JoinMethod as Into<&str>>::into(self.join_method),
+            self.table_name,
+            scope,
+            self.join_on.get_sql(&local_rel, "0".to_string(), registry)
+        )
+        .to_string();
+        res += "\n";
+        for (rel, e) in self.joins.iter() {
+            res += e
+                .get_joins(scope.to_owned() + REL_DETERMINER + &*rel, registry)
+                .as_str();
+        }
+        res
     }
 }

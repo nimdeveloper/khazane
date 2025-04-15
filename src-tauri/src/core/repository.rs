@@ -229,7 +229,7 @@ impl<T: Model + 'static> Repository<T> for DuckDbRepository<T> {
 /// Get a repository for the specific model type
 pub async fn get_repository<T: Model + 'static>(
     state: &tauri::State<'_, Mutex<AppData>>,
-) -> Result<impl Repository<T>> {
+) -> Result<DuckDbRepository<T>> {
     // Make sure we have a database connection
     let app_data = state.lock().await;
 
