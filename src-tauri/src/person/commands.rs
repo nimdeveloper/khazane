@@ -1,14 +1,16 @@
+#![allow(dead_code)]
 use tauri::{async_runtime::Mutex, State};
 
 use crate::{
     app::AppData,
-    core::{
-        error::Result,
-        repository::{self, Repository},
-    },
+    core::{error::Result, repository},
 };
 
-use super::{inputs::PersonDto, model::Person, query::{self, FilterOptions}};
+use super::{
+    inputs::PersonDto,
+    model::Person,
+    query::{self, FilterOptions},
+};
 
 #[tauri::command]
 pub async fn list_people(
@@ -21,7 +23,8 @@ pub async fn list_people(
         Err(e) => {
             eprintln!("Error in get_person_with_filter: {}", e);
             // Fallback to the original implementation
-            repo.find_all().await
+            // repo.find_all().await
+            Err(e)
         }
     }
 }
@@ -36,7 +39,8 @@ pub async fn get_person_by_id(
         Ok(person) => Ok(person),
         Err(e) => {
             eprintln!("Error in get_person_by_id: {}", e);
-            repo.find_by_id(&id).await
+            Err(e)
+            // repo.find_by_id(&id).await
         }
     }
 }
@@ -48,7 +52,8 @@ pub async fn create_person(state: State<'_, Mutex<AppData>>, person: PersonDto) 
         Ok(person) => Ok(person),
         Err(e) => {
             eprintln!("Error in create_person: {}", e);
-            repo.create(person).await
+            // repo.create(person).await
+            Err(e)
         }
     }
 }
@@ -64,7 +69,8 @@ pub async fn update_person(
         Ok(person) => Ok(person),
         Err(e) => {
             eprintln!("Error in update_person: {}", e);
-            repo.update(&id, person).await
+            // repo.update(&id, person).await
+            Err(e)
         }
     }
 }

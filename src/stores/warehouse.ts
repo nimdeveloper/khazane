@@ -14,10 +14,9 @@ export const useMyWarehouseStore = defineStore("myWarehouseStore", {
         },
         async addWareHouse(wareHouse: WareHouse) {
             await this.loadWareHouses();
-
-            let res = await apiWithTauri().warehouse.saveWareHouse(
-                wareHouse.toInterface()
-            );
+            let data = wareHouse.toInterface();
+            delete (data as any).id;
+            let res = await apiWithTauri().warehouse.saveWareHouse(data);
             let instance = null;
             if (res) {
                 instance = WareHouse.fromInterface(res);

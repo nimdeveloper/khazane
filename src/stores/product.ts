@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import { apiWithTauri } from "~/api/tauri";
-import { ComplexID } from "~/interfaces/_base";
 import {
     ProductCategory,
     ProductUnit,
@@ -102,9 +101,9 @@ export const useMyProductStore = defineStore("myProductStore", {
         // Category
         async addCategory(label: string) {
             if (!this.tauri) return;
-            const category = new ProductCategory(ComplexID.empty(), label);
+            const category = new ProductCategory(0, label);
             let data = category.toInterface();
-            delete (data as any).key;
+            delete (data as any).id;
             let res = await apiWithTauri().products.saveProductCategory(data);
             let instance: ProductCategory | null = null;
             if (res) {

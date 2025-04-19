@@ -27,7 +27,8 @@ pub async fn register_migrations() {
             updated_at TIMESTAMP
         )
         "#,
-        "DROP TABLE IF EXISTS location"
+        "DROP TABLE IF EXISTS location",
+        "location.1"
     )
     .await;
 }

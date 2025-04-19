@@ -8,7 +8,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ComplexID } from "~/interfaces/_base";
 import { Order } from "~/interfaces/order";
 import { useMeasureStore } from "~/stores/measure";
 
@@ -16,7 +15,7 @@ definePageMeta({ layout: "new-order" });
 
 const measurementStore = useMeasureStore();
 
-const order = ref(new Order(ComplexID.empty()));
+const order = ref(new Order(0));
 
 const { storage } = useTempOrder();
 

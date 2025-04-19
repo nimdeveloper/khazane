@@ -1,7 +1,6 @@
 use crate::core::error::{custom_error, Result};
 use crate::core::repository::DuckDbRepository;
-use crate::core::selector::{Internal, OderDirection, Operations};
-use chrono::Utc;
+use crate::core::selector::{Internal, Operations, OrderDirection};
 use serde::Deserialize;
 
 use super::inputs::LocationDto;
@@ -23,7 +22,6 @@ pub fn get_location_with_filter(
     let conn: duckdb::Connection = repo.get_connection()?;
 
     let mut query = Location::select();
-
     // let mut params: Vec<Box<dyn ToSql>> = Vec::new();
 
     if let Some(search_term) = &filters.search_term {
@@ -41,37 +39,30 @@ pub fn get_location_with_filter(
             // query.push_str(&format!(" ORDER BY l.{} {}", sort_by, sort_order));
             query.order(sort_by.to_owned().into(), sort_order.to_owned().into());
         } else {
-            query.order(sort_by.to_owned().into(), OderDirection::DESC);
+            query.order(sort_by.to_owned().into(), OrderDirection::DESC);
         }
     } else {
-        query.order("id".into(), OderDirection::DESC);
+        query.order("id".into(), OrderDirection::DESC);
     }
 
     // Add pagination
     if let (Some(limit), Some(offset)) = (filters.limit, filters.offset) {
         query.paginate(limit, Some(offset));
-        // query.push_str(" LIMIT ? OFFSET ?");
-        // params.push(Box::new(limit));
-        // params.push(Box::new(offset));
     } else if let Some(limit) = filters.limit {
         query.paginate(limit, None);
-        // query.push_str(" LIMIT ?");
-        // params.push(Box::new(limit));
     }
     let mut locations: Vec<Location> = Vec::new();
-    let result = query.all(&conn);
-    if let Ok(stmt) = result {
-        let mut rows = stmt.raw_query();
-        while let Some(row) = rows.next()? {
-            let location = Location::from_row(row, &stmt);
-            if let Ok(location) = location {
-                if !(locations.iter().filter(|&e| e.id == location.id).count() > 0) {
-                    locations.push(location);
-                }
+    let (stmt, translate) = query.all(&conn)?;
+
+    let mut rows = stmt.raw_query();
+    while let Some(row) = rows.next()? {
+        let location = Location::from_row(row, &translate);
+        if let Ok(location) = location {
+            if !(locations.iter().filter(|&e| e.id == location.id).count() > 0) {
+                locations.push(location);
             }
         }
     }
-
     Ok(locations)
 }
 
@@ -85,13 +76,11 @@ pub fn get_location_by_id(repo: &DuckDbRepository<Location>, id: &str) -> Result
         Internal::Value(id.to_string().into()),
     );
 
-    let result = query.all(&conn);
-    if let Ok(stmt) = result {
-        let mut rows = stmt.raw_query();
-        if let Some(row) = rows.next()? {
-            let location: Location = Location::from_row(row, &stmt)?;
-            return Ok(Some(location));
-        }
+    let (stmt, translate) = query.all(&conn)?;
+    let mut rows = stmt.raw_query();
+    if let Some(row) = rows.next()? {
+        let location: Location = Location::from_row(row, &translate)?;
+        return Ok(Some(location));
     }
     Ok(None)
 }
@@ -102,35 +91,10 @@ pub fn create_location(
 ) -> Result<Location> {
     let conn = repo.get_connection()?;
 
-    // Generate new UUID
-    let now = Utc::now();
-
     // Create the location with fields from DTO
-    let location = Location {
-        id: -1,
-        name: location_dto.name.clone(),
-        created_at: Some(now.naive_utc()),
-        updated_at: Some(now.naive_utc()),
-    };
+    let mut location = Location::new(location_dto.name.clone());
+    location.save(&conn)?;
     Ok(location)
-    // // Insert into the database
-    // let (insert_sql, data) = location.get_insert_query();
-    // if insert_sql.len() > 0 {
-    //     let mut stmt = conn.prepare(&insert_sql)?;
-    //     stmt.insert(&data)?;
-
-    //     return match stmt.raw_query().next()? {
-    //         Some(row) => {
-    //             let id = row.get(stmt.column_index("id")?)?;
-    //             location.id = id;
-    //             Ok(location)
-    //         }
-    //         None => Err(custom_error("failed to insert at 'location'!")),
-    //     };
-    //     Err(custom_error(
-    //         "Failed to get insert query for Location model!",
-    //     ))
-    // }
 }
 
 pub fn update_location(
@@ -147,20 +111,10 @@ pub fn update_location(
     }
 
     let mut location = location_check.unwrap();
-    let now = Utc::now();
 
     // Update fields
     location.name = location_dto.name.clone();
-    location.updated_at = Some(now.naive_utc());
+
+    location.save(&conn)?;
     Ok(location)
-    // Update in the database
-    // let (update_sql, data) = location.get_update_query();
-    // if update_sql.len() > 0 {
-    //     let mut stmt = conn.prepare(&update_sql)?;
-    //     stmt.update(&data)?;
-    //     Ok(location)
-    // }
-    // Err(custom_error(
-    //     "Failed to get update query for Location model!",
-    // ))
 }

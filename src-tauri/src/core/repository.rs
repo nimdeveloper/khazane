@@ -1,16 +1,13 @@
 #![allow(dead_code)]
 use async_trait::async_trait;
-use chrono::Utc;
-use duckdb::params;
 use duckdb::Connection;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::marker::PhantomData;
 use tauri::async_runtime::Mutex;
-use uuid::Uuid;
 
 use crate::app::AppData;
 use crate::core::database;
-use crate::core::error::{custom_error, Error, Result};
+use crate::core::error::{custom_error, Result};
 
 /// Base model trait that all models must implement
 pub trait Model: Serialize + DeserializeOwned + Send + Sync {
@@ -28,11 +25,11 @@ pub struct Timestamps {
 /// Repository trait for database operations
 #[async_trait]
 pub trait Repository<T: Model> {
-    async fn find_all(&self) -> Result<Vec<T>>;
-    async fn find_by_id(&self, id: &str) -> Result<Option<T>>;
-    async fn create<D: Serialize + Send>(&self, item: D) -> Result<T>;
-    async fn update<D: Serialize + Send>(&self, id: &str, item: D) -> Result<T>;
-    async fn delete(&self, id: &str) -> Result<bool>;
+    // async fn find_all(&self) -> Result<Vec<T>>;
+    // async fn find_by_id(&self, id: &str) -> Result<Option<T>>;
+    // async fn create<D: Serialize + Send>(&self, item: D) -> Result<T>;
+    // async fn update<D: Serialize + Send>(&self, id: &str, item: D) -> Result<T>;
+    // async fn delete(&self, id: &str) -> Result<bool>;
 
     // New method to ensure the table exists
     async fn ensure_table_exists(&self) -> Result<()>;
@@ -72,158 +69,158 @@ impl<T: Model + 'static> Repository<T> for DuckDbRepository<T> {
         Ok(())
     }
 
-    async fn delete(&self, id: &str) -> Result<bool> {
-        self.ensure_table_exists().await?;
-        let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::TABLE_NAME;
-        let sql = format!("DELETE FROM {} WHERE data->>'id' = ?", table_name);
+    // async fn delete(&self, id: &str) -> Result<bool> {
+    //     self.ensure_table_exists().await?;
+    //     let conn = database::get_connection(self.db_path.as_str())?;
+    //     let table_name = T::TABLE_NAME;
+    //     let sql = format!("DELETE FROM {} WHERE data->>'id' = ?", table_name);
 
-        let mut stmt = conn.prepare(&sql)?;
-        let count = stmt.execute([id]).map_err(Error::from)?;
+    //     let mut stmt = conn.prepare(&sql)?;
+    //     let count = stmt.execute([id]).map_err(Error::from)?;
 
-        Ok(count > 0)
-    }
+    //     Ok(count > 0)
+    // }
 
-    async fn find_all(&self) -> Result<Vec<T>> {
-        self.ensure_table_exists().await?;
-        let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::TABLE_NAME;
-        let sql = format!("SELECT data FROM {}", table_name);
+    // async fn find_all(&self) -> Result<Vec<T>> {
+    //     self.ensure_table_exists().await?;
+    //     let conn = database::get_connection(self.db_path.as_str())?;
+    //     let table_name = T::TABLE_NAME;
+    //     let sql = format!("SELECT data FROM {}", table_name);
 
-        let mut stmt = conn.prepare(&sql)?;
-        let mut rows = stmt.query([]).map_err(Error::from)?;
+    //     let mut stmt = conn.prepare(&sql)?;
+    //     let mut rows = stmt.query([]).map_err(Error::from)?;
 
-        let mut items = Vec::new();
-        while let Some(row) = rows.next().map_err(Error::from)? {
-            let json_str: String = row.get(0).map_err(Error::from)?;
-            let item: T = serde_json::from_str(&json_str)
-                .map_err(|e| custom_error(format!("Failed to deserialize: {}", e)))?;
-            items.push(item);
-        }
+    //     let mut items = Vec::new();
+    //     while let Some(row) = rows.next().map_err(Error::from)? {
+    //         let json_str: String = row.get(0).map_err(Error::from)?;
+    //         let item: T = serde_json::from_str(&json_str)
+    //             .map_err(|e| custom_error(format!("Failed to deserialize: {}", e)))?;
+    //         items.push(item);
+    //     }
 
-        Ok(items)
-    }
+    //     Ok(items)
+    // }
 
-    async fn find_by_id(&self, id: &str) -> Result<Option<T>> {
-        self.ensure_table_exists().await?;
-        let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::TABLE_NAME;
-        let sql = format!("SELECT data FROM {} WHERE data->>'id' = ?", table_name);
+    // async fn find_by_id(&self, id: &str) -> Result<Option<T>> {
+    //     self.ensure_table_exists().await?;
+    //     let conn = database::get_connection(self.db_path.as_str())?;
+    //     let table_name = T::TABLE_NAME;
+    //     let sql = format!("SELECT data FROM {} WHERE data->>'id' = ?", table_name);
 
-        let mut stmt = conn.prepare(&sql)?;
-        let mut rows = stmt.query([id]).map_err(Error::from)?;
+    //     let mut stmt = conn.prepare(&sql)?;
+    //     let mut rows = stmt.query([id]).map_err(Error::from)?;
 
-        if let Some(row) = rows.next().map_err(Error::from)? {
-            let json_str: String = row.get(0).map_err(Error::from)?;
-            let item: T = serde_json::from_str(&json_str)
-                .map_err(|e| custom_error(format!("Failed to deserialize: {}", e)))?;
-            Ok(Some(item))
-        } else {
-            Ok(None)
-        }
-    }
+    //     if let Some(row) = rows.next().map_err(Error::from)? {
+    //         let json_str: String = row.get(0).map_err(Error::from)?;
+    //         let item: T = serde_json::from_str(&json_str)
+    //             .map_err(|e| custom_error(format!("Failed to deserialize: {}", e)))?;
+    //         Ok(Some(item))
+    //     } else {
+    //         Ok(None)
+    //     }
+    // }
 
-    async fn create<D: Serialize + Send>(&self, item: D) -> Result<T> {
-        self.ensure_table_exists().await?;
-        let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::TABLE_NAME;
+    // async fn create<D: Serialize + Send>(&self, item: D) -> Result<T> {
+    //     self.ensure_table_exists().await?;
+    //     let conn = database::get_connection(self.db_path.as_str())?;
+    //     let table_name = T::TABLE_NAME;
 
-        // Generate UUID for the new entity
-        let id = Uuid::new_v4().to_string();
+    //     // Generate UUID for the new entity
+    //     let id = Uuid::new_v4().to_string();
 
-        // Add timestamps
-        let now = Utc::now();
+    //     // Add timestamps
+    //     let now = Utc::now();
 
-        // Create a combination of the item with ID and timestamps
-        let mut json_value = serde_json::to_value(item)
-            .map_err(|e| custom_error(format!("Failed to serialize: {}", e)))?;
+    //     // Create a combination of the item with ID and timestamps
+    //     let mut json_value = serde_json::to_value(item)
+    //         .map_err(|e| custom_error(format!("Failed to serialize: {}", e)))?;
 
-        if let serde_json::Value::Object(ref mut map) = json_value {
-            map.insert("id".to_string(), serde_json::Value::String(id));
-            map.insert(
-                "created_at".to_string(),
-                serde_json::Value::String(now.to_rfc3339()),
-            );
-            map.insert(
-                "updated_at".to_string(),
-                serde_json::Value::String(now.to_rfc3339()),
-            );
-        }
+    //     if let serde_json::Value::Object(ref mut map) = json_value {
+    //         map.insert("id".to_string(), serde_json::Value::String(id));
+    //         map.insert(
+    //             "created_at".to_string(),
+    //             serde_json::Value::String(now.to_rfc3339()),
+    //         );
+    //         map.insert(
+    //             "updated_at".to_string(),
+    //             serde_json::Value::String(now.to_rfc3339()),
+    //         );
+    //     }
 
-        let json_str = serde_json::to_string(&json_value)
-            .map_err(|e| custom_error(format!("Failed to serialize to string: {}", e)))?;
+    //     let json_str = serde_json::to_string(&json_value)
+    //         .map_err(|e| custom_error(format!("Failed to serialize to string: {}", e)))?;
 
-        // Insert the entity into the table
-        let sql = format!("INSERT INTO {} (data) VALUES (?)", table_name);
-        let mut stmt = conn.prepare(&sql)?;
-        stmt.execute([json_str.clone()]).map_err(Error::from)?;
+    //     // Insert the entity into the table
+    //     let sql = format!("INSERT INTO {} (data) VALUES (?)", table_name);
+    //     let mut stmt = conn.prepare(&sql)?;
+    //     stmt.execute([json_str.clone()]).map_err(Error::from)?;
 
-        // Deserialize back to the model type
-        let item: T = serde_json::from_str(&json_str)
-            .map_err(|e| custom_error(format!("Failed to deserialize created item: {}", e)))?;
+    //     // Deserialize back to the model type
+    //     let item: T = serde_json::from_str(&json_str)
+    //         .map_err(|e| custom_error(format!("Failed to deserialize created item: {}", e)))?;
 
-        Ok(item)
-    }
+    //     Ok(item)
+    // }
 
-    async fn update<D: Serialize + Send>(&self, id: &str, item: D) -> Result<T> {
-        self.ensure_table_exists().await?;
-        let conn = database::get_connection(self.db_path.as_str())?;
-        let table_name = T::TABLE_NAME;
+    // async fn update<D: Serialize + Send>(&self, id: &str, item: D) -> Result<T> {
+    //     self.ensure_table_exists().await?;
+    //     let conn = database::get_connection(self.db_path.as_str())?;
+    //     let table_name = T::TABLE_NAME;
 
-        // Get existing record to preserve created_at
-        let sql = format!("SELECT data FROM {} WHERE data->>'id' = ?", table_name);
-        let mut stmt = conn.prepare(&sql)?;
-        let mut rows = stmt.query([id]).map_err(Error::from)?;
+    //     // Get existing record to preserve created_at
+    //     let sql = format!("SELECT data FROM {} WHERE data->>'id' = ?", table_name);
+    //     let mut stmt = conn.prepare(&sql)?;
+    //     let mut rows = stmt.query([id]).map_err(Error::from)?;
 
-        let existing_json = if let Some(row) = rows.next().map_err(Error::from)? {
-            let json_str: String = row.get(0).map_err(Error::from)?;
-            serde_json::from_str::<serde_json::Value>(&json_str)
-                .map_err(|e| custom_error(format!("Failed to parse existing JSON: {}", e)))?
-        } else {
-            return Err(custom_error(format!("Record with id {} not found", id)));
-        };
+    //     let existing_json = if let Some(row) = rows.next().map_err(Error::from)? {
+    //         let json_str: String = row.get(0).map_err(Error::from)?;
+    //         serde_json::from_str::<serde_json::Value>(&json_str)
+    //             .map_err(|e| custom_error(format!("Failed to parse existing JSON: {}", e)))?
+    //     } else {
+    //         return Err(custom_error(format!("Record with id {} not found", id)));
+    //     };
 
-        // Extract created_at from existing record
-        let created_at = if let serde_json::Value::Object(ref map) = existing_json {
-            map.get("created_at").cloned()
-        } else {
-            None
-        };
+    //     // Extract created_at from existing record
+    //     let created_at = if let serde_json::Value::Object(ref map) = existing_json {
+    //         map.get("created_at").cloned()
+    //     } else {
+    //         None
+    //     };
 
-        // Add id, created_at, and updated_at to the update
-        let mut json_value = serde_json::to_value(item)
-            .map_err(|e| custom_error(format!("Failed to serialize: {}", e)))?;
+    //     // Add id, created_at, and updated_at to the update
+    //     let mut json_value = serde_json::to_value(item)
+    //         .map_err(|e| custom_error(format!("Failed to serialize: {}", e)))?;
 
-        let now = Utc::now();
+    //     let now = Utc::now();
 
-        if let serde_json::Value::Object(ref mut map) = json_value {
-            map.insert("id".to_string(), serde_json::Value::String(id.to_string()));
+    //     if let serde_json::Value::Object(ref mut map) = json_value {
+    //         map.insert("id".to_string(), serde_json::Value::String(id.to_string()));
 
-            if let Some(created_at) = created_at {
-                map.insert("created_at".to_string(), created_at);
-            }
+    //         if let Some(created_at) = created_at {
+    //             map.insert("created_at".to_string(), created_at);
+    //         }
 
-            map.insert(
-                "updated_at".to_string(),
-                serde_json::Value::String(now.to_rfc3339()),
-            );
-        }
+    //         map.insert(
+    //             "updated_at".to_string(),
+    //             serde_json::Value::String(now.to_rfc3339()),
+    //         );
+    //     }
 
-        let json_str = serde_json::to_string(&json_value)
-            .map_err(|e| custom_error(format!("Failed to serialize to string: {}", e)))?;
+    //     let json_str = serde_json::to_string(&json_value)
+    //         .map_err(|e| custom_error(format!("Failed to serialize to string: {}", e)))?;
 
-        // Update the record
-        let sql = format!("UPDATE {} SET data = ? WHERE data->>'id' = ?", table_name);
-        let mut stmt = conn.prepare(&sql)?;
-        stmt.execute(params![json_str.clone(), id])
-            .map_err(Error::from)?;
+    //     // Update the record
+    //     let sql = format!("UPDATE {} SET data = ? WHERE data->>'id' = ?", table_name);
+    //     let mut stmt = conn.prepare(&sql)?;
+    //     stmt.execute(params![json_str.clone(), id])
+    //         .map_err(Error::from)?;
 
-        // Deserialize back to the model type
-        let updated_item: T = serde_json::from_str(&json_str)
-            .map_err(|e| custom_error(format!("Failed to deserialize updated item: {}", e)))?;
+    //     // Deserialize back to the model type
+    //     let updated_item: T = serde_json::from_str(&json_str)
+    //         .map_err(|e| custom_error(format!("Failed to deserialize updated item: {}", e)))?;
 
-        Ok(updated_item)
-    }
+    //     Ok(updated_item)
+    // }
 }
 
 /// Get a repository for the specific model type

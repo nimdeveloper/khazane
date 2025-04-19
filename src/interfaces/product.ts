@@ -1,9 +1,8 @@
-import { ComplexID, type IComplexID } from "./_base";
 import { MeasurementUnit, type IMeasurementUnit } from "./measurement-unit";
 import { WareHouse, type IWareHouse } from "./warehouse";
 
 export interface IProductUnit {
-    id: IComplexID | null;
+    id: Number;
     title: string;
     code: string;
     unit: IMeasurementUnit | null;
@@ -27,7 +26,7 @@ export class ProductUnit implements IProductUnit {
     constructor(
         public title: string,
         public unit: MeasurementUnit | null = null,
-        public id: ComplexID = ComplexID.empty(),
+        public id: Number = 0,
         public code: string = "",
         public base_price: number = 0,
         public inventory: number = 0,
@@ -43,7 +42,7 @@ export class ProductUnit implements IProductUnit {
         let obj = new ProductUnit(
             data.title,
             data.unit ? MeasurementUnit.fromInterface(data.unit) : null,
-            ComplexID.fromInterface(data.id),
+            data.id,
             data.code,
             Number(data.base_price),
             Number(data.inventory),
@@ -68,7 +67,7 @@ export class ProductUnit implements IProductUnit {
     }
     toInterface(): IProductUnit {
         return {
-            id: this.id.toInterface(),
+            id: this.id,
             title: this.title,
             unit: this.unit ? this.unit.toInterface() : null,
             code: this.code,
@@ -104,29 +103,23 @@ export class ProductUnit implements IProductUnit {
         return this.title;
     }
     get key() {
-        return this.id.id;
+        return this.id;
     }
 }
 
 export interface IProductCategory {
-    id: IComplexID | null;
+    id: Number;
     label: string;
 }
 export class ProductCategory implements IProductCategory {
-    constructor(
-        public id: ComplexID = ComplexID.empty(),
-        public label: string = ""
-    ) {}
+    constructor(public id: Number = 0, public label: string = "") {}
     static fromInterface(data: IProductCategory) {
         // (data as any).id = normalizeId((data as any).id);
-        return new ProductCategory(
-            ComplexID.fromInterface(data.id),
-            data.label
-        );
+        return new ProductCategory(data.id, data.label);
     }
     public toInterface() {
         return {
-            id: this.id.toInterface(),
+            id: this.id,
             label: this.label,
         };
     }
@@ -134,10 +127,10 @@ export class ProductCategory implements IProductCategory {
         return JSON.stringify(this.toInterface());
     }
     static read(data: string) {
-        if (!data) return new ProductCategory(ComplexID.empty());
+        if (!data) return new ProductCategory(0);
         return this.fromInterface(JSON.parse(data));
     }
     get key() {
-        return this.id.id;
+        return this.id;
     }
 }

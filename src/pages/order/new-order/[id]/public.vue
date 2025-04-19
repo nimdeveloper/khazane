@@ -110,7 +110,7 @@ definePageMeta({ layout: "new-order" });
 const personStore = useMyPersonStore();
 const warehouseStore = useMyWarehouseStore();
 
-const order = ref(new Order(""));
+const order = ref(new Order(0));
 
 const newUserModalOpen = inject<{ open: boolean; preferred_name: string }>(
     "newUserModalOpen"

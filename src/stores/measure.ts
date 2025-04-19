@@ -15,11 +15,11 @@ export const useMeasureStore = defineStore("Measure", {
         },
         async addUnit(unit: MeasurementUnit | string) {
             if (!(unit instanceof MeasurementUnit)) {
-                unit = new MeasurementUnit(random(12), unit);
+                unit = new MeasurementUnit(0, unit);
             }
-            let res = await apiWithTauri().products.saveMeasurementUnit(
-                unit.toInterface()
-            );
+            let data = unit.toInterface();
+            delete (data as any).id;
+            let res = await apiWithTauri().products.saveMeasurementUnit(data);
             let instance: MeasurementUnit | null = null;
             if (res) {
                 instance = MeasurementUnit.fromInterface(res);

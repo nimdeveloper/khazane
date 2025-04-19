@@ -2,13 +2,14 @@ use tauri::{async_runtime::Mutex, State};
 
 use crate::{
     app::AppData,
-    core::{
-        error::Result,
-        repository::{self, Repository},
-    },
+    core::{error::Result, repository},
 };
 
-use super::{inputs::WarehouseDto, model::Warehouse, query::{self, FilterOptions}};
+use super::{
+    inputs::WarehouseDto,
+    model::Warehouse,
+    query::{self, FilterOptions},
+};
 
 #[tauri::command]
 pub async fn list_warehouses(
@@ -21,7 +22,8 @@ pub async fn list_warehouses(
         Err(e) => {
             eprintln!("Error in get_warehouse_with_filter: {}", e);
             // Fallback to the original implementation
-            repo.find_all().await
+            // repo.find_all().await
+            Err(e)
         }
     }
 }
@@ -36,7 +38,8 @@ pub async fn get_warehouse_by_id(
         Ok(warehouse) => Ok(warehouse),
         Err(e) => {
             eprintln!("Error in get_warehouse_by_id: {}", e);
-            repo.find_by_id(&id).await
+            // repo.find_by_id(&id).await
+            Err(e)
         }
     }
 }
@@ -51,7 +54,8 @@ pub async fn create_warehouse(
         Ok(warehouse) => Ok(warehouse),
         Err(e) => {
             eprintln!("Error in create_warehouse: {}", e);
-            repo.create(warehouse).await
+            // repo.create(warehouse).await
+            Err(e)
         }
     }
 }
@@ -67,7 +71,8 @@ pub async fn update_warehouse(
         Ok(warehouse) => Ok(warehouse),
         Err(e) => {
             eprintln!("Error in update_warehouse: {}", e);
-            repo.update(&id, warehouse).await
+            // repo.update(&id, warehouse).await
+            Err(e)
         }
     }
 }

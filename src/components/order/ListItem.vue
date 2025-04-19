@@ -131,7 +131,7 @@ const handlePrint = () => {
 };
 const handleComplete = () => {
     storage.value = order;
-    navigateTo({ name: "order-new-order-id-public", params: { id: key } });
+    navigateTo({ name: "order-new-order-id-public", params: { id: `${key}` } });
 };
 </script>
 

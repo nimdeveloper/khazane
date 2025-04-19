@@ -111,7 +111,7 @@ import { onClickOutside } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
 
 interface SelectedType {
-    key: string;
+    key: string | Number;
     prefix?: string;
     label: string;
 }

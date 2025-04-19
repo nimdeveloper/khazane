@@ -85,7 +85,6 @@
 
 <script lang="ts" setup>
 import { BaseDirectory, readFile } from "@tauri-apps/plugin-fs";
-import { ComplexID } from "~/interfaces/_base";
 import { Order } from "~/interfaces/order";
 import { ProductUnit } from "~/interfaces/product";
 import { useMyProductStore } from "~/stores/product";
@@ -96,7 +95,7 @@ const defaultImage = "/images/no-photo.jpg";
 
 const productStore = useMyProductStore();
 
-const order = ref(new Order(ComplexID.empty()));
+const order = ref(new Order(0));
 const imagesList = ref<string[]>([]);
 
 const { storage } = useTempOrder();

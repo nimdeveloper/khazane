@@ -1,5 +1,3 @@
-import { ComplexID, type IComplexID } from "./_base";
-
 export interface IWareHouse {
     name: string;
     color?: {
@@ -7,7 +5,7 @@ export interface IWareHouse {
         code: string;
     };
     shorthand?: string;
-    id: IComplexID | null;
+    id: Number;
 }
 export function instanceOfIWareHouse(object: any): Boolean {
     return object && "shorthand" in object;
@@ -36,7 +34,7 @@ export class WareHouse implements IWareHouse {
         },
     ];
     constructor(
-        public id: ComplexID = ComplexID.empty(),
+        public id: Number = 0,
         public name: string = "",
         public shorthand: string = "",
         public color: IWareHouse["color"] = undefined
@@ -44,25 +42,20 @@ export class WareHouse implements IWareHouse {
 
     static fromInterface(data: IWareHouse) {
         // (data as any).id = normalizeId((data as any).id);
-        return new WareHouse(
-            ComplexID.fromInterface(data.id),
-            data.name,
-            data.shorthand,
-            data.color
-        );
+        return new WareHouse(data.id, data.name, data.shorthand, data.color);
     }
     public toInterface(): IWareHouse {
         return {
             name: this.name,
             color: this.color,
             shorthand: this.shorthand,
-            id: this.id.toInterface(),
+            id: this.id,
         };
     }
     get label() {
         return this.shorthand ? this.shorthand : this.name;
     }
     get key() {
-        return this.id.id;
+        return this.id;
     }
 }

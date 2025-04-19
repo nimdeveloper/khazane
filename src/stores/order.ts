@@ -52,7 +52,7 @@ export const useMyOrderStore = defineStore("Order", {
             if (!this.tauri) return;
             await this.loadOrders();
             if (isNew) {
-                order.id = `${this.orders.length + 1}`;
+                order.id = 0;
             } else {
                 this.orders = this.orders.filter(
                     (each) => Number(each.id) !== Number(order.id)

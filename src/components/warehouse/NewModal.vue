@@ -114,7 +114,6 @@
 
 <script lang="ts" setup>
 import type { ModalInterface } from "flowbite";
-import { ComplexID } from "~/interfaces/_base";
 import { WareHouse } from "~/interfaces/warehouse";
 import { useMyWarehouseStore } from "~/stores/warehouse";
 
@@ -126,7 +125,7 @@ const $modal = ref<ModalInterface | null>(null);
 const wareHouseStore = useMyWarehouseStore();
 
 const animationState = ref<"close" | "open">("close");
-const warehouse = ref(new WareHouse(ComplexID.empty()));
+const warehouse = ref(new WareHouse(0));
 
 watch(
     () => preferredName,
@@ -147,7 +146,7 @@ const submit = () => {
 };
 const onClose = () => {
     if (warehouse.value) {
-        warehouse.value = new WareHouse(ComplexID.empty());
+        warehouse.value = new WareHouse(0);
     }
     animationState.value = "close";
 };

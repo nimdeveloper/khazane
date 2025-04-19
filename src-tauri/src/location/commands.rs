@@ -2,13 +2,14 @@ use tauri::{async_runtime::Mutex, State};
 
 use crate::{
     app::AppData,
-    core::{
-        error::Result,
-        repository::{self, Repository},
-    },
+    core::{error::Result, repository},
 };
 
-use super::{inputs::LocationDto, model::Location, query::{self, FilterOptions}};
+use super::{
+    inputs::LocationDto,
+    model::Location,
+    query::{self, FilterOptions},
+};
 
 #[tauri::command]
 pub async fn list_locations(
@@ -21,7 +22,8 @@ pub async fn list_locations(
         Err(e) => {
             eprintln!("Error in get_location_with_filter: {}", e);
             // Fallback to the original implementation
-            repo.find_all().await
+            // repo.find_all().await
+            Err(e)
         }
     }
 }
@@ -36,7 +38,8 @@ pub async fn get_location_by_id(
         Ok(location) => Ok(location),
         Err(e) => {
             eprintln!("Error in get_location_by_id: {}", e);
-            repo.find_by_id(&id).await
+            // repo.find_by_id(&id).await
+            Err(e)
         }
     }
 }
@@ -51,7 +54,8 @@ pub async fn create_location(
         Ok(location) => Ok(location),
         Err(e) => {
             eprintln!("Error in create_location: {}", e);
-            repo.create(location).await
+            // repo.create(location).await
+            Err(e)
         }
     }
 }
@@ -67,7 +71,8 @@ pub async fn update_location(
         Ok(location) => Ok(location),
         Err(e) => {
             eprintln!("Error in update_location: {}", e);
-            repo.update(&id, location).await
+            Err(e)
+            // repo.update(&id, location).await
         }
     }
 }

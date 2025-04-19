@@ -17,7 +17,7 @@ export default () => {
         },
         async saveProduct(product: IProductUnit) {
             try {
-                let data = await invoke<IProductUnit>("create_product", {
+                let data = await invoke<IProductUnit>("add_product", {
                     product,
                 });
                 return data;

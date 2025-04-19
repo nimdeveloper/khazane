@@ -64,13 +64,12 @@
 import { OrderListItem } from "#components";
 import { useIntervalFn } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
-import { ComplexID } from "~/interfaces/_base";
 import { Order } from "~/interfaces/order";
 import { useMyOrderStore } from "~/stores/order";
 
 const orderStore = useMyOrderStore();
 
-const toPrintOrder = ref(new Order(ComplexID.empty()));
+const toPrintOrder = ref(new Order(0));
 
 const { filteredOrders: orders } = storeToRefs(orderStore);
 

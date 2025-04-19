@@ -1,14 +1,17 @@
-use std::collections::HashMap;
+#![allow(dead_code)]
+use std::{collections::HashMap, rc::Rc};
 
 use crate::core::{
     database::value_ref_to_type,
-    error::{custom_error, Error},
+    error::{custom_error, Error, Result},
     repository::Model,
+    selector::{DbTranslateBox, Selector},
 };
-use duckdb::{params, types::ValueRef, Statement};
+use chrono::Utc;
+use duckdb::{params_from_iter, types::ValueRef, Connection, ToSql};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WarehouseColor {
     pub key: String,
     pub code: String,
@@ -16,7 +19,7 @@ pub struct WarehouseColor {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Warehouse {
-    pub id: String,
+    pub id: i64,
     pub name: String,
     pub shorthand: String,
     pub color: Option<WarehouseColor>,
@@ -24,112 +27,69 @@ pub struct Warehouse {
     pub updated_at: Option<chrono::NaiveDateTime>,
 }
 impl Warehouse {
-    pub fn get_select_for(selector: String, sub_rel: String) {
-        return (format!(
-            "#
-            {selector}.id AS {sub_rel}{query_prefix}id,
-            {selector}.name AS {sub_rel}{query_prefix}name,
-            {selector}.shorthand AS {sub_rel}{query_prefix}shorthand,
-            {selector}.color_code AS {sub_rel}{query_prefix}color_code,
-            {selector}.color_key AS {sub_rel}{query_prefix}color_key,
-            {selector}.created_at AS {sub_rel}{query_prefix}created_at,
-            {selector}.updated_at AS {sub_rel}{query_prefix}updated_at,
-        #",
-            selector = selector,
-            sub_rel = sub_rel,
-            query_prefix = Self::MODEL_QUERY_PREFIX.to_string(),
-        ),);
-    }
-    pub fn get_insert_query(&self) -> (String, _) {
-        if self.id == -1 {
-            let mut color_code = None;
-            let mut color_key = None;
-            if let Some(color) = &self.color {
-                color_code = Some(color.code.clone());
-                color_key = Some(color.key.clone());
-            }
-            return (
-                format!(
-                    "INSERT INTO warehouse (name,shorthand,color_code,color_key,updated_at,created_at) VALUES (?,?,?,?,?,?) RETURNING id"
-                ),
-                params![&self.name,&self.shorthand,&color_code,&color_key,&self.updated_at,&self.created_at],
-            );
+    pub fn new(name: String, shorthand: String, color: Option<WarehouseColor>) -> Self {
+        Warehouse {
+            id: 0,
+            name,
+            shorthand,
+            color,
+            created_at: Some(Utc::now().naive_utc()),
+            updated_at: Some(Utc::now().naive_utc()),
         }
-        // todo: add Result for cleaner code
-        return ("".to_string(), params![]);
     }
-    pub fn get_update_query(&self) -> (String, _) {
-        if self.id != -1 {
-            let mut color_code = None;
-            let mut color_key = None;
-            if let Some(color) = &self.color {
-                color_code = Some(color.code.clone());
-                color_key = Some(color.key.clone());
-            }
-            return (
-                format!("UPDATE {} SET name = ? , shorthand = ? , color_code = ? , color_key = ? , updated_at = ? WHERE id = ?", Self::TABLE_NAME),
-                params![&self.name,&self.shorthand,&color_code,&color_key,&self.created_at, &self.updated_at, &self.id],
-            );
-        }
-        // todo: add Result for cleaner code
-        return ("".to_string(), params![&self.name, &self.updated_at]);
+    pub fn select() -> Selector {
+        let mut selector = Selector::default();
+        selector.select(Self::get_columns().to_vec(), Self::TABLE_NAME);
+        selector
     }
-
-    pub fn get_columns() -> [&'static str; 4] {
+    pub fn get_columns() -> [String; 7] {
         [
-            "id",
-            "name",
-            "shorthand",
-            "color_code",
-            "color_key",
-            "created_at",
-            "updated_at",
+            "id".to_string(),
+            "name".to_string(),
+            "shorthand".to_string(),
+            "color_code".to_string(),
+            "color_key".to_string(),
+            "created_at".to_string(),
+            "updated_at".to_string(),
         ]
     }
 
-    pub fn from_row(row: &duckdb::Row, stmt: &Statement) -> Self {
+    pub fn from_row(row: &duckdb::Row, translator: &DbTranslateBox) -> Result<Self> {
         let mut color = None;
-        let color_code = row
-            .get::<_, String>(stmt.column_index("color_code")?)
+        let color_code: Result<Option<String>> = row
+            .get(translator.field("color_code")?)
             .map_err(Error::from);
-        let color_key = row
-            .get::<_, String>(stmt.column_index("color_key")?)
-            .map_err(Error::from);
-        if let Ok(color_code) = color_code {
-            if let Ok(color_key) = color_key {
+        let color_key: Result<Option<String>> =
+            row.get(translator.field("color_key")?).map_err(Error::from);
+        if let Ok(Some(color_code)) = color_code {
+            if let Ok(Some(color_key)) = color_key {
                 color = Some(WarehouseColor {
                     key: color_key,
                     code: color_code,
                 });
             }
         }
-        Warehouse {
-            id: row.get(stmt.column_index("id")?)?,
-            name: row.get(stmt.column_index("name")?)?,
-            shorthand: row.get(stmt.column_index("shorthand")?)?,
+        Ok(Warehouse {
+            id: row.get(translator.field("id")?)?,
+            name: row.get(translator.field("name")?)?,
+            shorthand: row.get(translator.field("shorthand")?)?,
             color,
-            created_at: row.get(stmt.column_index("created_at")?)?,
-            updated_at: row.get(stmt.column_index("updated_at")?)?,
-        }
+            created_at: row.get(translator.field("created_at")?)?,
+            updated_at: row.get(translator.field("updated_at")?)?,
+        })
     }
-    pub fn from_map(m: HashMap<String, ValueRef>) -> Result<Self, Error> {
+    pub fn from_map(m: HashMap<String, ValueRef>) -> Result<Self> {
         let mut color = None;
 
-        if Self::get_columns().iter().any(|&e| !m.contains_key(e)) {
-            return Err(custom_error(
-                "Failed to construct MeasurementUnit from HasMap! Some keys missing!",
-            ));
-        }
-        let id: Result<String> = value_ref_to_type(m.get("id").unwrap()).map_err(Error::from);
-        if let Err(e) = id {
-            return Err(e);
-        }
-        let id = id.unwrap();
+        // if Self::get_columns().iter().any(|&e| !m.contains_key(e)) {
+        //     return Err(custom_error(
+        //         "Failed to construct MeasurementUnit from HasMap! Some keys missing!",
+        //     ));
+        // }
+        let id: i64 = value_ref_to_type(m.get("id").unwrap()).map_err(Error::from)?;
 
-        let color_code: Result<String> =
-            value_ref_to_type(m.get("color_code").unwrap()).map_err(Error::from);
-        let color_key: Result<String> =
-            value_ref_to_type(m.get("color_key").unwrap()).map_err(Error::from);
+        let color_code: Result<String> = value_ref_to_type(m.get("color_code").unwrap());
+        let color_key: Result<String> = value_ref_to_type(m.get("color_key").unwrap());
         if let Ok(color_code) = color_code {
             if let Ok(color_key) = color_key {
                 color = Some(WarehouseColor {
@@ -138,33 +98,13 @@ impl Warehouse {
                 });
             }
         }
-
-        let name: Result<String> = value_ref_to_type(m.get("name").unwrap()).map_err(Error::from);
-        if let Err(e) = name {
-            return Err(e);
-        }
-        let name = name.unwrap();
-
-        let shorthand: Result<String> =
-            value_ref_to_type(m.get("shorthand").unwrap()).map_err(Error::from);
-        if let Err(e) = shorthand {
-            return Err(e);
-        }
-        let shorthand = shorthand.unwrap();
-
-        let created_at: Result<chrono::NaiveDateTime> =
-            value_ref_to_type(m.get("created_at").unwrap()).map_err(Error::from);
-        if let Err(e) = created_at {
-            return Err(e);
-        }
-        let created_at = created_at.unwrap();
-
-        let updated_at: Result<chrono::NaiveDateTime> =
-            value_ref_to_type(m.get("updated_at").unwrap()).map_err(Error::from);
-        if let Err(e) = updated_at {
-            return Err(e);
-        }
-        let updated_at = updated_at.unwrap();
+        let name: String = value_ref_to_type(m.get("name").unwrap()).map_err(Error::from)?;
+        let shorthand: String =
+            value_ref_to_type(m.get("shorthand").unwrap()).map_err(Error::from)?;
+        let created_at: chrono::NaiveDateTime =
+            value_ref_to_type(m.get("created_at").unwrap()).map_err(Error::from)?;
+        let updated_at: chrono::NaiveDateTime =
+            value_ref_to_type(m.get("updated_at").unwrap()).map_err(Error::from)?;
 
         Ok(Warehouse {
             id,
@@ -175,12 +115,73 @@ impl Warehouse {
             updated_at: Some(updated_at),
         })
     }
+    pub fn save<'a>(&mut self, connection: &'a Connection) -> Result<()> {
+        let mut params: Vec<Rc<dyn ToSql>> = Vec::new();
+        let query;
+        let now = Utc::now();
+
+        if self.id > 0 {
+            self.updated_at = Some(now.naive_utc());
+            query = format!(
+                "UPDATE {} SET name = ? , shorthand = ? , color_code = ? , color_key = ? , updated_at = ? WHERE id = ?",
+                Self::TABLE_NAME
+            );
+            params.push(Rc::new(self.name.clone()));
+            params.push(Rc::new(self.shorthand.clone()));
+            if let Some(color) = &self.color {
+                params.push(Rc::new(color.code.clone()));
+                params.push(Rc::new(color.key.clone()));
+            } else {
+                params.push(Rc::new(None::<String>));
+                params.push(Rc::new(None::<String>));
+            }
+            params.push(Rc::new(self.updated_at.clone()));
+            params.push(Rc::new(self.id.clone()));
+        } else {
+            self.updated_at = Some(now.naive_utc());
+            self.created_at = Some(now.naive_utc());
+            query = format!(
+                "INSERT INTO {} (name,shorthand,color_code,color_key,updated_at,created_at) VALUES (?,?,?,?,?,?) RETURNING id",
+                Self::TABLE_NAME
+            );
+            params.push(Rc::new(self.name.clone()));
+            params.push(Rc::new(self.shorthand.clone()));
+            if let Some(color) = &self.color {
+                params.push(Rc::new(color.code.clone()));
+                params.push(Rc::new(color.key.clone()));
+            } else {
+                params.push(Rc::new(None::<String>));
+                params.push(Rc::new(None::<String>));
+            }
+            params.push(Rc::new(self.updated_at.clone()));
+            params.push(Rc::new(self.created_at.clone()));
+        }
+        if self.id > 0 {
+            // Update in the database
+            let mut stmt = connection.prepare(&query)?;
+            let changes = stmt.execute(params_from_iter(params.into_iter()))?;
+            if changes <= 0 {
+                todo!("Add warning?")
+            }
+            return Ok(());
+        } else {
+            let mut stmt = connection.prepare(&query)?;
+            stmt.execute(params_from_iter(params.into_iter()))?;
+            return match stmt.raw_query().next()? {
+                Some(row) => {
+                    let id = row.get(stmt.column_index("id")?)?;
+                    self.id = id;
+                    return Ok(());
+                }
+                None => Err(custom_error("failed to insert at 'warehouse'!")),
+            };
+        }
+    }
 }
 
 impl Model for Warehouse {
-    const MODEL_QUERY_PREFIX: String = String::from("warehouse_");
-    const TABLE_NAME: String = String::from("warehouse");
+    const TABLE_NAME: &str = "warehouse";
     fn get_id(&self) -> String {
-        self.id.clone()
+        format!("{}", self.id)
     }
 }

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use super::error::{Error, ErrorSource, Result};
 use duckdb::types::{FromSql, FromSqlError, ValueRef};
 use duckdb::Connection;
@@ -111,12 +112,12 @@ pub fn value_ref_to_type<T: FromSql>(input: &ValueRef) -> Result<T> {
             message: "Invalid target type for converting db returned type".to_owned(),
             cause: None,
         },
-        FromSqlError::OutOfRange(i) => Error {
+        FromSqlError::OutOfRange(_) => Error {
             source: ErrorSource::Database,
             message: "Destination integer type is small! can't convert.".to_owned(),
             cause: None,
         },
-        FromSqlError::Other(err) => Error {
+        FromSqlError::Other(_) => Error {
             source: ErrorSource::Database,
             message: "Failed to convert db returned type".to_owned(),
             cause: None,

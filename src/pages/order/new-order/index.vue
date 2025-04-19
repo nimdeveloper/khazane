@@ -10,17 +10,19 @@ definePageMeta({ layout: "new-product" });
 const { storage } = useTempOrder();
 
 onBeforeMount(() => {
+    /**
+     * TODO Fix pages check the order id from the URL
+     */
     if (!storage.value?.id) {
-        const id = random(30);
-        storage.value.id = id;
+        storage.value.id = 0;
         navigateTo({
             name: "order-new-order-id-public",
-            params: { id },
+            params: { id: "new" },
         });
     } else {
         navigateTo({
             name: "order-new-order-id-public",
-            params: { id: storage.value.id },
+            params: { id: `${storage.value.id}` },
         });
     }
 });

@@ -4,7 +4,7 @@ use crate::warehouse::inputs::WarehouseDto;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ProductCategoryDto {
-    pub id: Option<String>,
+    pub id: Option<i64>,
     pub label: String,
 }
 
@@ -16,13 +16,13 @@ pub struct ProductWarehouseDto {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MeasurementUnitDto {
-    pub id: Option<String>,
+    pub id: Option<i64>,
     pub title: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProductDto {
-    pub id: Option<String>,
+    pub id: Option<i64>,
     pub title: String,
     pub code: String,
     pub unit: Option<MeasurementUnitDto>,
@@ -32,6 +32,5 @@ pub struct ProductDto {
     pub status: String,
     pub image: String,
     pub updated_at: Option<chrono::NaiveDateTime>,
-    pub ware_houses: Vec<ProductWarehouseDto>,
     pub category: Option<ProductCategoryDto>,
 }

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::app::AppData;
 use crate::core::database;
 use crate::core::error::Result;
@@ -17,13 +19,14 @@ pub struct Migration {
 }
 
 // A single migration definition
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct MigrationDefinition {
     pub service: &'static str,
     pub name: &'static str,
     pub version: i32,
     pub up_sql: &'static str,
     pub down_sql: Option<&'static str>,
+    pub dependency: Option<Vec<&'static str>>,
 }
 
 // Global migration registry
@@ -32,8 +35,8 @@ static MIGRATION_REGISTRY: std::sync::LazyLock<RwLock<Option<MigrationRegistry>>
     std::sync::LazyLock::new(|| RwLock::new(None));
 static INIT: Once = Once::new();
 
-async fn prepare() {
-    let mut registry = MIGRATION_REGISTRY.write().await;
+fn prepare() {
+    let mut registry = MIGRATION_REGISTRY.try_write().unwrap();
     *registry = Some(HashMap::new());
 }
 // Initialize the migration registry
@@ -47,7 +50,7 @@ fn init_registry() {
 pub async fn register_migration(migration: MigrationDefinition) {
     init_registry();
 
-    let id = format!("{}_{}", migration.service, migration.version);
+    let id = format!("{}.{}", migration.service, migration.version);
     let registry = MIGRATION_REGISTRY.write();
 
     if let Some(registry) = registry.await.as_mut() {
@@ -113,6 +116,10 @@ pub fn remove_migration_record(conn: &Connection, service: &str, version: i32) -
 
 /// Apply a migration if it hasn't been applied yet
 pub fn apply_migration(conn: &Connection, migration: &MigrationDefinition) -> Result<bool> {
+    println!(
+        "Applying migration {}.{}: {}",
+        migration.service, migration.version, migration.name
+    );
     if !is_migration_applied(conn, migration.service, migration.version)? {
         // Apply the migration
         conn.execute_batch(migration.up_sql)?;
@@ -120,12 +127,10 @@ pub fn apply_migration(conn: &Connection, migration: &MigrationDefinition) -> Re
         // Record that the migration has been applied
         record_migration(conn, migration.service, migration.name, migration.version)?;
 
-        println!(
-            "Applied migration {}.{}: {}",
-            migration.service, migration.version, migration.name
-        );
+        println!("✅ Migration Applied",);
         Ok(true)
     } else {
+        println!("⛔ Migration already applied!");
         // Migration already applied
         Ok(false)
     }
@@ -201,7 +206,47 @@ async fn get_sorted_migrations() -> Result<Vec<MigrationDefinition>> {
     if let Some(registry) = registry {
         // Collect migrations into owned types
         migrations = registry.values().cloned().collect();
+
         migrations.sort_by(|a, b| a.service.cmp(b.service).then(a.version.cmp(&b.version)));
+        // Sort migrations by service and version first
+        migrations.sort_by(|a, b| a.service.cmp(b.service).then(a.version.cmp(&b.version)));
+        // Resolve dependencies
+        let mut resolved: Vec<MigrationDefinition> = vec![];
+        let mut unresolved = migrations;
+
+        while !unresolved.is_empty() {
+            let mut progress = false;
+
+            unresolved.retain(|migration| {
+                if let Some(deps) = &migration.dependency {
+                    if deps.iter().all(|dep| {
+                        resolved
+                            .iter()
+                            .any(|m| format!("{}.{}", m.service, m.version) == *dep)
+                    }) {
+                        resolved.push(migration.clone());
+                        progress = true;
+                        false // Remove from unresolved
+                    } else {
+                        true // Keep in unresolved
+                    }
+                } else {
+                    resolved.push(migration.clone());
+                    progress = true;
+                    false // Remove from unresolved
+                }
+            });
+
+            if !progress {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "Circular or unresolved dependency detected in migrations!",
+                )
+                .into());
+            }
+        }
+
+        migrations = resolved;
     } else {
         // No migrations registered
     }
@@ -211,15 +256,6 @@ async fn get_sorted_migrations() -> Result<Vec<MigrationDefinition>> {
 // Macro to register migrations
 #[macro_export]
 macro_rules! register_migration {
-    ($service:expr, $name:expr, $version:expr, $up_sql:expr) => {
-        $crate::core::migration::register_migration($crate::core::migration::MigrationDefinition {
-            service: $service,
-            name: $name,
-            version: $version,
-            up_sql: $up_sql,
-            down_sql: None,
-        });
-    };
     ($service:expr, $name:expr, $version:expr, $up_sql:expr, $down_sql:expr) => {
         $crate::core::migration::register_migration($crate::core::migration::MigrationDefinition {
             service: $service,
@@ -227,6 +263,17 @@ macro_rules! register_migration {
             version: $version,
             up_sql: $up_sql,
             down_sql: Some($down_sql),
+            dependency: None,
         });
+    };
+    ($service:expr, $name:expr, $version:expr, $up_sql:expr, $down_sql:expr, $($dep:expr),+) => {
+        $crate::core::migration::register_migration($crate::core::migration::MigrationDefinition {
+            service: $service,
+            name: $name,
+            version: $version,
+            up_sql: $up_sql,
+            down_sql: Some($down_sql),
+            dependency: Some(vec![$($dep),+]),
+        })
     };
 }

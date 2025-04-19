@@ -1,15 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct WarehouseColorDto {
-    pub key: String,
-    pub code: String,
-}
+use super::model::WarehouseColor;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WarehouseDto {
     pub id: Option<String>,
     pub name: String,
     pub shorthand: String,
-    pub color: Option<WarehouseColorDto>,
+    pub color: Option<WarehouseColor>,
 }

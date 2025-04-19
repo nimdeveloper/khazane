@@ -120,7 +120,6 @@ import { breakpointsTailwind, onClickOutside } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
 import { ProductCategory, type IProductUnit } from "~/interfaces/product";
 import { WareHouse } from "~/interfaces/warehouse";
-import { ComplexID } from "~/interfaces/_base";
 import { useMyGlobalStore } from "~/stores/global";
 import { useMyProductStore } from "~/stores/product";
 import { useMyWarehouseStore } from "~/stores/warehouse";
@@ -130,8 +129,8 @@ const lgAndLarger = breakpoints.greaterOrEqual("lg");
 
 const globalState = useMyGlobalStore();
 
-const defaultInventory = ref(new WareHouse(ComplexID.empty(), "همه"));
-const defaultCategory = ref(new ProductCategory(ComplexID.empty(), "همه"));
+const defaultInventory = ref(new WareHouse(0, "همه"));
+const defaultCategory = ref(new ProductCategory(0, "همه"));
 
 const productStore = useMyProductStore();
 const wareHouseStore = useMyWarehouseStore();

@@ -1,4 +1,3 @@
-import { ComplexID, type IComplexID } from "./_base";
 import { Location, type ILocation } from "./location";
 import { Person, type IPerson } from "./person";
 import { ProductUnit, type IProductUnit } from "./product";
@@ -13,7 +12,7 @@ export interface IOrderProduct {
     quantity: number;
 }
 export interface IOrder {
-    id: IComplexID | null;
+    id: Number;
     type?: string;
     description?: string;
     delivery: IPerson | IWareHouse | null;
@@ -32,7 +31,7 @@ export class Order implements IOrder {
     image?: string | File;
 
     constructor(
-        public id: ComplexID,
+        public id: Number,
         public type?: IOrder["type"],
         public description?: IOrder["description"],
         public delivery: Person | WareHouse | null = null,
@@ -55,7 +54,7 @@ export class Order implements IOrder {
     static fromInterface(data: IOrder) {
         // (data as any).id = normalizeId((data as any).id);
         return new this(
-            ComplexID.fromInterface(data.id),
+            data.id,
             data.type,
             data.description,
             data.delivery ? this.autoPersonWareHouse(data.delivery) : null,
@@ -90,7 +89,7 @@ export class Order implements IOrder {
     }
     toInterface(): IOrder {
         return {
-            id: this.id.toInterface(),
+            id: this.id,
             type: this.type,
             description: this.description,
             delivery: this.delivery ? this.delivery.toInterface() : null,
@@ -123,13 +122,13 @@ export class Order implements IOrder {
         return JSON.stringify(this.toInterface());
     }
     static read(data: string) {
-        if (!data) return new Order(ComplexID.empty());
+        if (!data) return new Order(0);
         return this.fromInterface(JSON.parse(data));
     }
     public valid() {
         return true;
     }
     get key() {
-        return this.id.id;
+        return this.id;
     }
 }

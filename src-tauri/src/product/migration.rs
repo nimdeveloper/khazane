@@ -27,7 +27,8 @@ pub async fn register_migrations() {
             updated_at TIMESTAMP
         )
         "#,
-        "DROP TABLE IF EXISTS category"
+        "DROP TABLE IF EXISTS category",
+        "product.1"
     )
     .await;
 
@@ -56,7 +57,8 @@ pub async fn register_migrations() {
             updated_at TIMESTAMP
         )
         "#,
-        "DROP TABLE IF EXISTS measure_unit"
+        "DROP TABLE IF EXISTS measure_unit",
+        "product.3"
     )
     .await;
 
@@ -95,7 +97,10 @@ pub async fn register_migrations() {
             FOREIGN KEY (category_id) REFERENCES category(id)
         )
         "#,
-        "DROP TABLE IF EXISTS product"
+        "DROP TABLE IF EXISTS product",
+        "product.5",
+        "product.2",
+        "product.4"
     )
     .await;
 
@@ -128,7 +133,10 @@ pub async fn register_migrations() {
             FOREIGN KEY (warehouse_id) REFERENCES warehouse(id)
         )
         "#,
-        "DROP TABLE IF EXISTS product_warehouse"
+        "DROP TABLE IF EXISTS product_warehouse",
+        "product.6",
+        "product.7",
+        "warehouse.2"
     )
     .await;
 }

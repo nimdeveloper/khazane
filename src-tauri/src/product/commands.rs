@@ -1,10 +1,7 @@
 use crate::core::error::Result;
 use tauri::{async_runtime::Mutex, State};
 
-use crate::{
-    app::AppData,
-    core::repository::{self, Repository},
-};
+use crate::{app::AppData, core::repository};
 
 use super::{
     inputs::{MeasurementUnitDto, ProductCategoryDto, ProductDto},
@@ -18,26 +15,34 @@ pub async fn get_categories(
     filters: FilterOptions,
 ) -> Result<Vec<ProductCategory>> {
     let repo = repository::get_repository::<ProductCategory>(&state).await?;
-    repo.find_all().await
-}
-
-#[tauri::command]
-pub async fn get_category_by_id(
-    state: State<'_, Mutex<AppData>>,
-    id: String,
-) -> Result<Option<ProductCategory>> {
-    let repo = repository::get_repository::<ProductCategory>(&state).await?;
-    match query::get_category_by_id(&repo, &id) {
-        Ok(category) => Ok(category),
+    match query::get_category_with_filter(&repo, &filters) {
+        Ok(categories) => Ok(categories),
         Err(e) => {
-            eprintln!("Error in get_category_by_id: {}", e);
-            repo.find_by_id(&id).await
+            eprintln!("Error in get_category_with_filter: {}", e);
+            // repo.find_all().await
+            Err(e)
         }
     }
 }
 
 #[tauri::command]
-pub async fn add_category(
+pub async fn get_category_by_id(
+    state: State<'_, Mutex<AppData>>,
+    id: i64,
+) -> Result<Option<ProductCategory>> {
+    let repo = repository::get_repository::<ProductCategory>(&state).await?;
+    match query::get_category_by_id(&repo, id) {
+        Ok(category) => Ok(category),
+        Err(e) => {
+            eprintln!("Error in get_category_by_id: {}", e);
+            // repo.find_by_id(&id).await
+            Err(e)
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn create_category(
     state: State<'_, Mutex<AppData>>,
     category: ProductCategoryDto,
 ) -> Result<ProductCategory> {
@@ -46,7 +51,8 @@ pub async fn add_category(
         Ok(category) => Ok(category),
         Err(e) => {
             eprintln!("Error in create_category: {}", e);
-            repo.create(category).await
+            // repo.create(category).await
+            Err(e)
         }
     }
 }
@@ -54,15 +60,16 @@ pub async fn add_category(
 #[tauri::command]
 pub async fn update_category(
     state: State<'_, Mutex<AppData>>,
-    id: String,
+    id: i64,
     category: ProductCategoryDto,
 ) -> Result<ProductCategory> {
     let repo = repository::get_repository::<ProductCategory>(&state).await?;
-    match query::update_category(&repo, &id, &category) {
+    match query::update_category(&repo, id, &category) {
         Ok(category) => Ok(category),
         Err(e) => {
             eprintln!("Error in update_category: {}", e);
-            repo.update(&id, category).await
+            // repo.update(&id, category).await
+            Err(e)
         }
     }
 }
@@ -77,7 +84,8 @@ pub async fn get_products(
         Ok(products) => Ok(products),
         Err(e) => {
             eprintln!("Error in get_product_with_filter: {}", e);
-            repo.find_all().await
+            // repo.find_all().await
+            Err(e)
         }
     }
 }
@@ -85,14 +93,15 @@ pub async fn get_products(
 #[tauri::command]
 pub async fn get_product_by_id(
     state: State<'_, Mutex<AppData>>,
-    id: String,
+    id: i64,
 ) -> Result<Option<Product>> {
     let repo = repository::get_repository::<Product>(&state).await?;
-    match query::get_product_by_id(&repo, &id) {
+    match query::get_product_by_id(&repo, id) {
         Ok(product) => Ok(product),
         Err(e) => {
             eprintln!("Error in get_product_by_id: {}", e);
-            repo.find_by_id(&id).await
+            // repo.find_by_id(&id).await
+            Err(e)
         }
     }
 }
@@ -104,23 +113,25 @@ pub async fn add_product(state: State<'_, Mutex<AppData>>, product: ProductDto) 
         Ok(product) => Ok(product),
         Err(e) => {
             eprintln!("Error in create_product: {}", e);
-            repo.create(product).await
+            // repo.create(product).await
+            Err(e)
         }
     }
 }
 
 #[tauri::command]
 pub async fn update_product(
-    state: State<'_, Mutex<AppData>>, 
-    id: String,
-    product: ProductDto
+    state: State<'_, Mutex<AppData>>,
+    id: i64,
+    product: ProductDto,
 ) -> Result<Product> {
     let repo = repository::get_repository::<Product>(&state).await?;
-    match query::update_product(&repo, &id, &product) {
+    match query::update_product(&repo, id, &product) {
         Ok(product) => Ok(product),
         Err(e) => {
             eprintln!("Error in update_product: {}", e);
-            repo.update(&id, product).await
+            // repo.update(&id, product).await
+            Err(e)
         }
     }
 }
@@ -131,20 +142,28 @@ pub async fn get_measure_units(
     filters: FilterOptions,
 ) -> Result<Vec<MeasurementUnit>> {
     let repo = repository::get_repository::<MeasurementUnit>(&state).await?;
-    repo.find_all().await
+    match query::get_measure_unit_with_filter(&repo, &filters) {
+        Ok(categories) => Ok(categories),
+        Err(e) => {
+            eprintln!("Error in get_category_with_filter: {}", e);
+            // repo.find_all().await
+            Err(e)
+        }
+    }
 }
 
 #[tauri::command]
 pub async fn get_measure_unit_by_id(
     state: State<'_, Mutex<AppData>>,
-    id: String,
+    id: i64,
 ) -> Result<Option<MeasurementUnit>> {
     let repo = repository::get_repository::<MeasurementUnit>(&state).await?;
-    match query::get_measurement_unit_by_id(&repo, &id) {
+    match query::get_measurement_unit_by_id(&repo, id) {
         Ok(unit) => Ok(unit),
         Err(e) => {
             eprintln!("Error in get_measurement_unit_by_id: {}", e);
-            repo.find_by_id(&id).await
+            // repo.find_by_id(&id).await
+            Err(e)
         }
     }
 }
@@ -159,7 +178,8 @@ pub async fn create_measure_unit(
         Ok(unit) => Ok(unit),
         Err(e) => {
             eprintln!("Error in create_measurement_unit: {}", e);
-            repo.create(unit).await
+            // repo.create(unit).await
+            Err(e)
         }
     }
 }
@@ -167,15 +187,16 @@ pub async fn create_measure_unit(
 #[tauri::command]
 pub async fn update_measure_unit(
     state: State<'_, Mutex<AppData>>,
-    id: String,
+    id: i64,
     unit: MeasurementUnitDto,
 ) -> Result<MeasurementUnit> {
     let repo = repository::get_repository::<MeasurementUnit>(&state).await?;
-    match query::update_measurement_unit(&repo, &id, &unit) {
+    match query::update_measurement_unit(&repo, id, &unit) {
         Ok(unit) => Ok(unit),
         Err(e) => {
             eprintln!("Error in update_measurement_unit: {}", e);
-            repo.update(&id, unit).await
+            // repo.update(&id, unit).await
+            Err(e)
         }
     }
 }

@@ -105,7 +105,7 @@ const newLocationModalOpen = inject<{ open: boolean; preferred_name: string }>(
     "newLocationModalOpen"
 );
 
-const order = ref(new Order(""));
+const order = ref(new Order(0));
 
 const { storage } = useTempOrder();
 
