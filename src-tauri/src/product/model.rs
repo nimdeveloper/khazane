@@ -4,14 +4,14 @@ use std::rc::Rc;
 
 use crate::core::database::value_ref_to_type;
 use crate::core::error::{custom_error, Error, Result};
+use crate::core::repository::Model;
 use crate::core::selector::{
     Condition, DbTranslateBox, Internal, Join, JoinMethod, Operations, Selector,
 };
-use crate::core::{helpers::flatten_with_prefix, repository::Model};
 use crate::warehouse::model::Warehouse;
 use chrono::{NaiveDateTime, Utc};
 use duckdb::types::ValueRef;
-use duckdb::{params_from_iter, Connection, Statement, ToSql};
+use duckdb::{params_from_iter, Connection, ToSql};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -128,62 +128,105 @@ impl Model for ProductCategory {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ProductWarehouse {
-    pub id: String,
+    pub id: i64,
     pub quantity: i64,
+    #[serde(skip_serializing)]
+    #[serde(skip_deserializing)]
+    pub product_id: i64,
     pub warehouse: Option<Warehouse>,
 }
 impl ProductWarehouse {
+    pub fn new(quantity: i64, product_id: i64, warehouse: Option<Warehouse>) -> Self {
+        ProductWarehouse {
+            id: 0,
+            quantity,
+            product_id,
+            warehouse,
+        }
+    }
+    pub fn bulk_insert(values: &Vec<ProductWarehouse>, conn: &Connection) -> Result<()> {
+        let mut params: Vec<Rc<dyn ToSql>> = Vec::new();
+        let mut query = format!(
+            "INSERT INTO {} (quantity, product_id, warehouse_id) VALUES ",
+            Self::TABLE_NAME
+        );
+        for value in values.iter() {
+            query.push_str(" (?, ?, ?),");
+            params.push(Rc::new(value.quantity.clone()));
+            params.push(Rc::new(value.product_id.clone()));
+            params.push(Rc::new(
+                value
+                    .warehouse
+                    .as_ref()
+                    .map(|w| Some(w.id.clone()))
+                    .unwrap_or(None),
+            ));
+        }
+        if query.ends_with(",") {
+            query.pop();
+        }
+        let mut stmt = conn.prepare(&query)?;
+        let changes = stmt.execute(params_from_iter(params.into_iter()))?;
+        if changes <= 0 || changes != values.len() {
+            custom_error(
+                "Failed to insert at 'product warehouse'! No rows inserted or wrong insert count!",
+            );
+        }
+        Ok(())
+    }
+    pub fn from_row(row: &duckdb::Row, translator: &DbTranslateBox) -> Result<Self> {
+        let mut warehouse = None;
+        if let Some(_) = row.get::<_, Option<i64>>(translator.field("warehouse_id")?)? {
+            if let Ok(rel) = translator.with_rel("warehouse") {
+                warehouse = Some(Warehouse::from_row(row, &rel)?);
+            }
+        }
+        Ok(Self {
+            id: row.get(translator.field("id")?)?,
+            quantity: row.get(translator.field("quantity")?)?,
+            product_id: row.get(translator.field("product_id")?)?,
+            warehouse,
+        })
+    }
+    pub fn select() -> Selector {
+        let mut s = Selector::default();
+        s.select(Self::get_columns().to_vec(), Self::TABLE_NAME);
+        s.with(
+            Join::to(
+                Warehouse::TABLE_NAME,
+                JoinMethod::LeftJoin,
+                Condition::new(
+                    Internal::Field("warehouse_id".into()),
+                    Operations::EqualTo,
+                    Internal::Field("warehouse__id".into()),
+                ),
+                Warehouse::get_columns().to_vec(),
+            ),
+            "warehouse",
+        );
+        s
+    }
     // pub fn as_join() {
     //     Join::to(Self::TABLE_NAME, JoinMethod::LeftJoinJoin)
     //         .on("id", "warehouse_id")
     //         .with(Warehouse::TABLE_NAME)
     //         .as("warehouse")
     // }
-    pub fn get_columns() -> [String; 3] {
+    pub fn get_columns() -> [String; 4] {
         [
             "id".to_string(),
             "quantity".to_string(),
             "warehouse_id".to_string(),
+            "product_id".to_string(),
         ]
     }
-    pub fn from_map(m: HashMap<String, ValueRef>, load_relations: bool) -> Result<Self> {
-        // if Self::get_columns().iter().any(|&e| !m.contains_key(e)) {
-        //     return Err(custom_error(
-        //         "Failed to construct MeasurementUnit from HasMap! Some keys missing!",
-        //     ));
-        // }
-        let id: String = value_ref_to_type(m.get("id").unwrap())?;
-        let quantity: i64 = value_ref_to_type(m.get("quantity").unwrap())?;
-
-        let res = ProductWarehouse {
-            id,
-            quantity,
-            warehouse: None,
-        };
-        if load_relations {
-            res.set_warehouse(m);
-        }
-        Ok(res)
-    }
-    pub fn set_warehouse(&self, m: HashMap<String, ValueRef>) {
-        // if let Some(_) = self.warehouse {
-        //     return;
-        // }
-        // if !m.contains_key(format!("{}id", (Warehouse::MODEL_QUERY_PREFIX)).as_str()) {
-        //     return; // No warehouse_id in the map
-        // }
-        // let warehouse = Warehouse::from_map(flatten_with_prefix(
-        //     Warehouse::MODEL_QUERY_PREFIX.to_string(),
-        //     m,
-        // ));
-        // if let Ok(warehouse) = warehouse {
-        //     self.warehouse = Some(warehouse);
-        // } else {
-        //     return; // Failed to set warehouse
-        // }
-        return;
+}
+impl Model for ProductWarehouse {
+    const TABLE_NAME: &str = "product_warehouse";
+    fn get_id(&self) -> String {
+        self.id.to_string().clone()
     }
 }
 
@@ -301,7 +344,7 @@ impl Model for MeasurementUnit {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Product {
     pub id: i64,
     pub title: String,
@@ -380,7 +423,7 @@ impl Product {
                 Condition::new(
                     Internal::Field("unit_id".into()),
                     Operations::EqualTo,
-                    Internal::Field("id".into()),
+                    Internal::Field("unit__id".into()),
                 ),
                 MeasurementUnit::get_columns().to_vec(),
             ),
@@ -393,7 +436,7 @@ impl Product {
                 Condition::new(
                     Internal::Field("category_id".into()),
                     Operations::EqualTo,
-                    Internal::Field("id".into()),
+                    Internal::Field("category__id".into()),
                 ),
                 ProductCategory::get_columns().to_vec(),
             ),
@@ -447,6 +490,92 @@ impl Product {
                 }
             }
         }
+        Ok(())
+    }
+    pub fn bulk_warehouses_load<'a>(
+        conn: &'a Connection,
+        products: &mut Vec<Product>,
+    ) -> Result<()> {
+        if products.len() < 1 {
+            return Ok(());
+        }
+        // let ids = products
+        //     .iter()
+        //     .map(|e| Value::BigInt(e.id))
+        //     .collect::<Vec<Value>>();
+        let ids = products.iter().map(|e| e.id).collect::<Vec<i64>>();
+        let mut warehouses: Vec<ProductWarehouse> = Vec::new();
+        let mut selection = ProductWarehouse::select();
+        //
+        //
+        // !
+        // ! WARN: Fix after `List` is implemented by Duckdb!
+        // !
+        //
+        let unstable_list: String = ids
+            .iter()
+            .map(|e| e.to_string())
+            .collect::<Vec<String>>()
+            .join("','");
+        let unstable_condition: String = format!("('{}')", unstable_list);
+        selection.filter(
+            Internal::Field("product_id".into()),
+            Operations::In,
+            Internal::Field(unstable_condition.into()),
+        );
+        // !
+        // !END
+        // !
+
+        // selection.filter(
+        //     Internal::Field("product_id".into()),
+        //     Operations::In,
+        //     Internal::Value(Value::List(ids).into()),
+        // );
+
+        let (stmt, translate) = selection.all(&conn)?;
+
+        let mut rows = stmt.raw_query();
+        while let Some(row) = rows.next()? {
+            let warehouse = ProductWarehouse::from_row(row, &translate)?;
+
+            if !(warehouses.iter().filter(|&e| e.id == warehouse.id).count() > 0) {
+                warehouses.push(warehouse);
+            }
+        }
+
+        for product in products.iter_mut() {
+            let mut product_warehouses: Vec<ProductWarehouse> = warehouses
+                .iter()
+                .filter(|&e| e.product_id == product.id)
+                .cloned()
+                .collect();
+            if product_warehouses.len() > 0 {
+                product.ware_houses.append(&mut product_warehouses);
+            }
+        }
+
+        Ok(())
+    }
+    pub fn load_warehouses<'a>(&mut self, conn: &'a Connection) -> Result<()> {
+        let mut warehouses: Vec<ProductWarehouse> = Vec::new();
+        let mut selection = ProductWarehouse::select();
+        selection.filter(
+            Internal::Field("product_id".into()),
+            Operations::EqualTo,
+            Internal::Value(self.id.into()),
+        );
+
+        let (stmt, translate) = selection.all(&conn)?;
+
+        let mut rows = stmt.raw_query();
+        while let Some(row) = rows.next()? {
+            let warehouse = ProductWarehouse::from_row(row, &translate)?;
+            if !(warehouses.iter().filter(|&e| e.id == warehouse.id).count() > 0) {
+                warehouses.push(warehouse);
+            }
+        }
+        self.ware_houses.append(&mut warehouses);
         Ok(())
     }
     pub fn save<'a>(&mut self, conn: &'a Connection) -> Result<()> {
@@ -516,6 +645,15 @@ impl Product {
         } else {
             let mut stmt = conn.prepare(&query)?;
             stmt.execute(params_from_iter(params.into_iter()))?;
+
+            return match stmt.raw_query().next()? {
+                Some(row) => {
+                    let id = row.get(stmt.column_index("id")?)?;
+                    self.id = id;
+                    return Ok(());
+                }
+                None => Err(custom_error("failed to insert at 'location'!")),
+            };
         }
         Ok(())
     }

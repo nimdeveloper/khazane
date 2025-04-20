@@ -8,8 +8,9 @@ pub struct ProductCategoryDto {
     pub label: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ProductWarehouseDto {
+    pub id: Option<i64>,
     pub quantity: i64,
     pub warehouse: Option<WarehouseDto>,
 }
@@ -33,4 +34,6 @@ pub struct ProductDto {
     pub image: String,
     pub updated_at: Option<chrono::NaiveDateTime>,
     pub category: Option<ProductCategoryDto>,
+    #[serde(rename = "ware_houses")]
+    pub warehouses: Vec<ProductWarehouseDto>,
 }

@@ -77,6 +77,7 @@ pub fn run() {
     let salt = b"somesalt";
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_log::Builder::new().build())
         // Add plugins
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(

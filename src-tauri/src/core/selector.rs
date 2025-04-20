@@ -3,7 +3,8 @@ use super::{
     error::{custom_error, Error, Result},
     helpers::random_string,
 };
-use duckdb::{params_from_iter, Connection, Row, Rows, Statement, ToSql};
+use duckdb::{params_from_iter, Connection, Statement, ToSql};
+use log;
 use std::{collections::HashMap, ops::Deref, rc::Rc};
 
 const REL_DETERMINER: &str = "__";
@@ -14,26 +15,33 @@ fn resolve_field_string(f: String, rel_map: &HashMap<String, String>, current: S
     if parts.len() > 1 {
         let column = parts.last().unwrap();
         let relation = parts[..parts.len() - 1].join(REL_DETERMINER);
-        let scoped_relation;
-        if current.len() > 0 {
-            scoped_relation = format!("{}{}{}", current, REL_DETERMINER, relation);
+        // let scoped_relation;
+        if rel_map.contains_key(&relation) {
+            res += &format!("{}.{}", rel_map.get(&relation).unwrap(), column);
         } else {
-            scoped_relation = format!("{}", relation);
-        }
-        println!("Checking {} included!", scoped_relation.to_owned());
-        println!("{:?}", rel_map);
-        println!("{:?}", parts);
-        if rel_map.contains_key(&scoped_relation) {
-            res += &format!("{}_{}", rel_map.get(&scoped_relation).unwrap(), column);
-        } else {
-            res += &f;
+            // TODO: Unknown relation!
+            if current.len() > 0 {
+                let scoped_relation = current.to_string();
+                res += &format!("{}.{}", scoped_relation.to_owned(), column);
+            } else {
+                res += &f;
+            }
         }
     } else {
-        let scoped_relation = current.to_string();
-        if rel_map.contains_key(&scoped_relation) {
-            res += &format!("{}_{}", rel_map.get(&scoped_relation).unwrap(), f);
-        } else {
+        if f.starts_with("(") {
+            //
+            //
+            // !WARNING: Unstable condition! waiting till the Duckdb implements Arrays
+            //
+            //
             res += &f;
+        } else {
+            if current.len() > 0 {
+                let scoped_relation = current.to_string();
+                res += &format!("{}.{}", scoped_relation.to_owned(), f);
+            } else {
+                res += &f;
+            }
         }
     }
     res
@@ -148,6 +156,10 @@ impl Selector {
         self.offset = page_number;
         self
     }
+    pub fn limit(&mut self, limit: usize) -> &mut Self {
+        self.limit = Some(limit);
+        self
+    }
     pub fn filter(
         &mut self,
         comparable: Internal,
@@ -169,7 +181,7 @@ impl Selector {
         connection: &'a Connection,
     ) -> Result<(Rc<Statement<'a>>, DbTranslateBox<'a>)> {
         let (query, params, scope, rel_map) = self.get_sql();
-        println!("{}", query.to_owned());
+        log::debug!("{}", query.to_owned());
         let mut stmt: Statement<'a> = connection.prepare(&query).map_err(Error::from)?;
         stmt.execute(params_from_iter(params.into_iter()))
             .map_err(Error::from)?;
@@ -201,8 +213,6 @@ impl Selector {
             }
             None => {}
         };
-        println!("{:?}", res);
-        println!("{:?}", self.rel_map);
         res
     }
     fn get_sql(&self) -> (String, Vec<Rc<dyn ToSql>>, String, HashMap<String, String>) {
@@ -338,12 +348,14 @@ impl Query {
 pub enum Operations {
     EqualTo,
     Like,
+    In,
 }
 impl Into<&str> for Operations {
     fn into(self) -> &'static str {
         match self {
             Operations::EqualTo => "=",
             Operations::Like => "LIKE",
+            Operations::In => "IN",
         }
     }
 }
@@ -399,43 +411,6 @@ impl Condition {
     }
 }
 impl Condition {
-    fn get_as_join_sql(
-        &self,
-        rel_map: &HashMap<String, String>,
-        parent: String,
-        current: String,
-        registry: &mut Vec<Rc<dyn ToSql>>,
-    ) -> String {
-        let mut res = "".to_string();
-        match self.comparable.deref() {
-            Internal::Field(name) => {
-                let tmp = *name.inner.to_owned();
-                res += &parent;
-                res += ".";
-                res += tmp.as_str();
-            }
-            Internal::Value(v) => {
-                res += "?";
-                registry.push(v.inner.to_owned());
-            }
-        };
-        res += " ";
-        res += self.operation.into();
-        res += " ";
-        match self.compared.deref() {
-            Internal::Field(name) => {
-                let tmp = *name.inner.to_owned();
-                res += &current;
-                res += ".";
-                res += tmp.as_str();
-            }
-            Internal::Value(v) => {
-                res += "?";
-                registry.push(v.inner.to_owned());
-            }
-        };
-        res
-    }
     fn get_sql(
         &self,
         rel_map: &HashMap<String, String>,
@@ -641,12 +616,8 @@ impl Join {
             <JoinMethod as Into<&str>>::into(self.join_method),
             self.table_name,
             scope,
-            self.join_on.get_as_join_sql(
-                &rel_map,
-                parent_scope.to_owned(),
-                scope.to_owned(),
-                registry
-            )
+            self.join_on
+                .get_sql(&rel_map, parent_scope.to_owned(), registry)
         )
         .to_string();
         for (rel, e) in self.joins.iter() {

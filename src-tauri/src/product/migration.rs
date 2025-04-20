@@ -125,7 +125,7 @@ pub async fn register_migrations() {
         CREATE TABLE product_warehouse (
             id INTEGER PRIMARY KEY DEFAULT nextval('product_warehouse_id_seq'),
             product_id INTEGER NOT NULL,
-            warehouse_id INTEGER NOT NULL,
+            warehouse_id INTEGER,
             quantity INTEGER NOT NULL,
             created_at TIMESTAMP,
             updated_at TIMESTAMP,
@@ -139,4 +139,14 @@ pub async fn register_migrations() {
         "warehouse.2"
     )
     .await;
+    register_migration!(
+        "product",
+        "Make",
+        9,
+        r#"
+            CREATE UNIQUE INDEX product_id_warehouse_id_unique_idx ON product_warehouse (product_id,warehouse_id);
+        "#,
+        "DROP INDEX IF EXISTS product_id_warehouse_id_unique_idx",
+        "product.8"
+    ).await;
 }

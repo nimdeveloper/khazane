@@ -1,13 +1,12 @@
 use crate::core::{
-    database::value_ref_to_type,
-    error::{custom_error, Error, Result},
+    error::{custom_error, Result},
     repository::Model,
     selector::{DbTranslateBox, Selector},
 };
 use chrono::Utc;
-use duckdb::{params_from_iter, types::ValueRef, Connection, ToSql};
+use duckdb::{params_from_iter, Connection, ToSql};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fmt::Debug, rc::Rc};
+use std::{fmt::Debug, rc::Rc};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Location {
@@ -48,29 +47,29 @@ impl Location {
             updated_at: row.get(translator.field("updated_at")?)?,
         })
     }
-    pub fn from_map(m: HashMap<String, ValueRef>) -> Result<Self> {
-        if Self::get_columns().iter().any(|e| !m.contains_key(e)) {
-            return Err(custom_error(
-                "Failed to construct MeasurementUnit from HasMap! Some keys missing!",
-            ));
-        }
-        let id: i64 = value_ref_to_type(m.get("id").unwrap()).map_err(Error::from)?;
+    // pub fn from_map(m: HashMap<String, ValueRef>) -> Result<Self> {
+    //     if Self::get_columns().iter().any(|e| !m.contains_key(e)) {
+    //         return Err(custom_error(
+    //             "Failed to construct MeasurementUnit from HasMap! Some keys missing!",
+    //         ));
+    //     }
+    //     let id: i64 = value_ref_to_type(m.get("id").unwrap()).map_err(Error::from)?;
 
-        let name: String = value_ref_to_type(m.get("name").unwrap()).map_err(Error::from)?;
+    //     let name: String = value_ref_to_type(m.get("name").unwrap()).map_err(Error::from)?;
 
-        let created_at: chrono::NaiveDateTime =
-            value_ref_to_type(m.get("created_at").unwrap()).map_err(Error::from)?;
+    //     let created_at: chrono::NaiveDateTime =
+    //         value_ref_to_type(m.get("created_at").unwrap()).map_err(Error::from)?;
 
-        let updated_at: chrono::NaiveDateTime =
-            value_ref_to_type(m.get("updated_at").unwrap()).map_err(Error::from)?;
+    //     let updated_at: chrono::NaiveDateTime =
+    //         value_ref_to_type(m.get("updated_at").unwrap()).map_err(Error::from)?;
 
-        Ok(Location {
-            id,
-            name,
-            created_at: Some(created_at),
-            updated_at: Some(updated_at),
-        })
-    }
+    //     Ok(Location {
+    //         id,
+    //         name,
+    //         created_at: Some(created_at),
+    //         updated_at: Some(updated_at),
+    //     })
+    // }
     pub fn save<'a>(&mut self, connection: &'a Connection) -> Result<()> {
         let mut params: Vec<Rc<dyn ToSql>> = Vec::new();
         let query;

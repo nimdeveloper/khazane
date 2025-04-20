@@ -1,13 +1,8 @@
 use crate::core::error::{custom_error, Result};
-use crate::core::repository::{DuckDbRepository, Repository};
+use crate::core::repository::DuckDbRepository;
 use crate::core::selector::{Internal, Operations, OrderDirection};
-use chrono::Utc;
-use duckdb::ToSql;
-use serde::{Deserialize, Serialize};
-use std::error::Error;
-use std::ops::Deref;
-use std::panic::Location;
-use uuid::Uuid;
+use crate::warehouse::model::Warehouse;
+use serde::Deserialize;
 
 use super::inputs::{MeasurementUnitDto, ProductCategoryDto, ProductDto};
 use super::model::{MeasurementUnit, Product, ProductCategory, ProductWarehouse};
@@ -100,38 +95,8 @@ pub fn get_product_with_filter(
             let current_product = products.iter_mut().find(|e| e.id == product.id).unwrap();
             current_product.related_from_row(row, &translate)?;
         }
-
-        // Load warehouses for this product in a separate query
-        // let warehouse_query = "
-        //     SELECT pw.quantity, w.id, w.name, w.shorthand, w.color_key, w.color_code
-        //     FROM product_warehouse pw
-        //     JOIN warehouse w ON pw.warehouse_id = w.id
-        //     WHERE pw.product_id = ?
-        // ";
-
-        // let mut warehouse_stmt = conn.prepare(warehouse_query)?;
-        // let mut warehouse_rows = warehouse_stmt.query(&[&product.id])?;
-
-        // let mut warehouses = Vec::new();
-        // while let Some(warehouse_row) = warehouse_rows.next()? {
-        //     let quantity: i64 = warehouse_row.get(0)?;
-        //     let warehouse = Warehouse {
-        //         id: warehouse_row.get(1)?,
-        //         name: warehouse_row.get(2)?,
-        //         shorthand: warehouse_row.get(3)?,
-        //         color_key: warehouse_row.get(4)?,
-        //         color_code: warehouse_row.get(5)?,
-        //     };
-
-        //     warehouses.push(ProductWarehouse {
-        //         quantity,
-        //         warehouse: Some(warehouse),
-        //     });
-        // }
-
-        // product.ware_houses = warehouses;
     }
-
+    Product::bulk_warehouses_load(&conn, &mut products)?;
     Ok(products)
 }
 
@@ -153,36 +118,7 @@ pub fn get_product_by_id(repo: &DuckDbRepository<Product>, id: i64) -> Result<Op
         }
         let product = product.as_mut().unwrap();
         product.related_from_row(row, &translate)?;
-
-        // Load warehouses for this product
-        // let warehouse_query = "
-        //     SELECT pw.quantity, w.id, w.name, w.shorthand, w.color_key, w.color_code
-        //     FROM product_warehouse pw
-        //     JOIN warehouse w ON pw.warehouse_id = w.id
-        //     WHERE pw.product_id = ?
-        // ";
-
-        // let mut warehouse_stmt = conn.prepare(warehouse_query)?;
-        // let mut warehouse_rows = warehouse_stmt.query(&[&product.id])?;
-
-        // let mut warehouses = Vec::new();
-        // while let Some(warehouse_row) = warehouse_rows.next()? {
-        //     let quantity: i64 = warehouse_row.get(0)?;
-        //     let warehouse = Warehouse {
-        //         id: warehouse_row.get(1)?,
-        //         name: warehouse_row.get(2)?,
-        //         shorthand: warehouse_row.get(3)?,
-        //         color_key: warehouse_row.get(4)?,
-        //         color_code: warehouse_row.get(5)?,
-        //     };
-
-        //     warehouses.push(ProductWarehouse {
-        //         quantity,
-        //         warehouse: Some(warehouse),
-        //     });
-        // }
-
-        // product.ware_houses = warehouses;
+        product.load_warehouses(&conn)?;
     }
     Ok(product)
 }
@@ -249,34 +185,80 @@ pub fn create_product(
     // let mut stmt = conn.prepare(insert_product_sql)?;
     // stmt.execute(&[&product_json])?;
 
-    // // Handle warehouse relations if any
-    // if let Some(warehouses) = &product_dto.warehouses {
-    //     for warehouse_dto in warehouses {
-    //         // Create warehouse relation
-    //         let warehouse_id = warehouse_dto.warehouse_id.clone();
-    //         if !warehouse_id.is_empty() {
-    //             let product_warehouse_id = Uuid::new_v4().to_string();
-    //             let product_warehouse = ProductWarehouse {
-    //                 quantity: warehouse_dto.quantity,
-    //                 warehouse: None, // We'll load this when querying
-    //             };
+    // Handle warehouse relations if any
+    let mut fetched_warehouses: Vec<Warehouse> = Vec::new();
 
-    //             // Store relation with IDs
-    //             let product_warehouse_json = serde_json::json!({
-    //                 "id": product_warehouse_id,
-    //                 "quantity": product_warehouse.quantity,
-    //                 "product_id": product.id,
-    //                 "warehouse_id": warehouse_id,
-    //                 "created_at": now.to_rfc3339(),
-    //                 "updated_at": now.to_rfc3339()
-    //             });
+    let mut warehouse_query = Warehouse::select();
 
-    //             let insert_warehouse_sql = "INSERT INTO product_warehouse (data) VALUES (?)";
-    //             let mut wh_stmt = conn.prepare(insert_warehouse_sql)?;
-    //             wh_stmt.execute(&[&product_warehouse_json.to_string()])?;
-    //         }
-    //     }
-    // }
+    //
+    //
+    // !
+    // ! WARN: Fix after `List` is implemented by Duckdb!
+    // !
+    //
+    if product_dto.warehouses.len() > 0 {
+        let ids = product_dto
+            .warehouses
+            .iter()
+            .filter(|e| e.warehouse.is_some())
+            .map(|e| e.warehouse.clone().unwrap().id.unwrap())
+            .collect::<Vec<i64>>();
+
+        let unstable_list: String = ids
+            .iter()
+            .map(|e| e.to_string())
+            .collect::<Vec<String>>()
+            .join("','");
+        let unstable_condition: String = format!("('{}')", unstable_list);
+        warehouse_query.filter(
+            Internal::Field("id".into()),
+            Operations::In,
+            Internal::Field(unstable_condition.into()),
+        );
+    }
+    // !
+    // !END
+    // !
+    // warehouse_query.filter(
+    //     Internal::Field("id".into()),
+    //     Operations::In,
+    //     Internal::Value(
+    //         duckdb::types::Value::List(
+    //             product_dto
+    //                 .warehouses
+    //                 .iter()
+    //                 .map(|w| duckdb::types::Value::BigInt(w.id.clone()))
+    //                 .collect::<Vec<duckdb::types::Value>>(),
+    //         )
+    //         .into(),
+    //     ),
+    // );
+    if product_dto.warehouses.len() > 0 {
+        let (stmt, translate) = warehouse_query.all(&conn)?;
+        let mut rows = stmt.raw_query();
+        while let Some(row) = rows.next()? {
+            let warehouse: Warehouse = Warehouse::from_row(row, &translate)?;
+            fetched_warehouses.push(warehouse);
+        }
+    }
+    let mut to_add_warehouses: Vec<ProductWarehouse> = Vec::new();
+    println!("Product: {}", product.id);
+    // Create warehouse relations
+    for warehouse in product_dto.warehouses.iter() {
+        let mut instance_warehouse = None;
+        if warehouse.warehouse.is_some() {
+            let warehouse_db_instance = fetched_warehouses
+                .iter()
+                .find(|w| w.id == warehouse.warehouse.clone().unwrap().id.unwrap())
+                .unwrap();
+            instance_warehouse = Some(warehouse_db_instance.clone())
+        }
+        let new_warehouse =
+            ProductWarehouse::new(warehouse.quantity, product.id, instance_warehouse);
+        to_add_warehouses.push(new_warehouse);
+    }
+
+    ProductWarehouse::bulk_insert(&to_add_warehouses, &conn)?;
 
     // Return the complete product with relations
     get_product_by_id(repo, product.id)?.ok_or(custom_error("Product not found!"))

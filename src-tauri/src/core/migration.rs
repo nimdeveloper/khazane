@@ -264,7 +264,7 @@ macro_rules! register_migration {
             up_sql: $up_sql,
             down_sql: Some($down_sql),
             dependency: None,
-        });
+        })
     };
     ($service:expr, $name:expr, $version:expr, $up_sql:expr, $down_sql:expr, $($dep:expr),+) => {
         $crate::core::migration::register_migration($crate::core::migration::MigrationDefinition {
