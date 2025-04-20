@@ -1,7 +1,16 @@
 <template>
     <Simplebar data-simplebar-direction="rtl" class="h-full w-full">
         <ProductDetail />
-        Test
+        <div
+            class="min-h-[80dvh] bg-gray-900 flex flex-col items-center justify-center rounded-xl"
+        >
+            <h1 class="text-5xl text-white font-bold mb-8 animate-pulse">
+                Coming Soon
+            </h1>
+            <p class="text-white text-lg mb-8">
+                We're working hard to bring you something amazing. Stay tuned!
+            </p>
+        </div>
     </Simplebar>
 </template>
 <script setup lang="ts">
