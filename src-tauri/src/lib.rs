@@ -38,7 +38,7 @@ async fn init_migrations() {
     product::migration::register_migrations().await;
     // orders::migration::register_migrations().await;
 
-    println!("All migrations registered successfully");
+    log::info!("All migrations registered successfully");
 }
 
 pub async fn init(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
@@ -59,14 +59,14 @@ pub async fn init(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 
             // Run migrations
             if let Err(e) = core::migration::run_migrations(&state).await {
-                eprintln!("Error running migrations: {}", e);
+                log::error!("Error running migrations: {}", e);
                 return Err(Box::new(e));
             }
 
             Ok(())
         }
         Err(e) => {
-            eprintln!("Failed to initialize database: {}", e);
+            log::error!("Failed to initialize database: {}", e);
             Err(Box::new(e))
         }
     }
@@ -99,7 +99,7 @@ pub fn run() {
             let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 if let Err(e) = init(&app_handle).await {
-                    eprintln!("Initialization error: {}", e);
+                    log::error!("Initialization error: {}", e);
                 }
             });
 

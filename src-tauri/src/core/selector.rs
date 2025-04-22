@@ -637,6 +637,7 @@ impl Join {
 pub struct DbTranslateBox<'a> {
     stmt: Rc<Statement<'a>>,
     scope: String,
+    relation_scope: String,
     rel_map: Rc<HashMap<String, String>>,
 }
 
@@ -645,6 +646,7 @@ impl<'a> DbTranslateBox<'a> {
         DbTranslateBox {
             stmt,
             scope,
+            relation_scope: String::new(),
             rel_map: Rc::new(rel_map),
         }
     }
@@ -654,15 +656,24 @@ impl<'a> DbTranslateBox<'a> {
             .map_err(Error::from)
     }
     pub fn with_rel(&self, rel: &str) -> Result<Self> {
-        let new_scope = self.scope.to_owned() + REL_DETERMINER + rel;
-        if self.rel_map.contains_key(&new_scope) {
-            return Ok(Self {
-                stmt: self.stmt.clone(),
-                scope: new_scope.to_owned(),
-                rel_map: self.rel_map.clone(),
-            });
+        let new_scope;
+        let new_rel_scope;
+        if self.relation_scope.len() > 0 {
+            new_rel_scope = self.relation_scope.to_owned() + REL_DETERMINER + &rel;
         } else {
+            new_rel_scope = rel.to_string();
+        }
+
+        if !self.rel_map.contains_key(&new_rel_scope) {
             return Err(custom_error(format!("Unknown relation {}.", rel)));
         }
+        new_scope = self.rel_map.get(&new_rel_scope).unwrap();
+
+        return Ok(Self {
+            stmt: self.stmt.clone(),
+            scope: new_scope.to_owned(),
+            relation_scope: new_rel_scope.to_owned(),
+            rel_map: self.rel_map.clone(),
+        });
     }
 }

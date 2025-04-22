@@ -65,7 +65,7 @@ pub fn create_connection(db_path: &str) -> Result<Connection> {
     let mut pool = CONNECTION_POOL.lock().unwrap();
     pool.insert(db_path.to_string(), Arc::new(Mutex::new(conn)));
 
-    println!("Database connection created and added to pool: {}", db_path);
+    log::info!("Database connection created and added to pool: {}", db_path);
     Ok(return_conn)
 }
 
@@ -77,7 +77,7 @@ pub async fn initialize_db(app: &AppHandle, db_name: &str) -> Result<String> {
     // Create a connection and add it to the pool
     create_connection(&db_path_str)?;
 
-    println!("Database initialized successfully at {}", db_path_str);
+    log::debug!("Database initialized successfully at {}", db_path_str);
     Ok(db_path_str)
 }
 

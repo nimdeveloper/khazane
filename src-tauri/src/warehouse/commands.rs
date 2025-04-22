@@ -20,7 +20,7 @@ pub async fn list_warehouses(
     match query::get_warehouse_with_filter(&repo, &filters) {
         Ok(warehouses) => Ok(warehouses),
         Err(e) => {
-            eprintln!("Error in get_warehouse_with_filter: {}", e);
+            log::error!("Error in get_warehouse_with_filter: {}", e);
             // Fallback to the original implementation
             // repo.find_all().await
             Err(e)
@@ -37,7 +37,7 @@ pub async fn get_warehouse_by_id(
     match query::get_warehouse_by_id(&repo, &id) {
         Ok(warehouse) => Ok(warehouse),
         Err(e) => {
-            eprintln!("Error in get_warehouse_by_id: {}", e);
+            log::error!("Error in get_warehouse_by_id: {}", e);
             // repo.find_by_id(&id).await
             Err(e)
         }
@@ -53,7 +53,7 @@ pub async fn create_warehouse(
     match query::create_warehouse(&repo, &warehouse) {
         Ok(warehouse) => Ok(warehouse),
         Err(e) => {
-            eprintln!("Error in create_warehouse: {}", e);
+            log::error!("Error in create_warehouse: {}", e);
             // repo.create(warehouse).await
             Err(e)
         }
@@ -70,7 +70,7 @@ pub async fn update_warehouse(
     match query::update_warehouse(&repo, &id, &warehouse) {
         Ok(warehouse) => Ok(warehouse),
         Err(e) => {
-            eprintln!("Error in update_warehouse: {}", e);
+            log::error!("Error in update_warehouse: {}", e);
             // repo.update(&id, warehouse).await
             Err(e)
         }

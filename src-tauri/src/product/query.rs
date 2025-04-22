@@ -208,8 +208,8 @@ pub fn create_product(
             .iter()
             .map(|e| e.to_string())
             .collect::<Vec<String>>()
-            .join("','");
-        let unstable_condition: String = format!("('{}')", unstable_list);
+            .join(",");
+        let unstable_condition: String = format!("({})", unstable_list);
         warehouse_query.filter(
             Internal::Field("id".into()),
             Operations::In,
@@ -242,17 +242,18 @@ pub fn create_product(
         }
     }
     let mut to_add_warehouses: Vec<ProductWarehouse> = Vec::new();
-    println!("Product: {}", product.id);
     // Create warehouse relations
     for warehouse in product_dto.warehouses.iter() {
         let mut instance_warehouse = None;
         if warehouse.warehouse.is_some() {
             let warehouse_db_instance = fetched_warehouses
                 .iter()
-                .find(|w| w.id == warehouse.warehouse.clone().unwrap().id.unwrap())
-                .unwrap();
-            instance_warehouse = Some(warehouse_db_instance.clone())
+                .find(|w| w.id == warehouse.warehouse.clone().unwrap().id.unwrap());
+            if warehouse_db_instance.is_some() {
+                instance_warehouse = Some(warehouse_db_instance.unwrap().clone())
+            }
         }
+
         let new_warehouse =
             ProductWarehouse::new(warehouse.quantity, product.id, instance_warehouse);
         to_add_warehouses.push(new_warehouse);

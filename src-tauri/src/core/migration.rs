@@ -116,9 +116,11 @@ pub fn remove_migration_record(conn: &Connection, service: &str, version: i32) -
 
 /// Apply a migration if it hasn't been applied yet
 pub fn apply_migration(conn: &Connection, migration: &MigrationDefinition) -> Result<bool> {
-    println!(
+    log::info!(
         "Applying migration {}.{}: {}",
-        migration.service, migration.version, migration.name
+        migration.service,
+        migration.version,
+        migration.name
     );
     if !is_migration_applied(conn, migration.service, migration.version)? {
         // Apply the migration
@@ -127,10 +129,10 @@ pub fn apply_migration(conn: &Connection, migration: &MigrationDefinition) -> Re
         // Record that the migration has been applied
         record_migration(conn, migration.service, migration.name, migration.version)?;
 
-        println!("✅ Migration Applied",);
+        log::info!("✅ Migration Applied",);
         Ok(true)
     } else {
-        println!("⛔ Migration already applied!");
+        log::info!("🆙 Migration already applied!");
         // Migration already applied
         Ok(false)
     }
@@ -146,9 +148,11 @@ pub fn revert_migration(conn: &Connection, migration: &MigrationDefinition) -> R
             // Remove the migration record
             remove_migration_record(conn, migration.service, migration.version)?;
 
-            println!(
+            log::info!(
                 "Reverted migration {}.{}: {}",
-                migration.service, migration.version, migration.name
+                migration.service,
+                migration.version,
+                migration.name
             );
             Ok(true)
         } else {

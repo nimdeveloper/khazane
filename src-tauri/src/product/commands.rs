@@ -18,7 +18,7 @@ pub async fn get_categories(
     match query::get_category_with_filter(&repo, &filters) {
         Ok(categories) => Ok(categories),
         Err(e) => {
-            eprintln!("Error in get_category_with_filter: {}", e);
+            log::error!("Error in get_category_with_filter: {}", e);
             // repo.find_all().await
             Err(e)
         }
@@ -34,7 +34,7 @@ pub async fn get_category_by_id(
     match query::get_category_by_id(&repo, id) {
         Ok(category) => Ok(category),
         Err(e) => {
-            eprintln!("Error in get_category_by_id: {}", e);
+            log::error!("Error in get_category_by_id: {}", e);
             // repo.find_by_id(&id).await
             Err(e)
         }
@@ -50,7 +50,7 @@ pub async fn create_category(
     match query::create_category(&repo, &category) {
         Ok(category) => Ok(category),
         Err(e) => {
-            eprintln!("Error in create_category: {}", e);
+            log::error!("Error in create_category: {}", e);
             // repo.create(category).await
             Err(e)
         }
@@ -67,7 +67,7 @@ pub async fn update_category(
     match query::update_category(&repo, id, &category) {
         Ok(category) => Ok(category),
         Err(e) => {
-            eprintln!("Error in update_category: {}", e);
+            log::error!("Error in update_category: {}", e);
             // repo.update(&id, category).await
             Err(e)
         }
@@ -83,7 +83,7 @@ pub async fn get_products(
     match query::get_product_with_filter(&repo, &filters) {
         Ok(products) => Ok(products),
         Err(e) => {
-            eprintln!("Error in get_product_with_filter: {}", e);
+            log::error!("Error in get_product_with_filter: {}", e);
             // repo.find_all().await
             Err(e)
         }
@@ -99,7 +99,7 @@ pub async fn get_product_by_id(
     match query::get_product_by_id(&repo, id) {
         Ok(product) => Ok(product),
         Err(e) => {
-            eprintln!("Error in get_product_by_id: {}", e);
+            log::error!("Error in get_product_by_id: {}", e);
             // repo.find_by_id(&id).await
             Err(e)
         }
@@ -112,7 +112,7 @@ pub async fn add_product(state: State<'_, Mutex<AppData>>, product: ProductDto) 
     match query::create_product(&repo, &product) {
         Ok(product) => Ok(product),
         Err(e) => {
-            eprintln!("Error in create_product: {}", e);
+            log::error!("Error in create_product: {}", e);
             // repo.create(product).await
             Err(e)
         }
@@ -129,7 +129,7 @@ pub async fn update_product(
     match query::update_product(&repo, id, &product) {
         Ok(product) => Ok(product),
         Err(e) => {
-            eprintln!("Error in update_product: {}", e);
+            log::error!("Error in update_product: {}", e);
             // repo.update(&id, product).await
             Err(e)
         }
@@ -145,7 +145,7 @@ pub async fn get_measure_units(
     match query::get_measure_unit_with_filter(&repo, &filters) {
         Ok(categories) => Ok(categories),
         Err(e) => {
-            eprintln!("Error in get_category_with_filter: {}", e);
+            log::error!("Error in get_category_with_filter: {}", e);
             // repo.find_all().await
             Err(e)
         }
@@ -161,7 +161,7 @@ pub async fn get_measure_unit_by_id(
     match query::get_measurement_unit_by_id(&repo, id) {
         Ok(unit) => Ok(unit),
         Err(e) => {
-            eprintln!("Error in get_measurement_unit_by_id: {}", e);
+            log::error!("Error in get_measurement_unit_by_id: {}", e);
             // repo.find_by_id(&id).await
             Err(e)
         }
@@ -177,7 +177,7 @@ pub async fn create_measure_unit(
     match query::create_measurement_unit(&repo, &unit) {
         Ok(unit) => Ok(unit),
         Err(e) => {
-            eprintln!("Error in create_measurement_unit: {}", e);
+            log::error!("Error in create_measurement_unit: {}", e);
             // repo.create(unit).await
             Err(e)
         }
@@ -194,7 +194,7 @@ pub async fn update_measure_unit(
     match query::update_measurement_unit(&repo, id, &unit) {
         Ok(unit) => Ok(unit),
         Err(e) => {
-            eprintln!("Error in update_measurement_unit: {}", e);
+            log::error!("Error in update_measurement_unit: {}", e);
             // repo.update(&id, unit).await
             Err(e)
         }

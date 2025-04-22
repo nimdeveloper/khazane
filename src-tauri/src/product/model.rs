@@ -167,6 +167,8 @@ impl ProductWarehouse {
         if query.ends_with(",") {
             query.pop();
         }
+        log::trace!("{}", query);
+
         let mut stmt = conn.prepare(&query)?;
         let changes = stmt.execute(params_from_iter(params.into_iter()))?;
         if changes <= 0 || changes != values.len() {
@@ -179,9 +181,12 @@ impl ProductWarehouse {
     pub fn from_row(row: &duckdb::Row, translator: &DbTranslateBox) -> Result<Self> {
         let mut warehouse = None;
         if let Some(_) = row.get::<_, Option<i64>>(translator.field("warehouse_id")?)? {
-            if let Ok(rel) = translator.with_rel("warehouse") {
-                warehouse = Some(Warehouse::from_row(row, &rel)?);
-            }
+            match translator.with_rel("warehouse") {
+                Ok(rel) => {
+                    warehouse = Some(Warehouse::from_row(row, &rel)?);
+                }
+                Err(e) => log::error!("{}", e),
+            };
         }
         Ok(Self {
             id: row.get(translator.field("id")?)?,
@@ -516,8 +521,8 @@ impl Product {
             .iter()
             .map(|e| e.to_string())
             .collect::<Vec<String>>()
-            .join("','");
-        let unstable_condition: String = format!("('{}')", unstable_list);
+            .join(",");
+        let unstable_condition: String = format!("({})", unstable_list);
         selection.filter(
             Internal::Field("product_id".into()),
             Operations::In,

@@ -21,7 +21,7 @@ pub async fn list_people(
     match query::get_person_with_filter(&repo, &filters) {
         Ok(people) => Ok(people),
         Err(e) => {
-            eprintln!("Error in get_person_with_filter: {}", e);
+            log::error!("Error in get_person_with_filter: {}", e);
             // Fallback to the original implementation
             // repo.find_all().await
             Err(e)
@@ -38,7 +38,7 @@ pub async fn get_person_by_id(
     match query::get_person_by_id(&repo, &id) {
         Ok(person) => Ok(person),
         Err(e) => {
-            eprintln!("Error in get_person_by_id: {}", e);
+            log::error!("Error in get_person_by_id: {}", e);
             Err(e)
             // repo.find_by_id(&id).await
         }
@@ -51,7 +51,7 @@ pub async fn create_person(state: State<'_, Mutex<AppData>>, person: PersonDto) 
     match query::create_person(&repo, &person) {
         Ok(person) => Ok(person),
         Err(e) => {
-            eprintln!("Error in create_person: {}", e);
+            log::error!("Error in create_person: {}", e);
             // repo.create(person).await
             Err(e)
         }
@@ -68,7 +68,7 @@ pub async fn update_person(
     match query::update_person(&repo, &id, &person) {
         Ok(person) => Ok(person),
         Err(e) => {
-            eprintln!("Error in update_person: {}", e);
+            log::error!("Error in update_person: {}", e);
             // repo.update(&id, person).await
             Err(e)
         }

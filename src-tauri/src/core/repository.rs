@@ -63,7 +63,7 @@ impl<T: Model + 'static> Repository<T> for DuckDbRepository<T> {
             // Create the table if it doesn't exist
             let sql = format!("CREATE TABLE IF NOT EXISTS {} (data JSON)", table_name);
             database::execute(&conn, &sql)?;
-            println!("Created table: {}", table_name);
+            log::debug!("Created table: {}", table_name);
         }
 
         Ok(())
