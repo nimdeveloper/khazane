@@ -2,12 +2,14 @@
     <Simplebar data-simplebar-direction="rtl" class="h-full w-full">
         <ProductDetail />
         <div
-            class="min-h-[80dvh] bg-gray-900 flex flex-col items-center justify-center rounded-xl"
+            class="min-h-[80dvh] flex flex-col items-center justify-center rounded-xl"
         >
-            <h1 class="text-5xl text-white font-bold mb-8 animate-pulse">
+            <h1
+                class="text-5xl text-gray-900 dark:text-white font-bold mb-8 animate-pulse"
+            >
                 Coming Soon
             </h1>
-            <p class="text-white text-lg mb-8">
+            <p class="text-gray-900 dark:text-white text-lg mb-8">
                 We're working hard to bring you something amazing. Stay tuned!
             </p>
         </div>

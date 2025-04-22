@@ -12,7 +12,8 @@ pub struct FilterOptions {
     pub limit: Option<usize>,
     pub offset: Option<usize>,
     pub status: Option<String>,
-    pub category_id: Option<String>,
+    pub category_id: Option<i64>,
+    pub warehouse_id: Option<i64>,
     pub sort_by: Option<String>,
     pub sort_order: Option<String>,
     pub search_term: Option<String>,
@@ -40,6 +41,14 @@ pub fn get_product_with_filter(
             Internal::Field("category_id".into()),
             Operations::EqualTo,
             Internal::Value(category_id.clone().into()),
+        );
+    }
+
+    if let Some(warehouse_id) = &filters.warehouse_id {
+        query.filter(
+            Internal::Field("warehouse_id".into()),
+            Operations::EqualTo,
+            Internal::Value(warehouse_id.clone().into()),
         );
     }
 

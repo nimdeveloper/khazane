@@ -181,7 +181,7 @@ impl Selector {
         connection: &'a Connection,
     ) -> Result<(Rc<Statement<'a>>, DbTranslateBox<'a>)> {
         let (query, params, scope, rel_map) = self.get_sql();
-        log::debug!("{}", query.to_owned());
+        log::trace!("{}", query.to_owned());
         let mut stmt: Statement<'a> = connection.prepare(&query).map_err(Error::from)?;
         stmt.execute(params_from_iter(params.into_iter()))
             .map_err(Error::from)?;
@@ -233,7 +233,7 @@ impl Selector {
                 res += format!("{}\n", joins).as_str()
             }
             if conditions.len() > 0 {
-                res += format!("WHERE\n\t{}", conditions).as_str();
+                res += format!("WHERE\n\t{}\n", conditions).as_str();
             }
             if let Some(order) = &self.order {
                 res += format!("ORDER BY {}", order.resolve(&rel_map, scope.to_owned())).as_str();

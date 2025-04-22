@@ -16,16 +16,19 @@ export const useMyProductStore = defineStore("myProductStore", {
             sort: null,
             category: null,
             warehouse: null,
+            search: "",
         } as {
             status: string;
             sort: {
                 prefix: string;
                 label: string;
                 key: string;
-                sorter: (a: IProductUnit, b: IProductUnit) => number;
+                sort_by: string;
+                direction: string;
             } | null;
             category: ProductCategory | null;
             warehouse: WareHouse | null;
+            search: string;
         },
     }),
     getters: {
@@ -57,9 +60,6 @@ export const useMyProductStore = defineStore("myProductStore", {
                 }
                 products.push(item);
             }
-            if (state.filters.sort) {
-                return products.sort(state.filters.sort.sorter);
-            }
             return products;
         },
         productsCount(state) {
@@ -80,7 +80,31 @@ export const useMyProductStore = defineStore("myProductStore", {
         // Product
         async loadProducts() {
             if (!this.tauri) return;
-            let products = await apiWithTauri().products.getProducts();
+            this.filters.sort;
+            let products = await apiWithTauri().products.getProducts({
+                ...(this.filters.sort
+                    ? {
+                          sort_by: this.filters.sort.sort_by,
+                          sort_order: this.filters.sort.direction,
+                      }
+                    : {}),
+                ...(this.filters.status &&
+                this.filters.status.toLowerCase() !== "all"
+                    ? {
+                          status: this.filters.status,
+                      }
+                    : {}),
+                ...(this.filters.category
+                    ? { category_id: this.filters.category.id }
+                    : {}),
+                // TODO: Uncomment
+                // ...(this.filters.warehouse
+                //     ? { warehouse_id: this.filters.warehouse.id }
+                //     : {}),
+                ...(this.filters.search
+                    ? { search_term: this.filters.search }
+                    : {}),
+            });
             this.products = [];
             for (const each of products) {
                 this.products.push(ProductUnit.fromInterface(each));

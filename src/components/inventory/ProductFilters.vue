@@ -118,7 +118,7 @@
 <script lang="ts" setup>
 import { breakpointsTailwind, onClickOutside } from "@vueuse/core";
 import Simplebar from "simplebar-vue";
-import { ProductCategory, type IProductUnit } from "~/interfaces/product";
+import { ProductCategory } from "~/interfaces/product";
 import { WareHouse } from "~/interfaces/warehouse";
 import { useMyGlobalStore } from "~/stores/global";
 import { useMyProductStore } from "~/stores/product";
@@ -156,15 +156,15 @@ const sortChoices = [
         prefix: "الفبایی",
         label: "آ-ی",
         key: "alphabetical-des",
-        sorter: (a: IProductUnit, b: IProductUnit) =>
-            -b.title.localeCompare(a.title),
+        direction: "desc",
+        sort_by: "title",
     },
     {
         prefix: "الفبایی",
         label: "ی-آ",
         key: "alphabetical-asc",
-        sorter: (a: IProductUnit, b: IProductUnit) =>
-            b.title.localeCompare(a.title),
+        sort_by: "title",
+        direction: "asc",
     },
 ];
 const categoryChoices = computed(() => [
@@ -193,6 +193,16 @@ const productTypeChoices = [
         key: "draft",
     },
 ] as { label: string; key: "all" | "draft" | "inactive" | "active" }[];
+
+watch(productStore.filters, () => {
+    if (isPending) {
+        stop();
+    }
+    start();
+});
+const { isPending, start, stop } = useTimeoutFn(() => {
+    productStore.loadCategories();
+}, 500);
 
 // Function
 function changeProductTypeFilter(val: string) {
