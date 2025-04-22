@@ -4,10 +4,10 @@ import type { IProductCategory, IProductUnit } from "~/interfaces/product";
 
 export default () => {
     return {
-        async getProducts() {
+        async getProducts(filters = {}) {
             try {
                 let data = await invoke<IProductUnit[]>("get_products", {
-                    filters: {},
+                    filters,
                 });
                 return data;
             } catch (e) {

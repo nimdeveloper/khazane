@@ -58,7 +58,7 @@
                     <IconCaretUpDown :size="16" color="currentColor" />
                 </button>
                 <div
-                    class="absolute end-0 top-full bg-action-secondary dark:bg-dark-action-secondary translate-y-2 min-w-36 px-2 py-3 rounded-2xl shadow text-primary dark:text-dark-primary w-[calc(100dvw-20px)] lg:w-auto"
+                    class="absolute end-0 top-full bg-action-secondary dark:bg-dark-action-secondary translate-y-2 min-w-72 px-2 py-3 rounded-2xl shadow text-primary dark:text-dark-primary w-[calc(100dvw-20px)] lg:w-auto"
                     :class="{
                         block: miniMenuOpen,
                         hidden: !miniMenuOpen,
