@@ -6,7 +6,7 @@
         />
         <div class="flex flex-col w-full">
             <NuxtLink
-                class="inline-flex items-center mt-2 lg:mb-6 gap-0 hover:gap-1 transition-all lg:ms-4 text-secondary dark:text-dark-secondary"
+                class="inline-flex items-center mt-2 md:mb-6 gap-0 hover:gap-1 transition-all md:ms-4 text-secondary dark:text-dark-secondary"
                 to="/inventory/"
             >
                 <IconNavArrowRight
@@ -17,21 +17,21 @@
                 باز گشت به لیست محصولات
             </NuxtLink>
             <div class="flex w-full">
-                <div class="flex flex-col lg:flex-row w-full">
+                <div class="flex flex-col md:flex-row w-full">
                     <ul
-                        class="flex lg:block space-y space-y-4 grow-1 lg:grow-0 lg:w-96 lg:max-w-96 text-sm font-medium text-gray-500 dark:text-gray-400 lg:me-4 lg:mb-0 z-[2]"
+                        class="flex md:block space-y space-y-4 grow-1 md:grow-0 md:w-72 md:max-w-72 lg:w-96 lg:max-w-96 text-sm font-medium text-gray-500 dark:text-gray-400 md:me-4 md:mb-0 z-[2]"
                     >
                         <li
                             v-for="(step, index) of steps"
                             :key="index"
-                            class="relative pt-3 lg:ps-6 lg:pt-0 grow"
+                            class="relative pt-3 md:ps-6 md:pt-0 grow"
                         >
                             <div
-                                class="hidden sm:block absolute h-2 w-1/3 -start-1/2 -translate-x-full -translate-y-1/2 lg:w-9 bg-gradient-to-r lg:bg-action-primary lg:dark:bg-dark-action-primary lg:start-0 top-1/2 rounded-full transition-transform z-[1]"
+                                class="hidden sm:block absolute h-2 w-1/3 -start-1/2 -translate-x-full -translate-y-1/2 md:w-9 bg-gradient-to-r md:bg-action-primary md:dark:bg-dark-action-primary md:start-0 top-1/2 rounded-full transition-transform z-[1]"
                                 :class="{
-                                    'lg:translate-x-1/2': step.active,
-                                    'lg:translate-x-full': !step.active,
-                                    'hidden lg:block': index == 0,
+                                    'md:translate-x-1/2': step.active,
+                                    'md:translate-x-full': !step.active,
+                                    'hidden md:block': index == 0,
                                     'bg-action-primary dark:bg-dark-action-primary':
                                         index !== 0 && step.active,
                                     'bg-glob-secondary dark:bg-dark-glob-secondary':
@@ -40,7 +40,7 @@
                             ></div>
                             <NuxtLink
                                 :to="step.link"
-                                class="inline-flex flex-col lg:flex-row items-center px-4 lg:ps-4 lg:pe-6 py-3 rounded-lg w-full text-nowrap hover:bg-action-primary/10 hover:dark:bg-dark-action-primary/10 text-center lg:text-start z-[2] relative"
+                                class="inline-flex flex-col md:flex-row items-center px-4 md:ps-4 md:pe-6 py-3 rounded-lg w-full text-nowrap hover:bg-action-primary/10 hover:dark:bg-dark-action-primary/10 text-center md:text-start z-[2] relative"
                                 :class="{
                                     'bg-action-primary/5 dark:bg-dark-action-primary/5 text-action-primary dark:text-dark-action-primary':
                                         step.active,
@@ -62,11 +62,11 @@
                                 />
                                 <div class="flex flex-col">
                                     <div
-                                        class="text-secondary dark:text-dark-secondary text-sm hidden lg:block"
+                                        class="text-secondary dark:text-dark-secondary text-sm hidden md:block"
                                     >
                                         مرحله {{ index + 1 }}
                                     </div>
-                                    <div class="mt-1 text-xs lg:text-sm">
+                                    <div class="mt-1 text-xs md:text-sm">
                                         {{ step.name }}
                                     </div>
                                 </div>
@@ -74,7 +74,7 @@
                         </li>
                     </ul>
                     <div
-                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-action-secondary dark:bg-dark-action-secondary h-[calc(100dvh-225px)] lg:h-[calc(100dvh-138px)] flex flex-col relative w-auto lg:w-[calc(100%-384px)]"
+                        class="pt-6 ps-6 pe-3 pb-16 text-medium rounded-xl grow-1 bg-action-secondary dark:bg-dark-action-secondary h-[calc(100dvh-225px)] md:h-[calc(100dvh-138px)] flex flex-col relative w-auto md:w-[calc(100%-384px)]"
                     >
                         <Simplebar
                             data-simplebar-direction="rtl"
