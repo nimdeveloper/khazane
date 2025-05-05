@@ -70,6 +70,9 @@
                 </div>
             </div>
         </div>
+        <div>
+            <SampleDashboard />
+        </div>
     </Simplebar>
 </template>
 <script setup lang="ts">
